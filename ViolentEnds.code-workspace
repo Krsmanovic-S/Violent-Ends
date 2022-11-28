@@ -1,0 +1,75 @@
+{
+	"folders": [
+		{
+			"name": "ViolentEnds",
+			"path": "."
+		},
+		{
+			"name": "UE5",
+			"path": "C:\\Unreal Engine\\UE_5.0"
+		}
+	],
+	"settings": {
+		"typescript.tsc.autoDetect": "off",
+		"files.associations": {
+			"atomic": "cpp",
+			"bitset": "cpp",
+			"charconv": "cpp",
+			"chrono": "cpp",
+			"complex": "cpp",
+			"coroutine": "cpp",
+			"deque": "cpp",
+			"exception": "cpp",
+			"filesystem": "cpp",
+			"forward_list": "cpp",
+			"fstream": "cpp",
+			"functional": "cpp",
+			"future": "cpp",
+			"istream": "cpp",
+			"iterator": "cpp",
+			"list": "cpp",
+			"map": "cpp",
+			"memory": "cpp",
+			"mutex": "cpp",
+			"optional": "cpp",
+			"ostream": "cpp",
+			"set": "cpp",
+			"sstream": "cpp",
+			"stop_token": "cpp",
+			"streambuf": "cpp",
+			"system_error": "cpp",
+			"thread": "cpp",
+			"tuple": "cpp",
+			"unordered_map": "cpp",
+			"unordered_set": "cpp",
+			"utility": "cpp",
+			"vector": "cpp",
+			"xhash": "cpp",
+			"xlocale": "cpp",
+			"xlocinfo": "cpp",
+			"xmemory": "cpp",
+			"xstring": "cpp",
+			"xtree": "cpp",
+			"xutility": "cpp",
+			"__bit_reference": "cpp",
+			"__hash_table": "cpp",
+			"__mutex_base": "cpp",
+			"__node_handle": "cpp",
+			"__tree": "cpp",
+			"__tuple": "cpp",
+			"memory_resource": "cpp",
+			"queue": "cpp",
+			"random": "cpp",
+			"stack": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"*.rh": "cpp"
+		}
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.cpptools",
+			"ms-dotnettools.csharp"
+		]
+	}
+}
