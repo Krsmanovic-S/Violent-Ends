@@ -28,6 +28,8 @@ void AChest::BeginPlay()
 	
 	this->InteractionWidget->SetVisibility(false);
 
+	this->InteractiveObjectLocation = this->GetActorLocation();
+
 	this->InitializeChest();
 }
 

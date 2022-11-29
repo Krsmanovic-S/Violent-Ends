@@ -7,6 +7,7 @@
 
 
 class AProjectile;
+class UBaseAmmo;
 class UBaseCustomDamageType;
 class APlayerCharacter;
 class UEntityStats;
@@ -25,8 +26,7 @@ protected:
 
 public:	
 
-	void FireOneBullet(FVector ProjectileDirection = {10000.0, 0.0, 0.0});
-	void EnemyFireOneBullet(FVector ProjectileDirection = {10000.0, 0.0, 0.0});
+	void FireOneBullet(FVector ProjectileDirection = {9000.0, 0.0, 0.0});
 	void FireBurst();
 	void FireShotgun();
 	void FireSniper();
@@ -56,10 +56,13 @@ public:
 	// -------------------------------------------------------
 	// Ammo
 	UPROPERTY(BlueprintReadWrite)
-	class UBaseAmmo* HeldAmmo;
+	UBaseAmmo* HeldAmmo;
 
 	UPROPERTY(BlueprintReadWrite)
 	float MaximumRange = 10.f;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 BulletPierceAmount;
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 CurrentAmmo;

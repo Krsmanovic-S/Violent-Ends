@@ -62,42 +62,30 @@ void ABaseGun::InitializeGunProperties()
 
 void ABaseGun::FireOneBullet(FVector ProjectileDirection)
 {
-	if(this->CurrentAmmo == 0 || this->HeldAmmo == NULL)
+	if(!GetOwner()->IsA<ABaseEnemy>() && (this->CurrentAmmo == 0 || this->HeldAmmo == NULL))
 	{
 		return;
 	}
 
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this;
+
 	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(
 		ProjectileClass,
 		ProjectileSpawnPoint->GetComponentLocation(),
-		ProjectileSpawnPoint->GetComponentRotation()
+		ProjectileSpawnPoint->GetComponentRotation(),
+		SpawnParameters
 	);
 
-	Projectile->SetOwner(this);
+	Projectile->SetLifeSpan(this->MaximumRange / ProjectileDirection.X);
 
 	Projectile->ProjectileMovementComponent->SetVelocityInLocalSpace(ProjectileDirection);
 
-	CurrentAmmo--;
-	this->HeldAmmo->ItemCurrentStack--;
-}
-
-void ABaseGun::EnemyFireOneBullet(FVector ProjectileDirection)
-{
-	if(this->ProjectileClass == NULL)
+	if(!GetOwner()->IsA<ABaseEnemy>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Projectile class for Enemy not set."));
-		return;
+		this->CurrentAmmo--;
+		this->HeldAmmo->ItemCurrentStack--;
 	}
-
-	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(
-		ProjectileClass,
-		ProjectileSpawnPoint->GetComponentLocation(),
-		ProjectileSpawnPoint->GetComponentRotation()
-	);
-
-	Projectile->SetOwner(this);
-
-	Projectile->ProjectileMovementComponent->SetVelocityInLocalSpace(ProjectileDirection);
 }
 
 void ABaseGun::FireBurst()
@@ -152,13 +140,13 @@ void ABaseGun::FireSniper()
 	{
 		this->OwningPlayer->GetCharacterMovement()->SetMovementMode(MOVE_None, 0);
 
-		GetWorldTimerManager().SetTimer(SniperHandle, this, &ABaseGun::EnableMovement, 1, false);
+		GetWorldTimerManager().SetTimer(SniperHandle, this, &ABaseGun::EnableMovement, 0.25, false);
 	}
 }
 
 void ABaseGun::EnableMovement()
 {
-	this->FireOneBullet();
+	this->FireOneBullet(FVector(11000.0, 0.0, 0.0));
 
 	if(this->OwningPlayer && this->OwningPlayer->GetCharacterMovement())
 	{
@@ -258,11 +246,15 @@ void ABaseGun::UpdateAmmo()
 		this->BurstAmount = this->HeldAmmo->AmountToFire;
 
 		this->MaximumRange = this->HeldAmmo->GunFiringRange;
+
+		this->BulletPierceAmount = this->HeldAmmo->AmmoPierceAmount;
 	}
 	else
 	{
 		this->ReserveAmmo = 0;
 	}
+
+	
 
 	this->OwningPlayer->OnAmmoUpdated.Broadcast();
 }

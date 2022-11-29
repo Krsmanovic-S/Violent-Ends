@@ -1,9 +1,8 @@
 #include "BaseAbility.h"
-#include "Engine/World.h"
 #include "TimerManager.h"
 
 
-bool UBaseAbility::CanCastAbility(const float& CurrentStamina , const bool bFreeCast)
+bool UBaseAbility::CanCastAbility(float& CurrentStamina , const bool bFreeCast)
 {
     if(bFreeCast)
     {
@@ -12,6 +11,7 @@ bool UBaseAbility::CanCastAbility(const float& CurrentStamina , const bool bFree
 
     if(CurrentStamina >= this->StaminaCostToCast && !this->bIsOnCooldown)
     {
+        CurrentStamina -= this->StaminaCostToCast;
         return true;
     }
 

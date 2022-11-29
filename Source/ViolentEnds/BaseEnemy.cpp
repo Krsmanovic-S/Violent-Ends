@@ -55,7 +55,7 @@ void ABaseEnemy::Attack()
 
 		if(this->RangedWeapon != NULL)
 		{
-			this->RangedWeapon->EnemyFireOneBullet();
+			this->RangedWeapon->FireOneBullet();
 		}
 		else
 		{

@@ -345,12 +345,11 @@ void APlayerCharacter::ThrowGrenade()
 		FVector GrenadeSpawnLocation = GetMesh()->GetSocketLocation("GunAttachPoint");
 
 		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = this;
 
 		this->Grenade = GetWorld()->SpawnActor<AGrenade>(this->GrenadeClass, GrenadeSpawnLocation, FRotator(0, 0, 0), SpawnParameters);
 	
 		this->Grenade->GrenadeMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
-
-		//this->Grenade->GrenadeMesh->AddImpulse(GetMesh()->GetForwardVector() * 1000);
 
 		this->GrenadeCount--;
 	}
@@ -368,10 +367,7 @@ void APlayerCharacter::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 	if(this->CurrentInteractable != NULL)
 	{
-		// GetLocation() Method 
-		AActor* CurrentActor = Cast<AActor>(this->CurrentInteractable);
-
-		float PreviousDistance = FVector::Dist(this->GetActorLocation(), CurrentActor->GetActorLocation());
+		float PreviousDistance = FVector::Dist(this->GetActorLocation(), this->CurrentInteractable->InteractiveObjectLocation);
 		float CurrentDistance = FVector::Dist(this->GetActorLocation(), OtherActor->GetActorLocation());
 
 		// If we already have a focused interactable and this check 
@@ -379,11 +375,10 @@ void APlayerCharacter::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 		// and replace it with the newly entered interactable.
 		if(CurrentDistance < PreviousDistance)
 		{
+			AActor* CurrentActor = Cast<AActor>(this->CurrentInteractable);
 			this->CurrentInteractable->InteractionWidgetVisibility(CurrentActor->FindComponentByClass<class UWidgetComponent>(), false);
 
-			// Reduntant cast
-			this->CurrentInteractable = Cast<IInteractiveObject>(OtherActor);
-
+			this->CurrentInteractable = EnteringInteractable;
 			this->CurrentInteractable->InteractionWidgetVisibility(OtherActor->FindComponentByClass<class UWidgetComponent>(), true);
 		}
 	}
@@ -391,9 +386,7 @@ void APlayerCharacter::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 	// new one gets automatically assigned.
 	else
 	{
-		// Reduntant cast
-		this->CurrentInteractable = Cast<IInteractiveObject>(OtherActor);
-
+		this->CurrentInteractable = EnteringInteractable;
 		this->CurrentInteractable->InteractionWidgetVisibility(OtherActor->FindComponentByClass<class UWidgetComponent>(), true);
 	}
 }
@@ -404,9 +397,7 @@ void APlayerCharacter::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 
 	if(LeavingInteractable == this->CurrentInteractable)
 	{
-		AActor* LeavingActor = Cast<AActor>(LeavingInteractable);
-
-		this->CurrentInteractable->InteractionWidgetVisibility(LeavingActor->FindComponentByClass<class UWidgetComponent>(), false);
+		this->CurrentInteractable->InteractionWidgetVisibility(OtherActor->FindComponentByClass<class UWidgetComponent>(), false);
 
 		this->CurrentInteractable = NULL;
 
@@ -474,20 +465,18 @@ void APlayerCharacter::UnequipWeapon()
 
 void APlayerCharacter::AddXP(float& ExperienceToAdd)
 {
-	// XP overflow fix
-
 	this->CurrentXP += ExperienceToAdd;
 
-	if(this->CurrentXP >= this->XPForNextLevel)
+	while(this->CurrentXP >= this->XPForNextLevel)
 	{
-		this->OnPlayerLevelUp();
+		this->CurrentXP -= this->XPForNextLevel;
+
+		this->PlayerLevelUp();
 	}
 }
 
-void APlayerCharacter::OnPlayerLevelUp()
+void APlayerCharacter::PlayerLevelUp()
 {
-	this->CurrentXP -= this->XPForNextLevel;
-
 	this->CurrentLevel++;
 
 	this->AvailableSkillPoints++;
@@ -500,5 +489,8 @@ void APlayerCharacter::OnPlayerLevelUp()
 
 	// Spawn particle effect for level up.
 
-	this->OnLevelUp.Broadcast();
+	if(this->OnLevelUp.IsBound())
+	{
+		this->OnLevelUp.Broadcast();
+	}
 }

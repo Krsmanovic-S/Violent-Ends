@@ -66,23 +66,22 @@ EItemTier ILootSystem::RandomizeTier(int32 CurrentPlayerLevel)
 
 EItemRarity ILootSystem::RandomizeRarity()
 {
-	float Random = FMath::RandRange(0, 100);
+	int32 Random = FMath::RandRange(0, 100);
 
 	// 3% for Legendary
-	// 10% for Epic
-	// 20% for Rare
-	// 30% for Uncommon
-
-	// Fix the rarities (remember that this is horrible)
+	// 12% for Epic
+	// 18% for Rare
+	// 27% for Uncommon
+	// 40% for Common
  
-	if(Random >= 97.f)
-		return EItemRarity::Legendary;
-	else if(Random >= 90.f)
-		return EItemRarity::Epic;
-	else if(Random >= 80.f)
-		return EItemRarity::Rare;
-	else if(Random >= 30.f)
+	if(Random < 40)
+		return EItemRarity::Common;
+	else if(Random < 67)
 		return EItemRarity::Uncommon;
+	else if(Random < 85)
+		return EItemRarity::Rare;
+	else if(Random < 98)
+		return EItemRarity::Epic;
 
 	return EItemRarity::Common;
 }

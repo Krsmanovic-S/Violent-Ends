@@ -7,68 +7,51 @@
 
 AProjectile::AProjectile()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
+	this->ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
 	RootComponent = ProjectileMesh;
 
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
-	ProjectileMovementComponent->InitialSpeed = 2000.f;
-	ProjectileMovementComponent->MaxSpeed = 2000.f;
-
-	ProjectileRange = 700.f;
-
-	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+	this->ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
 }
 
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	StartingLocation = GetActorLocation();
+
+	this->ProjectileMesh->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnProjectileOverlap);
+
+	this->GunOwner = Cast<ABaseGun>(GetOwner());
+
+	this->ProjectilePierceAmount = this->GunOwner->BulletPierceAmount;
 }
 
-void AProjectile::Tick(float DeltaTime)
+void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
-	Super::Tick(DeltaTime);
-
-	// Try to move this from the tick function.
-	ProjectileRange = Cast<ABaseGun>(GetOwner())->MaximumRange;
-
-	CurrentLocation = GetActorLocation();
-
-	if(FVector::Dist(StartingLocation, CurrentLocation) >= ProjectileRange)
+	if(!this->GunOwner)
 	{
-		Destroy();
-	}
-}
-
-void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{	
-	AActor* MyOwner = GetOwner();
-
-	if(MyOwner == nullptr)
-	{
-		Destroy();
+		this->Destroy();
 		return;
 	}
-
-	AController* MyOwnerInst = MyOwner->GetInstigatorController();
-	UClass* DamageTypeClass = UDamageType::StaticClass();
-
-	if(OtherActor && OtherActor != this && OtherActor != MyOwner
+	
+	// If we hit an actor that can be damaged (has an UEntityStats component)
+	// then we damage that actor and reduce our pierce.
+	if(OtherActor && OtherActor != this && OtherActor != this->GunOwner
 	   && OtherActor->FindComponentByClass<class UEntityStats>())
 	{
-		ABaseGun* GunOwner = Cast<ABaseGun>(GetOwner());
-
-		ProjectileDamage += GunOwner->CalculateDamage(OtherActor->FindComponentByClass<class UEntityStats>());
+		float ProjectileDamage = this->GunOwner->CalculateDamage(OtherActor->FindComponentByClass<class UEntityStats>());
 
 		UGameplayStatics::ApplyDamage(OtherActor, 
 									  ProjectileDamage, 
-									  MyOwner->GetInstigatorController(), 
+									  this->GunOwner->GetInstigatorController(), 
 									  this, 
 									  UDamageType::StaticClass());
+
+		this->ProjectilePierceAmount--;
 	}
 
-	Destroy();
+	if(this->ProjectilePierceAmount <= 0)
+	{
+		this->Destroy();
+	}
 }

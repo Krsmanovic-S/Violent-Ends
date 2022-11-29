@@ -35,6 +35,8 @@ public:
 
 	int32 InteractiveObjectiveIndex;
 
+	FVector InteractiveObjectLocation;
+
 	bool bEnableWidgetSettings = true;
 
 	bool bWasInteractedWith = false;

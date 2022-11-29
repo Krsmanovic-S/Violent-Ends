@@ -5,37 +5,38 @@
 #include "Projectile.generated.h"
 
 
+class ABaseGun;
+class UProjectileMovementComponent;
+
 UCLASS()
 class VIOLENTENDS_API AProjectile : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
+
 	AProjectile();
 
 protected:
+
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
+	UProjectileMovementComponent* ProjectileMovementComponent;
 
 private:
 
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
+
+	void DestroyProjectileAtMaxRange();
 
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* ProjectileMesh;
 
-	//UPROPERTY(EditDefaultsOnly)
-	//UParticleSystem* ImpactEffect;
-	
-	float ProjectileRange;
-	float ProjectileDamage;
+	ABaseGun* GunOwner;
 
-	FVector StartingLocation;
-	FVector CurrentLocation;
+	int32 ProjectilePierceAmount = 0;
 };

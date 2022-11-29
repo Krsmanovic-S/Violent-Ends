@@ -27,4 +27,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float GunFiringRange = 500.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 AmmoPierceAmount = 0;
 };

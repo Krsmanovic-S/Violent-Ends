@@ -153,7 +153,7 @@ private:
 	IInteractiveObject* CurrentInteractable;
 	// ------------------------------------------
 	// XP & Leveling
-	void OnPlayerLevelUp();
+	void PlayerLevelUp();
 	// ------------------------------------------
 	// Grenade
 	AGrenade* Grenade;
