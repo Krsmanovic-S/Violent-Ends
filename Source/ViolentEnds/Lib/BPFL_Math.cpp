@@ -5,7 +5,7 @@
 FRotator UBPFL_Math::PredictRotationToMovingActor(
 	FVector Position, float ProjectileVelocity, FVector TargetPosition, FVector TargetVelocity)
 {
-	FVector OffsetToTarget = Position - TargetPosition;
+	FVector OffsetToTarget = TargetPosition - Position;
 	float ProjectileTravelTime = OffsetToTarget.Length() / ProjectileVelocity;
 
 	// This is a naive approach, as target velocity will affect the projectile travel time
