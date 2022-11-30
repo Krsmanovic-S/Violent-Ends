@@ -5,6 +5,7 @@
 #include "LootSystem.h"
 #include "BaseEnemy.generated.h"
 
+
 class ABaseGun;
 class UBaseCustomDamageType;
 class UBaseItem;
@@ -25,7 +26,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
 
 	void Attack();
 	void ResetAttack();
@@ -49,10 +49,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy")
 	TMap<TSubclassOf<UBaseCustomDamageType>, float> EnemyDamageTypes;
 
-	bool bCanAttack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
+	float WalkMovementSpeed;
 
-	UPROPERTY(BlueprintReadWrite)
-	FTimerHandle AttackHandle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
+	float RunMovementSpeed;
 
 private:
 
@@ -63,10 +64,10 @@ private:
 	UAIPerceptionStimuliSourceComponent* PerceptionStimuliComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
-	float AttackCooldownTime = 1.f;
+	TSubclassOf<ABaseGun> BlueprintGunClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
-	TSubclassOf<ABaseGun> BlueprintGunClass;
+	float AttackCooldownTime = 1.f;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
 	TArray<UBaseItem*> EnemyLoot;
@@ -76,6 +77,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	int32 MaximalAmountOfItems = 1;
+
+	bool bCanAttack;
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	FTimerHandle AttackHandle;
 
 	FTimerHandle DeathHandle;
 };

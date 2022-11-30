@@ -68,16 +68,18 @@ void APlayerCharacter::Tick(float DeltaTime)
 	{
 		if(this->PlayerStats->CurrentStamina > 0)
 		{
+			// Running speed.
 			GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 		}
 		else
 		{
+			// Walking speed.
 			GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 		}
 	}
 	else
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+		GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 	}
 }
 

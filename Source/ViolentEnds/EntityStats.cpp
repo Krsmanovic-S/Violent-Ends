@@ -1,6 +1,5 @@
 #include "EntityStats.h"
 #include "BaseEnemy.h"
-#include "EnemyAIController.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -48,12 +47,9 @@ void UEntityStats::DamageTaken(AActor *DamagedActor, float Damage, const UDamage
 		{
 			if(DamagedActor->IsA<ABaseEnemy>())
 			{
-				APawn* Pawn = Cast<APawn>(this->GetOwner());
+				ABaseEnemy* EnemyCharacter = Cast<ABaseEnemy>(this->GetOwner());
 
-				AEnemyAIController* AIController = Cast<AEnemyAIController>(Pawn->GetController());
-
-				// This variable sets off the death of the enemy character in the AI Controller class.
-				AIController->bIsDead = true;
+				EnemyCharacter->InitializeDeathTimer();
 			}
 		}
 	}

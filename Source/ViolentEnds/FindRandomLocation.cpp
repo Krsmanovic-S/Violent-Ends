@@ -15,21 +15,36 @@ UFindRandomLocation::UFindRandomLocation()
 
 EBTNodeResult::Type UFindRandomLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    FNavLocation Location;
+    FNavLocation RandomLocation;
 
     // Get AI Controller
     AEnemyAIController* AIController = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
 
-    // Obitain Navigation System and find a random location
+    // Obitain Navigation System to find a random location.
     const UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
 
-    if(NavSystem != NULL && NavSystem->GetRandomPointInNavigableRadius(AIController->EnemyOrigin, this->SearchRadius, Location))
+    uint8 LoopIterations = 0;
+    float Distance;
+
+    if(NavSystem != NULL && NavSystem->GetRandomPointInNavigableRadius(AIController->EnemyOrigin, this->SearchRadius, RandomLocation))
     {
-        AIController->GetBlackboardComponent()->SetValueAsVector(BlackboardKey.SelectedKeyName, Location.Location);
+        do
+        {
+            // Find a random location in a circle, whose center is EnemyOrigin and radius is SearchRadius.
+            NavSystem->GetRandomPointInNavigableRadius(AIController->EnemyOrigin, this->SearchRadius, RandomLocation);
+
+            // We would prefer locations at least 100 units away.
+            Distance = FVector::Dist(AIController->GetPawn()->GetActorLocation(), RandomLocation.Location);
+
+        } while (LoopIterations < 100 && Distance < 100);
+    }
+
+    if(Distance >= 100)
+    {
+         AIController->GetBlackboardComponent()->SetValueAsVector(BlackboardKey.SelectedKeyName, RandomLocation.Location);
 
         // Signal the BT Comp that task finished with success
         FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-
         return EBTNodeResult::Succeeded;
     }
 

@@ -6,7 +6,6 @@
 
 
 // BTT for finding random location on a nav mesh in a radius
-
 UCLASS(Blueprintable)
 class VIOLENTENDS_API UFindRandomLocation : public UBTTask_BlackboardBase
 {

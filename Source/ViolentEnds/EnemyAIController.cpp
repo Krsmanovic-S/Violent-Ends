@@ -1,19 +1,16 @@
 #include "EnemyAIController.h"
-#include "GameFramework/Pawn.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "BaseEnemy.h"
 
 
 AEnemyAIController::AEnemyAIController()
 {
 	this->BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior Tree Component"));
-	this->BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 
 	this->AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
 	this->AIPerceptionComponent->bEditableWhenInherited = true;
@@ -21,12 +18,18 @@ AEnemyAIController::AEnemyAIController()
 	SetPerceptionComponent(*this->AIPerceptionComponent);
 }
 
+void AEnemyAIController::OnUnPossess()
+{
+	this->Destroy();
+}
+
 void AEnemyAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
 	this->ControlledEnemy = Cast<ABaseEnemy>(InPawn);
-	this->EnemyOrigin = GetPawn()->GetActorLocation();
+
+	this->EnemyOrigin = InPawn->GetActorLocation();
 
 	if(this->BehaviorTree)
 	{
@@ -37,7 +40,9 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 
 	if(this->BehaviorTree->BlackboardAsset)
 	{
-		this->BlackboardComp->InitializeBlackboard(*(this->BehaviorTree->BlackboardAsset));
+		this->GetBlackboardComponent()->InitializeBlackboard(*(this->BehaviorTree->BlackboardAsset));
+
+		this->GetBlackboardComponent()->SetValueAsObject(TEXT("SelfActor"), this->ControlledEnemy);
 	}
 }
 
@@ -46,40 +51,6 @@ void AEnemyAIController::BeginPlay()
 	Super::BeginPlay();
 
 	this->PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-}
-
-void AEnemyAIController::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if(this->bPlayerIsInView)
-	{
-		this->BlackboardComp->SetValueAsVector(TEXT("PlayerLocation"), this->PlayerCharacter->GetActorLocation());
-		this->BlackboardComp->ClearValue(TEXT("LastKnownPlayerLocation"));
-
-		this->SetFocus(this->PlayerCharacter);
-	}
-	else if(this->BlackboardComp->GetKeyRawData(FName(TEXT("PlayerLocation"))))
-	{
-		this->BlackboardComp->ClearValue(TEXT("PlayerLocation"));
-		this->BlackboardComp->SetValueAsVector(TEXT("LastKnownPlayerLocation"), this->PlayerCharacter->GetActorLocation());
-	}
-	else
-	{
-		this->BlackboardComp->ClearValue(TEXT("PlayerLocation"));
-		this->BlackboardComp->ClearValue(TEXT("LastKnownPlayerLocation"));
-
-		this->ClearFocus(EAIFocusPriority::Gameplay);
-	}
-
-	// This is set to true when the controlled pawns health drops to 0,
-	// the trigger for this is in the EntityStats class.
-	if(this->bIsDead)
-	{
-		ControlledEnemy->InitializeDeathTimer();
-
-		this->Destroy();
-	}
 }
 
 void AEnemyAIController::OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedActors)
@@ -93,13 +64,20 @@ void AEnemyAIController::OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedA
 
 			if(Info.LastSensedStimuli[0].WasSuccessfullySensed())
 			{
-				// the actor enters the sense range
+				// Sensed actor enters the sense range
 				this->bPlayerIsInView = true;
+
+				this->GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), this->PlayerCharacter->GetActorLocation());
+				this->SetFocus(this->PlayerCharacter);
 			}
 			else
 			{
-				// the actor leaves the sense range
+				// Sensed actor leaves the sense range
 				this->bPlayerIsInView = false;
+
+				this->GetBlackboardComponent()->ClearValue(TEXT("PlayerLocation"));
+				this->GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownPlayerLocation"), this->PlayerCharacter->GetActorLocation());
+				this->ClearFocus(EAIFocusPriority::Gameplay);
 			}
 
 			return;

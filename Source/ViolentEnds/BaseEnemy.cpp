@@ -1,6 +1,4 @@
 #include "BaseEnemy.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "BaseGun.h"
 #include "EntityStats.h"
 #include "BaseItem.h"
@@ -10,11 +8,12 @@
 #include "TimerManager.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "BaseQuest.h"
+#include "EnemyAIController.h"
 
 
 ABaseEnemy::ABaseEnemy()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	this->EnemyStats = CreateDefaultSubobject<UEntityStats>(TEXT("Enemy Stats"));
 
@@ -40,11 +39,6 @@ void ABaseEnemy::BeginPlay()
 	APlayerCharacter* PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
 	this->InitializeLoot(this->EnemyLoot, this->EnemyLootTable, this->MaximalAmountOfItems, PlayerReference->CurrentLevel);
-}
-
-void ABaseEnemy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ABaseEnemy::Attack()
@@ -82,11 +76,14 @@ void ABaseEnemy::InitializeDeathTimer()
 	}
 
 	this->DropLoot();
+	this->SetActorEnableCollision(false);
 
 	GetWorldTimerManager().SetTimer(DeathHandle, this, &ABaseEnemy::HandleDestruction, 3, false);
 
-	this->SetActorEnableCollision(false);
+	AEnemyAIController* EnemyController = Cast<AEnemyAIController>(GetController());
+	EnemyController->OnUnPossess();
 }
+
 
 void ABaseEnemy::HandleDestruction()
 {

@@ -22,27 +22,25 @@ public:
 
 	AEnemyAIController();
 
+	virtual void OnUnPossess() override;
+
 protected:
 
 	virtual void OnPossess(APawn* InPawn) override; 
 
 	virtual void BeginPlay() override;
-	
-	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
 	void OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedActors);
 
 public:
 
+	// Controller needs this for the FindRandomLocation task.
 	UPROPERTY(BlueprintReadWrite)
 	FVector EnemyOrigin;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bPlayerIsInView = false;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bIsDead = false;
 
 private:
 
@@ -58,9 +56,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UBehaviorTreeComponent* BehaviorTreeComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
-	UBlackboardComponent* BlackboardComp;
 
 	ACharacter* PlayerCharacter;
 
