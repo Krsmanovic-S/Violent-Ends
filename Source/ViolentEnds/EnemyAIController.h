@@ -5,6 +5,14 @@
 #include "EnemyAIController.generated.h"
 
 
+class UBehaviorTree;
+class UBehaviorTreeComponent;
+class UAIPerceptionComponent;
+class UBlackboardComponent;
+class ABaseEnemy;
+class UAIPerceptionComponent;
+
+
 UCLASS()
 class VIOLENTENDS_API AEnemyAIController : public AAIController
 {
@@ -27,31 +35,35 @@ protected:
 
 public:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
-	class UBlackboardComponent* BlackboardComp;
-
 	UPROPERTY(BlueprintReadWrite)
 	FVector EnemyOrigin;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	bool bPlayerIsInView = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsDead = false;
 
 private:
 
+	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
+
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	UAIPerceptionComponent* AIPerceptionComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UBehaviorTree* BehaviorTree;
+
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	UBehaviorTreeComponent* BehaviorTreeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
+	UBlackboardComponent* BlackboardComp;
+
 	ACharacter* PlayerCharacter;
 
-	class ABaseEnemy* ControlledEnemy;
-
-	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (AllowPrivateAccess = true))
-	class UAIPerceptionComponent* AIPerceptionComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = true))
-	class UBehaviorTree* BehaviorTree;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = true))
-	class UBehaviorTreeComponent* BehaviorTreeComp;
+	ABaseEnemy* ControlledEnemy;
 
 };

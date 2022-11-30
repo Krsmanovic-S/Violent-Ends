@@ -7,8 +7,8 @@
 #include "PlayerCharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Kismet/GameplayStatics.h"
-#include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "TimerManager.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "BaseQuest.h"
 
 
@@ -16,9 +16,9 @@ ABaseEnemy::ABaseEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	this->PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));
-
 	this->EnemyStats = CreateDefaultSubobject<UEntityStats>(TEXT("Enemy Stats"));
+
+	this->PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));
 }
 
 void ABaseEnemy::BeginPlay()

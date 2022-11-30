@@ -494,3 +494,8 @@ void APlayerCharacter::PlayerLevelUp()
 		this->OnLevelUp.Broadcast();
 	}
 }
+
+FGenericTeamId APlayerCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId(0);
+}

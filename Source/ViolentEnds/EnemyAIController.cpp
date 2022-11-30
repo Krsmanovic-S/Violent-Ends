@@ -1,25 +1,24 @@
 #include "EnemyAIController.h"
 #include "GameFramework/Pawn.h"
-#include "Perception/AIPerceptionComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
-#include "BaseEnemy.h"
-#include "Perception/AISense_Sight.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "BaseEnemy.h"
 
 
 AEnemyAIController::AEnemyAIController()
 {
-	this->AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PawnSensingComponent"));
-	
 	this->BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior Tree Component"));
-
 	this->BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard Component"));
 
-	SetGenericTeamId(FGenericTeamId(1));
+	this->AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
+	this->AIPerceptionComponent->bEditableWhenInherited = true;
+	this->AIPerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdatedImpl);
+	SetPerceptionComponent(*this->AIPerceptionComponent);
 }
 
 void AEnemyAIController::OnPossess(APawn* InPawn)
@@ -27,19 +26,16 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	this->ControlledEnemy = Cast<ABaseEnemy>(InPawn);
-
 	this->EnemyOrigin = GetPawn()->GetActorLocation();
 
-	if(this->ControlledEnemy && this->ControlledEnemy->EnemyBehaviorTree)
+	if(this->BehaviorTree)
 	{
-		this->BehaviorTree = this->ControlledEnemy->EnemyBehaviorTree;
-
 		RunBehaviorTree(this->BehaviorTree);
 
 		this->BehaviorTreeComp->StartTree(*this->BehaviorTree);
 	}
 
-	if(this->BlackboardComp != NULL && this->BehaviorTree != NULL)
+	if(this->BehaviorTree->BlackboardAsset)
 	{
 		this->BlackboardComp->InitializeBlackboard(*(this->BehaviorTree->BlackboardAsset));
 	}
@@ -109,4 +105,54 @@ void AEnemyAIController::OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedA
 			return;
 		}
     }
+}
+
+FGenericTeamId AEnemyAIController::GetGenericTeamId() const
+{
+	return FGenericTeamId(1);
+}
+
+ETeamAttitude::Type AEnemyAIController::GetTeamAttitudeTowards(const AActor& Other) const
+{
+	const APawn* OtherPawn = Cast<APawn>(&Other);
+
+	if(!OtherPawn)
+	{
+		return ETeamAttitude::Neutral;
+	}
+	
+	auto EnemyActor = Cast<IGenericTeamAgentInterface>(OtherPawn->GetController());
+	auto PlayerActor = Cast<IGenericTeamAgentInterface>(&Other);
+
+	if(!EnemyActor && !PlayerActor)
+	{
+		return ETeamAttitude::Neutral;
+	}
+
+	FGenericTeamId OtherActorTeamId = NULL;
+
+	if(EnemyActor)
+	{
+		OtherActorTeamId = EnemyActor->GetGenericTeamId();
+	}
+	else if(PlayerActor)
+	{
+		OtherActorTeamId = PlayerActor->GetGenericTeamId();
+	}
+
+	FGenericTeamId ThisEntitiesTeamId = this->GetGenericTeamId();
+
+	// 255 is the value for FGenericTeamId::NoTeam, so anything
+	// that hasn't got a team will be registered as neutral.
+	if(OtherActorTeamId == 255)
+	{
+		return ETeamAttitude::Neutral;
+	}
+	// Same ID means that its a friendly enemy.
+	else if(OtherActorTeamId == ThisEntitiesTeamId)
+	{
+		return ETeamAttitude::Friendly;
+	}
+
+	return ETeamAttitude::Hostile;
 }

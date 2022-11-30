@@ -13,7 +13,7 @@ class VIOLENTENDS_API UBaseAbility : public UObject
 public:
 
 	UFUNCTION(BlueprintCallable)
-	bool CanCastAbility(float& CurrentStamina , const bool bFreeCast = false);
+	bool CanCastAbility(UPARAM(ref) float& CurrentStamina, const bool bFreeCast = false);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void CastAbility();

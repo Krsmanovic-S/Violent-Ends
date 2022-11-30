@@ -29,7 +29,7 @@ class UBoxComponent;
 
 
 UCLASS()
-class VIOLENTENDS_API APlayerCharacter : public ACharacter
+class VIOLENTENDS_API APlayerCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -174,6 +174,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dashing", meta = (AllowPrivateAccess = true))
 	float DashStaminaCost;
 	// ------------------------------------------
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	bool bIsAiming;
 	bool bHasDashed = false;

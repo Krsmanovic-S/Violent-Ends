@@ -5,8 +5,13 @@
 #include "LootSystem.h"
 #include "BaseEnemy.generated.h"
 
-
+class ABaseGun;
 class UBaseCustomDamageType;
+class UBaseItem;
+class UEntityStats;
+class UDataTable;
+class UAIPerceptionStimuliSourceComponent;
+
 
 UCLASS()
 class VIOLENTENDS_API ABaseEnemy : public ACharacter, public ILootSystem
@@ -32,10 +37,7 @@ public:
 	void HandleDestruction();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
-	class UEntityStats* EnemyStats;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	class UBehaviorTree* EnemyBehaviorTree;
+	UEntityStats* EnemyStats;
 
 	class UBaseQuest* RelevantQuest;
 
@@ -54,25 +56,25 @@ public:
 
 private:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
-	class UAIPerceptionStimuliSourceComponent* PerceptionStimuliComp;
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	ABaseGun* RangedWeapon;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
+	UAIPerceptionStimuliSourceComponent* PerceptionStimuliComp;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
 	float AttackCooldownTime = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
-	TSubclassOf<class ABaseGun> BlueprintGunClass;
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	class ABaseGun* RangedWeapon;
+	TSubclassOf<ABaseGun> BlueprintGunClass;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
-	TArray<class UBaseItem*> EnemyLoot;
+	TArray<UBaseItem*> EnemyLoot;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	class UDataTable* EnemyLootTable;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
+	UDataTable* EnemyLootTable;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	int32 MaximalAmountOfItems = 1;
 
 	FTimerHandle DeathHandle;

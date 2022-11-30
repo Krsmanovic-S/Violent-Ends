@@ -2,7 +2,7 @@
 #include "TimerManager.h"
 
 
-bool UBaseAbility::CanCastAbility(float& CurrentStamina , const bool bFreeCast)
+bool UBaseAbility::CanCastAbility(UPARAM(ref) float& CurrentStamina, const bool bFreeCast)
 {
     if(bFreeCast)
     {
