@@ -12,9 +12,15 @@ EBTNodeResult::Type UAttackPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 {
     ABaseEnemy* EnemyPawn = Cast<ABaseEnemy>(OwnerComp.GetAIOwner()->GetPawn());
 
-    EnemyPawn->Attack();
+    if(EnemyPawn)
+    {
+        EnemyPawn->Attack();
+    }
+    else
+    {
+        return EBTNodeResult::Failed;
+    }
 
     FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-
     return EBTNodeResult::Succeeded;
 }

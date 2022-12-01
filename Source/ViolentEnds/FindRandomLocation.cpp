@@ -24,7 +24,7 @@ EBTNodeResult::Type UFindRandomLocation::ExecuteTask(UBehaviorTreeComponent& Own
     const UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
 
     uint8 LoopIterations = 0;
-    float Distance;
+    float Distance = 0;
 
     if(NavSystem != NULL && NavSystem->GetRandomPointInNavigableRadius(AIController->EnemyOrigin, this->SearchRadius, RandomLocation))
     {

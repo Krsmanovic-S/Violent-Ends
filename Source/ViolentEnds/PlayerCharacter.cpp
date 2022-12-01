@@ -47,7 +47,6 @@ void APlayerCharacter::BeginPlay()
 
 	this->InteractionZone->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBoxBeginOverlap);
 	this->InteractionZone->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnBoxEndOverlap);
-
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -309,7 +308,7 @@ void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 
 void APlayerCharacter::EquipStandardAmmo()
 {
-	if(this->Gun != NULL)
+	if(this->Gun != NULL && this->bAllowedAmmoEquip)
 	{
 		this->EquipAmmo(EFiringStyle::Standard);
 	}
@@ -317,7 +316,7 @@ void APlayerCharacter::EquipStandardAmmo()
 
 void APlayerCharacter::EquipBurstAmmo()
 {
-	if(this->Gun != NULL)
+	if(this->Gun != NULL && this->bAllowedAmmoEquip)
 	{
 		this->EquipAmmo(EFiringStyle::Burst);
 	}
@@ -325,7 +324,7 @@ void APlayerCharacter::EquipBurstAmmo()
 
 void APlayerCharacter::EquipShotgunAmmo()
 {
-	if(this->Gun != NULL)
+	if(this->Gun != NULL && this->bAllowedAmmoEquip)
 	{
 		this->EquipAmmo(EFiringStyle::Shotgun);
 	}
@@ -333,7 +332,7 @@ void APlayerCharacter::EquipShotgunAmmo()
 
 void APlayerCharacter::EquipSniperAmmo()
 {
-	if(this->Gun != NULL)
+	if(this->Gun != NULL && this->bAllowedAmmoEquip)
 	{
 		this->EquipAmmo(EFiringStyle::Sniper);
 	}

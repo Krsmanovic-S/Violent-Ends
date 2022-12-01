@@ -59,7 +59,7 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	ABaseGun* RangedWeapon;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
 	UAIPerceptionStimuliSourceComponent* PerceptionStimuliComp;
 

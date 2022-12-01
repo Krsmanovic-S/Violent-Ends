@@ -7,6 +7,7 @@
 
 class APlayerCharacter;
 class UBaseItem;
+class UWorld;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnObjectiveUpdated);
 
@@ -62,7 +63,7 @@ struct FQuestObjective
 	int32 FinalProgress = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Objective")
-	TSubclassOf<class UBaseItem> ItemToCollect;
+	TSubclassOf<UBaseItem> ItemToCollect;
 
 	// Does this objective need to be completed before showing others or not?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Objective")
@@ -100,7 +101,7 @@ class VIOLENTENDS_API UBaseQuest : public UObject
 	
 public:
 
-	virtual class UWorld* GetWorld() const { return this->World; };
+	virtual UWorld* GetWorld() const { return this->World; };
 
 	UFUNCTION(BlueprintCallable)
 	void SetUpObjectives();
@@ -142,7 +143,7 @@ public:
 	TArray<FQuestObjective> Objectives;
 
 	UPROPERTY(Transient)
-	class UWorld* World;
+	UWorld* World;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnObjectiveUpdated RefreshObjectives;

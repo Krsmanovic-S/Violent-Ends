@@ -77,9 +77,11 @@ void ABaseGun::FireOneBullet(FVector ProjectileDirection)
 		SpawnParameters
 	);
 
-	Projectile->SetLifeSpan(this->MaximumRange / ProjectileDirection.X);
-
-	Projectile->ProjectileMovementComponent->SetVelocityInLocalSpace(ProjectileDirection);
+	if(Projectile)
+	{
+		Projectile->SetLifeSpan(this->MaximumRange / ProjectileDirection.X);
+		Projectile->ProjectileMovementComponent->SetVelocityInLocalSpace(ProjectileDirection);
+	}
 
 	if(!GetOwner()->IsA<ABaseEnemy>())
 	{

@@ -91,6 +91,9 @@ public:
 
 	bool bIsInCombat = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bAllowedAmmoEquip = true;
+
 	FTimerHandle FireHandle;
 	FTimerHandle ShootingHandle;
 

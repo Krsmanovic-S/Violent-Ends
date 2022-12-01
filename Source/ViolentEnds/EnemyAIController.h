@@ -39,8 +39,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	FVector EnemyOrigin;
 
-	UPROPERTY(BlueprintReadWrite)
-	bool bPlayerIsInView = false;
+	// This is used inside the Strafing EQS to make sure that 
+	// Enemies don't pick locations too close to each other.
+	TArray<AActor*> AllEnemies;
 
 private:
 
@@ -57,8 +58,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UBehaviorTreeComponent* BehaviorTreeComp;
 
-	ACharacter* PlayerCharacter;
-
 	ABaseEnemy* ControlledEnemy;
 
+	ACharacter* PlayerCharacter;
 };

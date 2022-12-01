@@ -4,13 +4,14 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "PlayerCharacter.h"
-#include "Kismet/GameplayStatics.h"
 #include "BaseEnemy.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 AEnemyAIController::AEnemyAIController()
 {
-	this->BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior Tree Component"));
+	this->BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 
 	this->AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
 	this->AIPerceptionComponent->bEditableWhenInherited = true;
@@ -37,6 +38,11 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 
 		this->BehaviorTreeComp->StartTree(*this->BehaviorTree);
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Behavior Tree Set."));
+		return;
+	}
 
 	if(this->BehaviorTree->BlackboardAsset)
 	{
@@ -51,6 +57,10 @@ void AEnemyAIController::BeginPlay()
 	Super::BeginPlay();
 
 	this->PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	this->GetBlackboardComponent()->SetValueAsObject(TEXT("PlayerActor"), this->PlayerCharacter);
+
+	TSubclassOf<ABaseEnemy> EnemyClass;
+	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), EnemyClass, this->AllEnemies);
 }
 
 void AEnemyAIController::OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedActors)
@@ -65,15 +75,14 @@ void AEnemyAIController::OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedA
 			if(Info.LastSensedStimuli[0].WasSuccessfullySensed())
 			{
 				// Sensed actor enters the sense range
-				this->bPlayerIsInView = true;
-
 				this->GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), this->PlayerCharacter->GetActorLocation());
 				this->SetFocus(this->PlayerCharacter);
+				this->ControlledEnemy->GetCharacterMovement()->MaxWalkSpeed = this->ControlledEnemy->RunMovementSpeed;
 			}
 			else
 			{
 				// Sensed actor leaves the sense range
-				this->bPlayerIsInView = false;
+				UE_LOG(LogTemp, Warning, TEXT("Player Left Focus."));
 
 				this->GetBlackboardComponent()->ClearValue(TEXT("PlayerLocation"));
 				this->GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownPlayerLocation"), this->PlayerCharacter->GetActorLocation());

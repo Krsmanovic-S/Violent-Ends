@@ -57,7 +57,7 @@ void ABaseEnemy::Attack()
 		}
 
 		GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, 
-							this->AttackCooldownTime, false);
+									    this->AttackCooldownTime, false);
 	}
 }
 
@@ -83,7 +83,6 @@ void ABaseEnemy::InitializeDeathTimer()
 	AEnemyAIController* EnemyController = Cast<AEnemyAIController>(GetController());
 	EnemyController->OnUnPossess();
 }
-
 
 void ABaseEnemy::HandleDestruction()
 {
