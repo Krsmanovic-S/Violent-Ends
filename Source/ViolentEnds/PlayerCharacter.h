@@ -26,6 +26,7 @@ class UBaseItem;
 class IInteractiveObject;
 class AGrenade;
 class UBoxComponent;
+class UAnimMontage;
 
 
 UCLASS()
@@ -62,7 +63,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
 	UEntityStats* PlayerStats;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
 	TSubclassOf<UBaseQuest> TestingQuest;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -86,13 +87,16 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 AvailableSkillPoints = 0;
 
-	UPROPERTY(BlueprintReadWrite)
-	bool bCanFire = true;
-
 	bool bIsInCombat = false;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bAllowedAmmoEquip = true;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bAllowedReload = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player|Animations")
+	UAnimMontage* ReloadAnimation;
 
 	FTimerHandle FireHandle;
 	FTimerHandle ShootingHandle;
@@ -105,6 +109,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnQuestUpdated OnQuestUpdated;
+
+	void ReloadWeapon();
 
 private:
 
@@ -125,7 +131,6 @@ private:
 	void Attack();
 	void StopAttacking();
 	void ResetShootingCooldown();
-	void ContinuousShooting();
 	// ------------------------------------------
 	// Ammo
 	void EquipAmmo(EFiringStyle AmmoFireStyle);
@@ -161,20 +166,20 @@ private:
 	// Grenade
 	AGrenade* Grenade;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player|Grenade", meta = (AllowPrivateAccess = true))
 	TSubclassOf<AGrenade> GrenadeClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player|Grenade", meta = (AllowPrivateAccess = true))
 	int32 GrenadeCount;
 	// ------------------------------------------
 	// Dash/Dodge
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dashing", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player|Dashing", meta = (AllowPrivateAccess = true))
 	float DashDistance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dashing", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player|Dashing", meta = (AllowPrivateAccess = true))
 	float DashCooldown;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dashing", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player|Dashing", meta = (AllowPrivateAccess = true))
 	float DashStaminaCost;
 	// ------------------------------------------
 

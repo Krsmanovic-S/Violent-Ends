@@ -40,6 +40,9 @@ public:
 	int32 GetAmmoStackSize(int32 ArrayIndex) const;
 
 	UFUNCTION(BlueprintCallable)
+	bool AutoEquipItem(UBaseItem* Item);
+
+	UFUNCTION(BlueprintCallable)
 	bool RemoveItem(const int32& ItemIndex, bool DropItem = false);
 
 	UFUNCTION(BlueprintCallable)

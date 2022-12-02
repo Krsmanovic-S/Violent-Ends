@@ -62,7 +62,7 @@ void ABaseGun::InitializeGunProperties()
 
 void ABaseGun::FireOneBullet(FVector ProjectileDirection)
 {
-	if(!GetOwner()->IsA<ABaseEnemy>() && (this->CurrentAmmo == 0 || this->HeldAmmo == NULL))
+	if(GetOwner()->IsA<APlayerCharacter>() && this->CurrentAmmo == 0)
 	{
 		return;
 	}
@@ -159,8 +159,8 @@ void ABaseGun::EnableMovement()
 bool ABaseGun::CanReload()
 {
 	// This is called whenever the reload input key is pressed.
-	if(this->HeldAmmo && this->ReserveAmmo && !bIsFiring
-	   && this->CurrentAmmo != this->MagazineSize)
+	if(this->HeldAmmo && this->ReserveAmmo && this->CurrentAmmo != this->MagazineSize
+	   && (!bIsFiring || this->CurrentAmmo == 0))
 	{
 		return true;
 	}
@@ -192,7 +192,7 @@ void ABaseGun::PullTrigger()
 		return;
 	}
 
-	if(this->HeldAmmo)
+	if(this->CurrentAmmo)
 	{
 		switch(this->HeldAmmo->AmmoFireStyle)
 		{
@@ -214,6 +214,10 @@ void ABaseGun::PullTrigger()
 				break;
 			default: break;
 		}
+	}
+	else
+	{
+		this->OwningPlayer->ReloadWeapon();
 	}
 }
 

@@ -80,8 +80,8 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 	}
 
 	if(InventoryCurrentCapacity == InventoryMaxCapacity &&
-	   CurrentItems[InventoryMaxCapacity - 1]->ItemCurrentStack ==
-	   CurrentItems[InventoryMaxCapacity - 1]->ItemMaxStack	)
+	   CurrentItems[InventoryMaxCapacity - 8]->ItemCurrentStack ==
+	   CurrentItems[InventoryMaxCapacity - 8]->ItemMaxStack	)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Inventory is full."));
 		return false;		
@@ -89,23 +89,45 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 	
 	// Increasing an items stack if the same type of item is 
 	// already there, this can only be done in the base slots.
-	for(int i = 0; i < this->BasicSlotAmount; i++)
+	// Equipment cannot be stacked anyways so just pass on it.
+	if(!Item->bIsEquipment)
 	{
-		if(this->CurrentItems[i] != NULL &&
-		   this->CurrentItems[i]->GetClass() == Item->GetClass() &&
-		   this->CurrentItems[i]->ItemCurrentStack < this->CurrentItems[i]->ItemMaxStack)
+		for(int i = 0; i < this->BasicSlotAmount; i++)
 		{
-			this->CurrentItems[i]->ItemCurrentStack++;
-
-			if(this->bItemRelevantToObjective)
+			if(this->CurrentItems[i] != NULL &&
+			this->CurrentItems[i]->GetClass() == Item->GetClass() &&
+			this->CurrentItems[i]->ItemCurrentStack < this->CurrentItems[i]->ItemMaxStack)
 			{
-				this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
-			}
+				this->CurrentItems[i]->ItemCurrentStack++;
 
-			OnInventoryUpdated.Broadcast();
+				if(this->bItemRelevantToObjective)
+				{
+					this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
+				}
 
-			return true;
-		}		
+				OnInventoryUpdated.Broadcast();
+				return true;
+			}		
+		}
+	}
+
+	auto CopyItem = DuplicateObject(Item, NULL);
+	CopyItem->OwningInventory = this;
+	CopyItem->World = GetWorld();
+	CopyItem->bWasInitialized = true;
+	CopyItem->ItemCurrentStack = 1;
+	CopyItem->ItemSlotIndex = -1;
+	CopyItem->InitializeTooltipMap();
+
+	// If we can auto equip something we should just
+	// do it here and immidiatelly return true.
+	if(this->AutoEquipItem(CopyItem))
+	{
+		if(this->bItemRelevantToObjective)
+		{
+			this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
+		}
+		return true;
 	}
 
 	// Adds a new item into the inventory.
@@ -113,18 +135,9 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 	{
 		if(this->CurrentItems[i] == NULL)
 		{
-			auto CopyItem = DuplicateObject(Item, NULL);
-
-			CopyItem->OwningInventory = this;
-			CopyItem->World = GetWorld();
-
 			this->CurrentItems[i] = CopyItem;
 			this->CurrentItems[i]->ItemSlotIndex = i;
-			this->CurrentItems[i]->ItemCurrentStack = 1;
-			this->CurrentItems[i]->bWasInitialized = true;
 			this->InventoryCurrentCapacity++;
-			
-			this->CurrentItems[i]->InitializeTooltipMap();
 
 			if(this->bItemRelevantToObjective)
 			{
@@ -132,7 +145,6 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 			}
 
 			OnInventoryUpdated.Broadcast();
-
 			return true;
 		}
 	}
@@ -230,6 +242,49 @@ int32 UInventoryComponent::GetAmmoStackSize(int32 ArrayIndex) const
 	return Ammo->ItemCurrentStack;
 }
 
+bool UInventoryComponent::AutoEquipItem(UBaseItem* Item)
+{
+	switch(Item->Type)
+	{
+		case EItemType::Weapon:
+			if(!this->CurrentItems[this->WeaponSlotIndex])
+			{
+				return this->MoveItemToEmptySlot(Item, this->WeaponSlotIndex);
+			}		
+		case EItemType::Helmet:
+			if(!this->CurrentItems[this->HelmetSlotIndex])
+			{
+				return this->MoveItemToEmptySlot(Item, this->HelmetSlotIndex);
+			}
+		case EItemType::BodyArmor:
+			if(!this->CurrentItems[this->BodyArmorSlotIndex])
+			{
+				return this->MoveItemToEmptySlot(Item, this->BodyArmorSlotIndex);
+			}
+		case EItemType::Legs:
+			if(!this->CurrentItems[this->LegsSlotIndex])
+			{
+				return this->MoveItemToEmptySlot(Item, this->LegsSlotIndex);
+			}	
+			break;
+		case EItemType::Boots:
+			if(!this->CurrentItems[this->BootsSlotIndex])
+			{
+				return this->MoveItemToEmptySlot(Item, this->BootsSlotIndex);
+			}	
+			break;
+		case EItemType::Arms:
+			if(!this->CurrentItems[ArmsSlotIndex])
+			{
+				return this->MoveItemToEmptySlot(Item, this->ArmsSlotIndex);
+			}	
+			break;
+		default:
+			UE_LOG(LogTemp, Warning, TEXT("Item Type Not Recognized."));
+	}
+	return false;
+}
+
 bool UInventoryComponent::RemoveItem(const int32& ItemIndex, bool DropItem)
 {
 	this->IsItemRelevantToAnObjective(this->CurrentItems[ItemIndex]);
@@ -298,9 +353,14 @@ bool UInventoryComponent::MoveItemToEmptySlot(UBaseItem* Item, const int32& Inde
 
 	this->CurrentItems[IndexToMoveTo] = Item;
 
-	this->CurrentItems[Item->ItemSlotIndex]->OwningInventory = nullptr;
-	this->CurrentItems[Item->ItemSlotIndex]->World = nullptr;
-	this->CurrentItems[Item->ItemSlotIndex] = NULL;
+	// Slot index can be -1 if we are using the auto equip 
+	// method, that is why we need this check here.
+	if(FromWhereIndex != -1)
+	{
+		this->CurrentItems[Item->ItemSlotIndex]->OwningInventory = nullptr;
+		this->CurrentItems[Item->ItemSlotIndex]->World = nullptr;
+		this->CurrentItems[Item->ItemSlotIndex] = NULL;
+	}
 
 	// We interacted with the Weapon slot.
 	if(FromWhereIndex == this->WeaponSlotIndex || IndexToMoveTo == this->WeaponSlotIndex)
@@ -529,6 +589,5 @@ void UInventoryComponent::IsItemRelevantToAnObjective(const UBaseItem* ItemToChe
 			}
 		}
 	}
-
 	this->bItemRelevantToObjective = false;
 }

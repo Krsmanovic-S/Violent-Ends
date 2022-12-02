@@ -6,6 +6,11 @@
 #include "BaseItem.generated.h"
 
 
+class UWorld;
+class UStaticMesh;
+class UTexture2D;
+class UInventoryComponent;
+
 UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class VIOLENTENDS_API UBaseItem : public UObject
 {
@@ -15,7 +20,7 @@ public:
 
 	UBaseItem();
 
-	virtual class UWorld* GetWorld() const { return this->World; };
+	virtual UWorld* GetWorld() const { return this->World; };
 
 	UFUNCTION(BlueprintCallable)
 	void InitializeTooltipMap();
@@ -27,13 +32,13 @@ public:
 	void OnUse(class APlayerCharacter* Player);
 
 	UPROPERTY(Transient)
-	class UWorld* World;
+	UWorld* World;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
-	class UStaticMesh* PickupMesh;
+	UStaticMesh* PickupMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
-	class UTexture2D* ItemThumbnail;
+	UTexture2D* ItemThumbnail;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
 	FText ItemDisplayName;
@@ -60,7 +65,7 @@ public:
 	int32 ItemCurrentStack;
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 ItemSlotIndex;
+	int32 ItemSlotIndex = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Stats")
 	FItemStatsRange ItemStatsRange;
@@ -81,6 +86,5 @@ public:
 	TMap<FString, float> MapForTooltips;
 
 	UPROPERTY(BlueprintReadWrite)
-	class UInventoryComponent* OwningInventory;
-
+	UInventoryComponent* OwningInventory;
 };

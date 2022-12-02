@@ -27,7 +27,10 @@ void APickupItemActor::BeginPlay()
 	Super::BeginPlay();
 	
 	this->ItemWidgetName->SetVisibility(false);
+}
 
+void APickupItemActor::InitializePickupProperties()
+{
 	if(this->ContainedItem)
 	{
 		this->ContainedItem->World = GEngine->GameViewport->GetWorld();
@@ -39,10 +42,6 @@ void APickupItemActor::BeginPlay()
 		{
 			this->RandomizeItemStats();
 		}
-	}
-	else
-	{
-		this->Destroy();
 	}
 }
 

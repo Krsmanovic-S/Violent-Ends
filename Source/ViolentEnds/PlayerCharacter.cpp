@@ -14,6 +14,7 @@
 #include "MainPlayerController.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "TimerManager.h"
+#include "Animation/AnimMontage.h"
 #include "ViolentEnds/LogMacros.h"
 
 
@@ -109,6 +110,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &APlayerCharacter::Attack);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &APlayerCharacter::StopAttacking);
 
+	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Released, this, &APlayerCharacter::ReloadWeapon);
+
 	PlayerInputComponent->BindAction(TEXT("Dash"), IE_Pressed, this, &APlayerCharacter::Dash);
 
 	PlayerInputComponent->BindAction(TEXT("ThrowGrenade"), IE_Pressed, this, &APlayerCharacter::ThrowGrenade);
@@ -191,56 +194,46 @@ void APlayerCharacter::ResetDash()
 
 void APlayerCharacter::Attack()
 {
-	if (this->Gun != nullptr)
+	if(this->Gun != nullptr)
 	{
-		if (this->Gun->HeldAmmo != nullptr && this->bCanFire)
+		if(this->Gun->HeldAmmo)
 		{
 			this->Gun->PullTrigger();
 
-			this->bCanFire = false;
-
-			GetWorldTimerManager().SetTimer(FireHandle, this, &APlayerCharacter::ResetShootingCooldown,
-				1 / this->Gun->HeldAmmo->ShotsPerSecond, false);
-
-			if (!GetWorldTimerManager().IsTimerActive(ShootingHandle))
+			if(!GetWorldTimerManager().IsTimerActive(ShootingHandle))
 			{
-				GetWorldTimerManager().SetTimer(ShootingHandle, this, &APlayerCharacter::ContinuousShooting,
+				GetWorldTimerManager().SetTimer(ShootingHandle, this, &APlayerCharacter::Attack,
 					1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
 			}
 
 			this->Gun->bIsFiring = true;
 		}
-		else
-		{
-			GetWorldTimerManager().ClearTimer(ShootingHandle);
-
-			this->Gun->bIsFiring = false;
-		}
 	}
-	else {}
 }
 
 void APlayerCharacter::StopAttacking()
 {
 	if (GetWorldTimerManager().IsTimerActive(ShootingHandle)) { GetWorldTimerManager().ClearTimer(ShootingHandle); }
 
-	if (this->Gun != nullptr) { this->Gun->bIsFiring = false; }
+	if(this->Gun)
+	{
+		this->Gun->bIsFiring = false;
+	}
 }
 
 void APlayerCharacter::ResetShootingCooldown()
 {
 	GetWorldTimerManager().ClearTimer(FireHandle);
 
-	this->bCanFire = true;
-
 	this->Gun->bIsFiring = false;
 }
 
-void APlayerCharacter::ContinuousShooting()
+void APlayerCharacter::ReloadWeapon()
 {
-	this->bCanFire = true;
-
-	this->Attack();
+	if(this->Gun && this->ReloadAnimation && this->bAllowedReload && this->Gun->CanReload())
+	{
+		this->GetMesh()->GetAnimInstance()->Montage_Play(this->ReloadAnimation, this->Gun->ReloadTime);
+	}
 }
 
 // -------------------------Ammo Equipping-------------------------
