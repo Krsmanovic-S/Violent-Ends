@@ -1,22 +1,22 @@
 #include "PlayerCharacter.h"
-#include "Components/BoxComponent.h"
-#include "MainPlayerController.h"
-#include "BaseGun.h"
-#include "InventoryComponent.h"
-#include "BaseItem.h"
-#include "BaseWeapon.h"
+
 #include "BaseAmmo.h"
+#include "BaseGun.h"
+#include "BaseWeapon.h"
+#include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
 #include "EntityStats.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "TimerManager.h"
-#include "Perception/AIPerceptionStimuliSourceComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Grenade.h"
-#include "Components/WidgetComponent.h"
 #include "InteractiveObject.h"
-#include "BaseQuest.h"
+#include "InventoryComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "MainPlayerController.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "TimerManager.h"
+#include "ViolentEnds/LogMacros.h"
 
+float GGun_Height = 55;
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -26,7 +26,8 @@ APlayerCharacter::APlayerCharacter()
 
 	this->PlayerInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Player Inventory"));
 
-	this->PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));
+	this->PerceptionStimuliComp =
+		CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));
 
 	this->InteractionZone = CreateDefaultSubobject<UBoxComponent>(TEXT("Interaction Zone"));
 	this->InteractionZone->SetupAttachment(this->GetMesh());
@@ -35,7 +36,7 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	this->MainPlayerController = Cast<AMainPlayerController>(GetController());
 
 	this->bIsAiming = false;
@@ -53,19 +54,28 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(MainPlayerController && this->bIsAiming)
+	if (MainPlayerController && this->bIsAiming)
 	{
-		MainPlayerController->GetHitResultUnderCursor(
-			ECollisionChannel::ECC_Visibility,
-			false,
-			MouseHitResult);
+		MainPlayerController->GetHitResultUnderCursor(ECC_Visibility, false, MouseHitResult);
 
-		RotateCharacterToMouse(this->MouseHitResult.ImpactPoint);
+		// The mouse hit result occurs at some arbitrary point, from the camera to the floor/ terrain
+		// Interpolate or extrapolate that trace to derive the point
+		// where the line's Z value is equal to the player's gun height (roughly, player location Z + 55)
+		// The player's location there is its half height, so it would be around 135cm above the current floor
+		FVector HitLocation = MouseHitResult.Location;
+		FVector CameraLocation = MouseHitResult.TraceStart;
+		float PlayerGunHeight = GetActorLocation().Z + GGun_Height;
+		float DistanceHitToPlayerGun = PlayerGunHeight - HitLocation.Z;
+		FVector TraceDirection = (CameraLocation - HitLocation).GetSafeNormal();
+
+		FVector Target = DistanceHitToPlayerGun * (1 / TraceDirection.Z) * TraceDirection + HitLocation;
+
+		RotateCharacterToMouse(Target);
 	}
-	
-	if(this->PlayerStats->bIsEntityRunning)
+
+	if (this->PlayerStats->bIsEntityRunning)
 	{
-		if(this->PlayerStats->CurrentStamina > 0)
+		if (this->PlayerStats->CurrentStamina > 0)
 		{
 			// Running speed.
 			GetCharacterMovement()->MaxWalkSpeed = 600.0f;
@@ -76,10 +86,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 			GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 		}
 	}
-	else
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 400.0f;
-	}
+	else { GetCharacterMovement()->MaxWalkSpeed = 400.0f; }
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -98,7 +105,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Released, this, &APlayerCharacter::StopAiming);
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &APlayerCharacter::Attack);
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &APlayerCharacter::StopAttacking);	
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &APlayerCharacter::StopAttacking);
 
 	PlayerInputComponent->BindAction(TEXT("Dash"), IE_Pressed, this, &APlayerCharacter::Dash);
 
@@ -121,12 +128,8 @@ void APlayerCharacter::RotateCharacterToMouse(FVector LookAtTarget)
 	// Vector math to get the new vector (from the destination to where we want it to start).
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f);
 
-	GetMesh()->SetWorldRotation(
-		FMath::RInterpTo(GetMesh()->GetComponentRotation(), 
-			LookAtRotation,
-			UGameplayStatics::GetWorldDeltaSeconds(this), 
-			7.5)
-	);
+	GetMesh()->SetWorldRotation(FMath::RInterpTo(
+		GetMesh()->GetComponentRotation(), LookAtRotation, UGameplayStatics::GetWorldDeltaSeconds(this), 7.5));
 }
 
 void APlayerCharacter::Aim()
@@ -146,7 +149,7 @@ void APlayerCharacter::MoveForward(float AxisValue)
 
 void APlayerCharacter::MoveRight(float AxisValue)
 {
-	AddMovementInput(GetActorRightVector() * AxisValue); 
+	AddMovementInput(GetActorRightVector() * AxisValue);
 }
 
 void APlayerCharacter::Run()
@@ -161,20 +164,19 @@ void APlayerCharacter::StopRunning()
 
 void APlayerCharacter::Dash()
 {
-	if(this->PlayerStats->CurrentStamina > DashStaminaCost && GetCharacterMovement()->Velocity != FVector::ZeroVector)
+	if (this->PlayerStats->CurrentStamina > DashStaminaCost && GetCharacterMovement()->Velocity != FVector::ZeroVector)
 	{
 		const FVector DashDirection = this->GetCharacterMovement()->GetLastInputVector();
-		
+
 		LaunchCharacter(DashDirection * this->DashDistance, true, true);
 
 		this->PlayerStats->CurrentStamina -= DashStaminaCost;
 
-		if(!this->bHasDashed)
+		if (!this->bHasDashed)
 		{
-		this->bHasDashed = true;
-		
-		GetWorldTimerManager().SetTimer(DashHandle, this, &APlayerCharacter::ResetDash, 
-										DashCooldown, false);
+			this->bHasDashed = true;
+
+			GetWorldTimerManager().SetTimer(DashHandle, this, &APlayerCharacter::ResetDash, DashCooldown, false);
 		}
 	}
 }
@@ -187,21 +189,21 @@ void APlayerCharacter::ResetDash()
 
 void APlayerCharacter::Attack()
 {
-	if(this->Gun != NULL)
+	if (this->Gun != nullptr)
 	{
-		if(this->Gun->HeldAmmo != NULL && this->bCanFire)
+		if (this->Gun->HeldAmmo != nullptr && this->bCanFire)
 		{
 			this->Gun->PullTrigger();
 
 			this->bCanFire = false;
 
-			GetWorldTimerManager().SetTimer(FireHandle, this, &APlayerCharacter::ResetShootingCooldown, 
-											1 / this->Gun->HeldAmmo->ShotsPerSecond, false);
-		
-			if(!GetWorldTimerManager().IsTimerActive(ShootingHandle))
+			GetWorldTimerManager().SetTimer(FireHandle, this, &APlayerCharacter::ResetShootingCooldown,
+				1 / this->Gun->HeldAmmo->ShotsPerSecond, false);
+
+			if (!GetWorldTimerManager().IsTimerActive(ShootingHandle))
 			{
-				GetWorldTimerManager().SetTimer(ShootingHandle, this, &APlayerCharacter::ContinuousShooting, 
-												1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
+				GetWorldTimerManager().SetTimer(ShootingHandle, this, &APlayerCharacter::ContinuousShooting,
+					1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
 			}
 
 			this->Gun->bIsFiring = true;
@@ -213,23 +215,14 @@ void APlayerCharacter::Attack()
 			this->Gun->bIsFiring = false;
 		}
 	}
-	else
-	{
-		
-	}
+	else {}
 }
 
 void APlayerCharacter::StopAttacking()
 {
-	if(GetWorldTimerManager().IsTimerActive(ShootingHandle))
-	{
-		GetWorldTimerManager().ClearTimer(ShootingHandle);
-	}
+	if (GetWorldTimerManager().IsTimerActive(ShootingHandle)) { GetWorldTimerManager().ClearTimer(ShootingHandle); }
 
-	if(this->Gun != NULL)
-	{
-		this->Gun->bIsFiring = false;
-	}
+	if (this->Gun != nullptr) { this->Gun->bIsFiring = false; }
 }
 
 void APlayerCharacter::ResetShootingCooldown()
@@ -252,44 +245,41 @@ void APlayerCharacter::ContinuousShooting()
 void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 {
 	// Don't do anything if we already equipped this ammo type.
-	if(this->Gun->HeldAmmo != NULL && this->Gun->HeldAmmo->AmmoFireStyle == AmmoFireStyle)
-	{
-		return;
-	}
+	if (this->Gun->HeldAmmo != nullptr && this->Gun->HeldAmmo->AmmoFireStyle == AmmoFireStyle) { return; }
 
 	bool CanAcceptAmmo = false;
 
-	for(EFiringStyle AcceptedAmmo : this->Gun->AcceptableAmmoTypes)
+	for (EFiringStyle AcceptedAmmo : this->Gun->AcceptableAmmoTypes)
 	{
-		if(AmmoFireStyle == AcceptedAmmo)
+		if (AmmoFireStyle == AcceptedAmmo)
 		{
 			CanAcceptAmmo = true;
 			break;
 		}
 	}
 
-	if(!CanAcceptAmmo)
+	if (!CanAcceptAmmo)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Gun doesn't accept this ammo type."));
 
 		return;
 	}
 
-	switch(AmmoFireStyle)
+	switch (AmmoFireStyle)
 	{
-		case EFiringStyle::Standard: 
+		case EFiringStyle::Standard:
 			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[0]->GetDefaultObject());
 			this->Gun->ReloadTime = 1.25;
 			break;
-		case EFiringStyle::Burst: 
+		case EFiringStyle::Burst:
 			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[1]->GetDefaultObject());
 			this->Gun->ReloadTime = 1.75;
 			break;
-		case EFiringStyle::Shotgun: 
+		case EFiringStyle::Shotgun:
 			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[2]->GetDefaultObject());
 			this->Gun->ReloadTime = 1.75;
 			break;
-		case EFiringStyle::Sniper: 
+		case EFiringStyle::Sniper:
 			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[3]->GetDefaultObject());
 			this->Gun->ReloadTime = 2;
 			break;
@@ -298,7 +288,7 @@ void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 			break;
 	}
 
-	if(this->Gun->HeldAmmo != NULL)
+	if (this->Gun->HeldAmmo != nullptr)
 	{
 		this->Gun->UpdateAmmo();
 
@@ -308,79 +298,73 @@ void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 
 void APlayerCharacter::EquipStandardAmmo()
 {
-	if(this->Gun != NULL && this->bAllowedAmmoEquip)
-	{
-		this->EquipAmmo(EFiringStyle::Standard);
-	}
+	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Standard); }
 }
 
 void APlayerCharacter::EquipBurstAmmo()
 {
-	if(this->Gun != NULL && this->bAllowedAmmoEquip)
-	{
-		this->EquipAmmo(EFiringStyle::Burst);
-	}
+	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Burst); }
 }
 
 void APlayerCharacter::EquipShotgunAmmo()
 {
-	if(this->Gun != NULL && this->bAllowedAmmoEquip)
-	{
-		this->EquipAmmo(EFiringStyle::Shotgun);
-	}
+	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Shotgun); }
 }
 
 void APlayerCharacter::EquipSniperAmmo()
 {
-	if(this->Gun != NULL && this->bAllowedAmmoEquip)
-	{
-		this->EquipAmmo(EFiringStyle::Sniper);
-	}
+	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Sniper); }
 }
 // ---------------------------------------------------------------------------------------------
 
 void APlayerCharacter::ThrowGrenade()
 {
-	if(this->GrenadeClass != NULL && this->GrenadeCount != 0)
+	if (this->GrenadeClass != nullptr && this->GrenadeCount != 0)
 	{
 		FVector GrenadeSpawnLocation = GetMesh()->GetSocketLocation("GunAttachPoint");
 
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
 
-		this->Grenade = GetWorld()->SpawnActor<AGrenade>(this->GrenadeClass, GrenadeSpawnLocation, FRotator(0, 0, 0), SpawnParameters);
-	
+		this->Grenade = GetWorld()->SpawnActor<AGrenade>(
+			this->GrenadeClass, GrenadeSpawnLocation, FRotator(0, 0, 0), SpawnParameters);
+
 		this->Grenade->GrenadeMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
 
 		this->GrenadeCount--;
 	}
 }
 
-void APlayerCharacter::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APlayerCharacter::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	IInteractiveObject* EnteringInteractable = Cast<IInteractiveObject>(OtherActor);
 
 	// Nothing changes if the entering actors cast is NULL or if we cannot interact anymore with it.
-	if(EnteringInteractable == NULL || (EnteringInteractable->bWasInteractedWith && !EnteringInteractable->bCanBeUsedAgain))
+	if (EnteringInteractable == nullptr
+		|| (EnteringInteractable->bWasInteractedWith && !EnteringInteractable->bCanBeUsedAgain))
 	{
 		return;
 	}
 
-	if(this->CurrentInteractable != NULL)
+	if (this->CurrentInteractable != nullptr)
 	{
-		float PreviousDistance = FVector::Dist(this->GetActorLocation(), this->CurrentInteractable->InteractiveObjectLocation);
+		float PreviousDistance =
+			FVector::Dist(this->GetActorLocation(), this->CurrentInteractable->InteractiveObjectLocation);
 		float CurrentDistance = FVector::Dist(this->GetActorLocation(), OtherActor->GetActorLocation());
 
-		// If we already have a focused interactable and this check 
-		// passes, we want to turn of the widget for the current one  
+		// If we already have a focused interactable and this check
+		// passes, we want to turn of the widget for the current one
 		// and replace it with the newly entered interactable.
-		if(CurrentDistance < PreviousDistance)
+		if (CurrentDistance < PreviousDistance)
 		{
 			AActor* CurrentActor = Cast<AActor>(this->CurrentInteractable);
-			this->CurrentInteractable->InteractionWidgetVisibility(CurrentActor->FindComponentByClass<class UWidgetComponent>(), false);
+			this->CurrentInteractable->InteractionWidgetVisibility(
+				CurrentActor->FindComponentByClass<class UWidgetComponent>(), false);
 
 			this->CurrentInteractable = EnteringInteractable;
-			this->CurrentInteractable->InteractionWidgetVisibility(OtherActor->FindComponentByClass<class UWidgetComponent>(), true);
+			this->CurrentInteractable->InteractionWidgetVisibility(
+				OtherActor->FindComponentByClass<class UWidgetComponent>(), true);
 		}
 	}
 	// No current interactable means that the
@@ -388,79 +372,77 @@ void APlayerCharacter::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 	else
 	{
 		this->CurrentInteractable = EnteringInteractable;
-		this->CurrentInteractable->InteractionWidgetVisibility(OtherActor->FindComponentByClass<class UWidgetComponent>(), true);
+		this->CurrentInteractable->InteractionWidgetVisibility(
+			OtherActor->FindComponentByClass<class UWidgetComponent>(), true);
 	}
 }
 
-void APlayerCharacter::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void APlayerCharacter::OnBoxEndOverlap(
+	UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	IInteractiveObject* LeavingInteractable = Cast<IInteractiveObject>(OtherActor);
 
-	if(LeavingInteractable == this->CurrentInteractable)
+	if (LeavingInteractable == this->CurrentInteractable)
 	{
-		this->CurrentInteractable->InteractionWidgetVisibility(OtherActor->FindComponentByClass<class UWidgetComponent>(), false);
+		this->CurrentInteractable->InteractionWidgetVisibility(
+			OtherActor->FindComponentByClass<class UWidgetComponent>(), false);
 
-		this->CurrentInteractable = NULL;
+		this->CurrentInteractable = nullptr;
 
 		this->InteractionZone->GetOverlappingActors(OverlappingInteractables);
 
 		FHitResult DummyHitResult;
 
-		for(auto* Actor : OverlappingInteractables)
+		for (auto* Actor : OverlappingInteractables)
 		{
-			this->OnBoxBeginOverlap(NULL, Actor, NULL, 0, false, DummyHitResult);
+			this->OnBoxBeginOverlap(nullptr, Actor, nullptr, 0, false, DummyHitResult);
 		}
 	}
 }
 
 void APlayerCharacter::OnInteract()
 {
-	if(this->CurrentInteractable != NULL)
+	if (this->CurrentInteractable != nullptr)
 	{
 		this->CurrentInteractable->InteractPure();
 
-		if(!this->CurrentInteractable->bCanBeUsedAgain)
+		if (!this->CurrentInteractable->bCanBeUsedAgain)
 		{
 			AActor* InteractableActor = Cast<AActor>(this->CurrentInteractable);
 
-			this->OnBoxEndOverlap(NULL, InteractableActor, NULL, 0);
+			this->OnBoxEndOverlap(nullptr, InteractableActor, nullptr, 0);
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No interactable in focus."));
-	}
+	else { UE_LOG(LogTemp, Warning, TEXT("No interactable in focus.")); }
 }
 
 void APlayerCharacter::EquipWeapon()
 {
 	int32 WeaponIndex = this->PlayerInventory->WeaponSlotIndex;
 
-	if(this->PlayerInventory->CurrentItems[WeaponIndex] == NULL)
-	{
-		return;
-	}
+	if (this->PlayerInventory->CurrentItems[WeaponIndex] == nullptr) { return; }
 
 	auto* WeaponClass = Cast<UBaseWeapon>(this->PlayerInventory->CurrentItems[WeaponIndex]);
 
-	if(WeaponClass->BlueprintGunClass)
+	if (WeaponClass->BlueprintGunClass)
 	{
 		FActorSpawnParameters SpawnParameters;
 
 		SpawnParameters.Owner = this;
 
 		this->Gun = GetWorld()->SpawnActor<ABaseGun>(WeaponClass->BlueprintGunClass, SpawnParameters);
-		this->Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
+		this->Gun->AttachToComponent(
+			GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
 	}
 }
 
 void APlayerCharacter::UnequipWeapon()
 {
-	if(this->Gun != NULL)
+	if (this->Gun != nullptr)
 	{
 		this->Gun->Destroy();
 
-		this->Gun = NULL;
+		this->Gun = nullptr;
 	}
 }
 
@@ -468,7 +450,7 @@ void APlayerCharacter::AddXP(float& ExperienceToAdd)
 {
 	this->CurrentXP += ExperienceToAdd;
 
-	while(this->CurrentXP >= this->XPForNextLevel)
+	while (this->CurrentXP >= this->XPForNextLevel)
 	{
 		this->CurrentXP -= this->XPForNextLevel;
 
@@ -490,10 +472,7 @@ void APlayerCharacter::PlayerLevelUp()
 
 	// Spawn particle effect for level up.
 
-	if(this->OnLevelUp.IsBound())
-	{
-		this->OnLevelUp.Broadcast();
-	}
+	if (this->OnLevelUp.IsBound()) { this->OnLevelUp.Broadcast(); }
 }
 
 FGenericTeamId APlayerCharacter::GetGenericTeamId() const
