@@ -64,11 +64,12 @@ void APlayerCharacter::Tick(float DeltaTime)
 		// The player's location there is its half height, so it would be around 135cm above the current floor
 		FVector HitLocation = MouseHitResult.Location;
 		FVector CameraLocation = MouseHitResult.TraceStart;
-		float PlayerGunHeight = GetActorLocation().Z + GGun_Height;
-		float DistanceHitToPlayerGun = PlayerGunHeight - HitLocation.Z;
 		FVector TraceDirection = (CameraLocation - HitLocation).GetSafeNormal();
+		float PlayerGunHeight = GetActorLocation().Z + GGun_Height;
+		float HitToPlayerGunDistance = PlayerGunHeight - HitLocation.Z;
+		FVector OffsetToLineIntersection = HitToPlayerGunDistance * (1 / TraceDirection.Z) * TraceDirection;
 
-		FVector Target = DistanceHitToPlayerGun * (1 / TraceDirection.Z) * TraceDirection + HitLocation;
+		FVector Target = HitLocation + OffsetToLineIntersection;
 
 		RotateCharacterToMouse(Target);
 	}
