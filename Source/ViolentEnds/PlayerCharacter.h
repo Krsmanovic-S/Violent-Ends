@@ -149,7 +149,7 @@ private:
 	void OnInteract();
 
 	UPROPERTY(EditAnywhere)
-	class UBoxComponent* InteractionZone;
+	UBoxComponent* InteractionZone;
 
 	TArray<AActor*> OverlappingInteractables;
 
@@ -162,7 +162,7 @@ private:
 	AGrenade* Grenade;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
-	TSubclassOf<class AGrenade> GrenadeClass;
+	TSubclassOf<AGrenade> GrenadeClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
 	int32 GrenadeCount;

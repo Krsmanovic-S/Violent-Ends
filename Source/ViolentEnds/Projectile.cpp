@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "BaseGun.h"
 #include "EntityStats.h"
+#include "ExplosiveCanister.h"
 
 
 AProjectile::AProjectile()
@@ -34,12 +35,16 @@ void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, 
 		return;
 	}
 	
-	// If we hit an actor that can be damaged (has an UEntityStats component)
-	// then we damage that actor and reduce our pierce.
-	if(OtherActor && OtherActor != this && OtherActor != this->GunOwner
-	   && OtherActor->FindComponentByClass<class UEntityStats>())
+	float ProjectileDamage = 1;
+
+	// If we hit an explosive canister or an actor that can be damaged 
+	// (has an UEntityStats component) then we damage that actor and reduce our pierce.
+	if(OtherActor && OtherActor != this && OtherActor != this->GunOwner && OtherActor->CanBeDamaged())
 	{
-		float ProjectileDamage = this->GunOwner->CalculateDamage(OtherActor->FindComponentByClass<class UEntityStats>());
+		if(OtherActor->FindComponentByClass<UEntityStats>())
+		{
+			ProjectileDamage = this->GunOwner->CalculateDamage(OtherActor->FindComponentByClass<UEntityStats>());
+		}
 
 		UGameplayStatics::ApplyDamage(OtherActor, 
 									  ProjectileDamage, 

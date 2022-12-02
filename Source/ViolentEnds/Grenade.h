@@ -5,6 +5,11 @@
 #include "Grenade.generated.h"
 
 
+class UStaticMeshComponent;
+class USphereComponent;
+class UBaseCustomDamageType;
+class UParticleSystem;
+
 UCLASS()
 class VIOLENTENDS_API AGrenade : public AActor
 {
@@ -21,17 +26,22 @@ public:
 	void Explode();
 
 	UPROPERTY(VisibleAnywhere, Category = "Grenade")
-	class UStaticMeshComponent* GrenadeMesh;
+	UStaticMeshComponent* GrenadeMesh;
 
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Grenade")
-	class USphereComponent* DamageSphere;
+	USphereComponent* DamageSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
 	float FuseLength = 2.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
-	float ExplosiveDamage = 20.f;
+	TSubclassOf<UBaseCustomDamageType> GrenadeDamageType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
+	float GrenadeDamage = 20.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
+	UParticleSystem* GrenadeExplosionEffect;
 };

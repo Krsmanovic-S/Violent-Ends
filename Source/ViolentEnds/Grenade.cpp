@@ -2,9 +2,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "TimerManager.h"
-#include "PlayerCharacter.h"
-#include "BaseEnemy.h"
 #include "EntityStats.h"
+#include "BaseCustomDamageType.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -23,37 +22,44 @@ void AGrenade::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FTimerHandle ExplodeHandle;
+	if(!this->GrenadeDamageType)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Damage Type Class for Grenades is not set."));
+		return;
+	}
 
+	FTimerHandle ExplodeHandle;
 	// Set the delay after which the grenade will explode.
 	GetWorldTimerManager().SetTimer(ExplodeHandle, this, &AGrenade::Explode, FuseLength, false);
 }
 
 void AGrenade::Explode()
 {
-	//this->DamageSphere->SetWorldLocation(this->GrenadeMesh->GetComponentLocation());
+	TArray<AActor*> OverlappingActors;
 
-	TArray<AActor*> OverlappingEnemies;
-	TArray<AActor*> OverlappingPlayer;
-
-	this->DamageSphere->GetOverlappingActors(OverlappingEnemies, ABaseEnemy::StaticClass());
-	this->DamageSphere->GetOverlappingActors(OverlappingPlayer, APlayerCharacter::StaticClass());
+	this->DamageSphere->GetOverlappingActors(OverlappingActors);
 
 	FDamageEvent DamageEvent;
+	float DamageToInflict = 1;
+	this->SetCanBeDamaged(false);
 
 	// For the enemies we do a for loop and apply the damage to all of them.
-	for(AActor* Actor : OverlappingEnemies)
+	for(AActor* Actor : OverlappingActors)
 	{
-		if(Actor->FindComponentByClass<class UEntityStats>())
+		if(Actor->CanBeDamaged())
 		{
-			Actor->TakeDamage(this->ExplosiveDamage, DamageEvent, NULL, this);
+			if(Actor->FindComponentByClass<UEntityStats>())
+			{
+				DamageToInflict = this->GrenadeDamageType.GetDefaultObject()->ReturnDamageAmount(
+								Actor->FindComponentByClass<UEntityStats>(), this->GrenadeDamage);
+			}
+			Actor->TakeDamage(DamageToInflict, DamageEvent, NULL, this);
 		}
 	}
 
-	// We know that there is only one Player, so no need for a for-loop.
-	if(!OverlappingPlayer.IsEmpty())
+	if(this->GrenadeExplosionEffect)
 	{
-		OverlappingPlayer[0]->TakeDamage(this->ExplosiveDamage, DamageEvent, NULL, this);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), this->GrenadeExplosionEffect, this->GetActorTransform(), true);
 	}
 
 	this->Destroy();

@@ -30,7 +30,7 @@ void UEntityStats::TickComponent(float DeltaTime, enum ELevelTick TickType, FAct
 	}
 }
 
-void UEntityStats::DamageTaken(AActor *DamagedActor, float Damage, const UDamageType *DamageType, class AController *Instigator, AActor *DamageCauser)
+void UEntityStats::DamageTaken(AActor *DamagedActor, float Damage, const UDamageType *DamageType, AController *Instigator, AActor *DamageCauser)
 {
 	// Only apply damage if we have any health left.
 	if(this->CurrentHealth > 0)

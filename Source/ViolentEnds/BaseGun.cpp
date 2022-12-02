@@ -224,10 +224,10 @@ float ABaseGun::CalculateDamage(class UEntityStats* OtherEntity)
 
 	for(auto& DamageType : GunDamageTypes)
 	{
-		CurrentDamageFromType = DamageType.Key.GetDefaultObject()->ReturnDamageAmount(GetOwner()->FindComponentByClass<class UEntityStats>(), DamageType.Value);
+		CurrentDamageFromType = DamageType.Key.GetDefaultObject()->ReturnDamageAmount(GetOwner()->FindComponentByClass<UEntityStats>(), DamageType.Value);
 
 		// Criticals are calculated from whomever fired the projectile.
-		DamageType.Key.GetDefaultObject()->CriticalHit(GetOwner()->FindComponentByClass<class UEntityStats>(), CurrentDamageFromType);
+		DamageType.Key.GetDefaultObject()->CriticalHit(GetOwner()->FindComponentByClass<UEntityStats>(), CurrentDamageFromType);
 
 		ResultingDamage += CurrentDamageFromType;
 	}

@@ -5,6 +5,8 @@
 #include "BaseCustomDamageType.generated.h"
 
 
+class UEntityStats;
+
 UCLASS()
 class VIOLENTENDS_API UBaseCustomDamageType : public UDamageType
 {
@@ -13,8 +15,8 @@ class VIOLENTENDS_API UBaseCustomDamageType : public UDamageType
 public:
 	
 	UFUNCTION(BlueprintCallable)
-	virtual float ReturnDamageAmount(class UEntityStats* EntityStats, float Damage);
+	virtual float ReturnDamageAmount(UEntityStats* EntityStats, float Damage);
 
 	UFUNCTION(BlueprintCallable)
-	void CriticalHit(class UEntityStats* EntityStats, float& CurrentDamageValue);
+	void CriticalHit(UEntityStats* EntityStats, float& CurrentDamageValue);
 };
