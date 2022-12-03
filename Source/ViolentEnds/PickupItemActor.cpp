@@ -1,6 +1,6 @@
 #include "PickupItemActor.h"
 #include "Components/BoxComponent.h"
-#include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "BaseItem.h"
 #include "ItemEnumsAndStructs.h"
 #include "BaseCustomDamageType.h"
@@ -15,11 +15,11 @@ APickupItemActor::APickupItemActor()
 	this->CollisionBox = CreateDefaultSubobject<UBoxComponent>(FName("Collision Box"));
 	RootComponent = this->CollisionBox;
 
-	this->StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
-	this->StaticMeshComp->SetupAttachment(this->CollisionBox);
+	this->SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
+	this->SkeletalMeshComp->SetupAttachment(this->CollisionBox);
 
 	this->ItemWidgetName =CreateDefaultSubobject<UWidgetComponent>(TEXT("Item Name Widget"));
-	this->ItemWidgetName->SetupAttachment(this->StaticMeshComp);
+	this->ItemWidgetName->SetupAttachment(this->SkeletalMeshComp);
 }
 
 void APickupItemActor::BeginPlay()
@@ -35,8 +35,8 @@ void APickupItemActor::InitializePickupProperties()
 	{
 		this->ContainedItem->World = GEngine->GameViewport->GetWorld();
 
-		this->StaticMeshComp->SetStaticMesh(this->ContainedItem->PickupMesh);
-		this->StaticMeshComp->SetWorldScale3D(FVector(0.5, 0.5, 0.5));
+		this->SkeletalMeshComp->SetSkeletalMesh(this->ContainedItem->PickupMesh);
+		//this->SkeletalMeshComp->SetWorldScale3D(FVector(0.5, 0.5, 0.5));
 
 		if(!this->bWasItemInitialized)
 		{

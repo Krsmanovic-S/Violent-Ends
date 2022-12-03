@@ -118,6 +118,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &APlayerCharacter::OnInteract);
 
+	PlayerInputComponent->BindAction(TEXT("SwapWeapons"), IE_Pressed, this, &APlayerCharacter::SwapWeapons);
+
 	PlayerInputComponent->BindAction(TEXT("StandardAmmo"), IE_Pressed, this, &APlayerCharacter::EquipStandardAmmo);
 	PlayerInputComponent->BindAction(TEXT("BurstAmmo"), IE_Pressed, this, &APlayerCharacter::EquipBurstAmmo);
 	PlayerInputComponent->BindAction(TEXT("ShotgunAmmo"), IE_Pressed, this, &APlayerCharacter::EquipShotgunAmmo);
@@ -215,17 +217,10 @@ void APlayerCharacter::StopAttacking()
 {
 	if (GetWorldTimerManager().IsTimerActive(ShootingHandle)) { GetWorldTimerManager().ClearTimer(ShootingHandle); }
 
-	if(this->Gun)
+	if(this->Gun != nullptr)
 	{
 		this->Gun->bIsFiring = false;
 	}
-}
-
-void APlayerCharacter::ResetShootingCooldown()
-{
-	GetWorldTimerManager().ClearTimer(FireHandle);
-
-	this->Gun->bIsFiring = false;
 }
 
 void APlayerCharacter::ReloadWeapon()
@@ -236,7 +231,40 @@ void APlayerCharacter::ReloadWeapon()
 	}
 }
 
-// -------------------------Ammo Equipping-------------------------
+// -------------------------Ammo Equipping & Weapon Swap-------------------------
+void APlayerCharacter::SwapWeapons()
+{
+	if(this->bAllowedAmmoEquip)
+	{
+		auto* PrimaryWeapon = this->PlayerInventory->CurrentItems[this->PlayerInventory->WeaponSlotIndex];
+		auto* SecondaryWeapon = this->PlayerInventory->CurrentItems[this->PlayerInventory->SecondaryWeaponSlotIndex];
+
+		// Whatever the case for the swap we need to nullify this guns'ammo.
+		if(this->Gun != nullptr) { this->Gun->HeldAmmo = nullptr; }
+
+		this->OnAmmoUpdated.Broadcast();
+
+		if(PrimaryWeapon != nullptr)
+		{
+			// Both weapons exist so we can just perform a swap.
+			if(SecondaryWeapon != nullptr)
+			{
+				this->PlayerInventory->SwapItems(SecondaryWeapon, this->PlayerInventory->WeaponSlotIndex);
+			}
+			// Otherwise we tehnically just unequip the current weapon.
+			else
+			{
+				this->PlayerInventory->MoveItemToEmptySlot(PrimaryWeapon, this->PlayerInventory->SecondaryWeaponSlotIndex);
+			}
+		}
+		// Only other possibility is that we don't have a primary weapon but do have a secondary one.
+		else if(SecondaryWeapon != nullptr)
+		{
+			this->PlayerInventory->MoveItemToEmptySlot(SecondaryWeapon, this->PlayerInventory->WeaponSlotIndex);
+		}
+	}
+}
+
 void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 {
 	// Don't do anything if we already equipped this ammo type.

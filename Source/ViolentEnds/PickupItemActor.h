@@ -5,6 +5,7 @@
 #include "PickupItemActor.generated.h"
 
 class UBaseItem;
+class USkeletalMeshComponent;
 class UBoxComponent;
 class UWidgetComponent;
 
@@ -39,7 +40,7 @@ private:
 	UBoxComponent* CollisionBox;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* StaticMeshComp;
+	USkeletalMeshComponent* SkeletalMeshComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	UWidgetComponent* ItemWidgetName;

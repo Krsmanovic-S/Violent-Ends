@@ -250,17 +250,20 @@ bool UInventoryComponent::AutoEquipItem(UBaseItem* Item)
 			if(!this->CurrentItems[this->WeaponSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->WeaponSlotIndex);
-			}		
+			}
+			break;	
 		case EItemType::Helmet:
 			if(!this->CurrentItems[this->HelmetSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->HelmetSlotIndex);
 			}
+			break;
 		case EItemType::BodyArmor:
 			if(!this->CurrentItems[this->BodyArmorSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->BodyArmorSlotIndex);
 			}
+			break;
 		case EItemType::Legs:
 			if(!this->CurrentItems[this->LegsSlotIndex])
 			{
@@ -274,7 +277,7 @@ bool UInventoryComponent::AutoEquipItem(UBaseItem* Item)
 			}	
 			break;
 		case EItemType::Arms:
-			if(!this->CurrentItems[ArmsSlotIndex])
+			if(!this->CurrentItems[this->ArmsSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->ArmsSlotIndex);
 			}	
@@ -282,6 +285,7 @@ bool UInventoryComponent::AutoEquipItem(UBaseItem* Item)
 		default:
 			UE_LOG(LogTemp, Warning, TEXT("Item Type Not Recognized."));
 	}
+
 	return false;
 }
 

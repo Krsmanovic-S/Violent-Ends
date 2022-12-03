@@ -87,19 +87,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 AvailableSkillPoints = 0;
 
-	bool bIsInCombat = false;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bAllowedAmmoEquip = true;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bAllowedReload = true;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player|Animations")
 	UAnimMontage* ReloadAnimation;
-
-	FTimerHandle FireHandle;
-	FTimerHandle ShootingHandle;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLevelUp OnLevelUp;
@@ -130,16 +119,14 @@ private:
 	// Shooting
 	void Attack();
 	void StopAttacking();
-	void ResetShootingCooldown();
 	// ------------------------------------------
-	// Ammo
+	// Ammo & Weapon Swap
+	void SwapWeapons();
 	void EquipAmmo(EFiringStyle AmmoFireStyle);
 	void EquipStandardAmmo();
 	void EquipBurstAmmo();
 	void EquipShotgunAmmo();
 	void EquipSniperAmmo();
-
-	uint8 CurrentlyEquippedAmmo = 0;
 
 	// ------------------------------------------
 	void ThrowGrenade();
@@ -185,9 +172,16 @@ private:
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	bool bAllowedAmmoEquip = true;
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	bool bAllowedReload = true;
+
 	bool bIsAiming;
 	bool bHasDashed = false;
 
+	FTimerHandle ShootingHandle;
 	FTimerHandle DashHandle;
 	FHitResult MouseHitResult;
 };

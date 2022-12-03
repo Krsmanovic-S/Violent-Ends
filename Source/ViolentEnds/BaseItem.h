@@ -7,7 +7,7 @@
 
 
 class UWorld;
-class UStaticMesh;
+class USkeletalMesh;
 class UTexture2D;
 class UInventoryComponent;
 
@@ -35,7 +35,7 @@ public:
 	UWorld* World;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
-	UStaticMesh* PickupMesh;
+	USkeletalMesh* PickupMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
 	UTexture2D* ItemThumbnail;
