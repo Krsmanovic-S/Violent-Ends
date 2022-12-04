@@ -42,7 +42,7 @@ Plugins/
 
 # [Fish] Base art related files
 *.spp
-# *.kra
+*.kra
 *.png~
 *.blend1
 
