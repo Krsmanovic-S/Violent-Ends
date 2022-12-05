@@ -23,7 +23,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void InitializePickupProperties();
 	
+	// Calculates the bottom and upper bound (% wise) that we will take into
+	// consideration for the bounds of a stat that we are randomizing.
 	FVector2D StatsRangeOnTier();
+
+	// Calculates a new percentile based range which will determine the new upper and lower
+	// bound of a stat. This comes after the tier function has processed a range first.
 	FVector2D StatsRangeOnRarity();
 
 	void RandomizeIndividualStat(float& CurrentStat, FVector2D CurrentRange, const FVector2D& TierRange, const FVector2D& RarityRange);

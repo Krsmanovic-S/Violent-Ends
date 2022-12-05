@@ -36,7 +36,6 @@ void APickupItemActor::InitializePickupProperties()
 		this->ContainedItem->World = GEngine->GameViewport->GetWorld();
 
 		this->SkeletalMeshComp->SetSkeletalMesh(this->ContainedItem->PickupMesh);
-		//this->SkeletalMeshComp->SetWorldScale3D(FVector(0.5, 0.5, 0.5));;
 
 		if(!this->bWasItemInitialized)
 		{
@@ -48,12 +47,20 @@ void APickupItemActor::InitializePickupProperties()
 FVector2D APickupItemActor::StatsRangeOnTier()
 {
 	FVector2D Result = FVector2D::ZeroVector;
+
+	if(this->ContainedItem->MaximalTierAvailable == EItemTier::None ||
+	   this->ContainedItem->MinimalTierAvailable == EItemTier::None)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Minimal or Maximal Tier not specified for Item.")); 
+		return Result;
+	}
+
 	float PercentageIncrement = 0;
 
 	switch(this->ContainedItem->MaximalTierAvailable - this->ContainedItem->MinimalTierAvailable)
 	{
-		case 1: PercentageIncrement = 50; break; // if tier 1 look <50, other above 50
-		case 2: PercentageIncrement = 33.33; break; // if tier 1 look <33, if tier 2 33<66, other >66
+		case 1: PercentageIncrement = 50; break;
+		case 2: PercentageIncrement = 33.33; break;
 		case 3: PercentageIncrement = 25; break;
 		case 4: PercentageIncrement = 20; break;
 		default: UE_LOG(LogTemp, Warning, TEXT("Tier difference unknown, PickupActor error..")); return Result;
@@ -100,7 +107,6 @@ FVector2D APickupItemActor::StatsRangeOnRarity()
 		case EItemRarity::Legendary: Result.X = 0.8; Result.Y = 1; break;
 		default: UE_LOG(LogTemp, Warning, TEXT("Rarity not set. PickupActor Error.")); return Result;
 	}
-
 	return Result;
 }
 
