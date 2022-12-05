@@ -63,7 +63,9 @@
 			"stack": "cpp",
 			"string": "cpp",
 			"string_view": "cpp",
-			"*.rh": "cpp"
+			"*.rh": "cpp",
+			"__config": "cpp",
+			"__nullptr": "cpp"
 		}
 	},
 	"extensions": {

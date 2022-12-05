@@ -4,11 +4,12 @@
 
 
 // Add default functionality here for any ILootSystem functions that are not pure virtual.
-class UBaseItem* ILootSystem::PickRandomItem(class UDataTable* LootTable, int32 CurrentPlayerLevel)
+UBaseItem* ILootSystem::PickRandomItem(UDataTable* LootTable, int32 CurrentPlayerLevel)
 {
-	if(!LootTable)
+	if(LootTable == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No loot table set for ILootSystem::PickRandomItem()."));
+		return nullptr;
 	}
 
     TArray<FName> AllTableRows = LootTable->GetRowNames();
@@ -19,20 +20,19 @@ class UBaseItem* ILootSystem::PickRandomItem(class UDataTable* LootTable, int32 
 	// Select a Random Row in the Data Table
 	FItemDataTable* SelectedRow = LootTable->FindRow<FItemDataTable>(AllTableRows[RandomRow], "");
 	
-	if(SelectedRow && SelectedRow->MinimalPlayerLevel <= CurrentPlayerLevel && SelectedRow->ChanceToSpawn <= RandomNumber
+	if(SelectedRow && SelectedRow->MinimalPlayerLevel <= CurrentPlayerLevel && SelectedRow->ChanceToSpawn >= RandomNumber
 	   && CurrentPlayerLevel <= SelectedRow->MaximalPlayerLevel)
 	{
 		return SelectedRow->ItemClass->GetDefaultObject<UBaseItem>();
 	}	
-
-	return NULL;
+	return nullptr;
 }
 
 EItemTier ILootSystem::RandomizeTier(int32 CurrentPlayerLevel)
 {
 	int32 CurrentTier = FMath::Max(CurrentPlayerLevel / 10, 1);
 	int32 MinimalTier = FMath::Max(CurrentTier - 1, 1);
-	int32 MaximalTier = FMath::Min(CurrentTier + 1, 7);
+	int32 MaximalTier = FMath::Min(CurrentTier + 1, 5);
 
 	// 20% chance for 1 tier lower
 	// 70% chance for same tier
@@ -53,15 +53,9 @@ EItemTier ILootSystem::RandomizeTier(int32 CurrentPlayerLevel)
 			return EItemTier::Tier3;
 		case 4:
 			return EItemTier::Tier4;
-		case 5:
-			return EItemTier::Tier5;
-		case 6:
-			return EItemTier::Tier6;
-		default:
-			return EItemTier::Tier7;
 	}
 
-	return EItemTier::Tier7;
+	return EItemTier::Tier5;
 }
 
 EItemRarity ILootSystem::RandomizeRarity()
@@ -83,14 +77,15 @@ EItemRarity ILootSystem::RandomizeRarity()
 	else if(Random < 98)
 		return EItemRarity::Epic;
 
-	return EItemRarity::Common;
+	return EItemRarity::Legendary;
 }
 
-void ILootSystem::InitializeLoot(TArray<class UBaseItem*>& Loot, class UDataTable* LootTable, int32 MaximalItems, int32 CurrentPlayerLevel)
+void ILootSystem::InitializeLoot(TArray<UBaseItem*>& Loot, UDataTable* LootTable, int32 MaximalItems, int32 CurrentPlayerLevel)
 {
-	if(!LootTable)
+	if(LootTable == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No loot table selected"));
+		UE_LOG(LogTemp, Warning, TEXT("No loot table selected for InitializeLoot() method."));
+		return;
 	}
 
 	int32 AmountToGenerate = FMath::RandRange(1, MaximalItems);
@@ -99,25 +94,26 @@ void ILootSystem::InitializeLoot(TArray<class UBaseItem*>& Loot, class UDataTabl
 	int32 BreakPoint = 50;
 
 	UBaseItem* InputItem;
+	UBaseItem* CopyItem;
 
 	// Either run until we generated the maximal amout or
 	// end after a fixed number of iterations.
-	while(AddedItems != AmountToGenerate && BreakPoint)
+	while(AddedItems != AmountToGenerate && BreakPoint != 0)
 	{
 		// Select randomly from a data table
 		InputItem = this->PickRandomItem(LootTable, CurrentPlayerLevel);
 
 		if(InputItem != NULL)
-		{
+		{	
+			CopyItem = DuplicateObject(InputItem, NULL);
+
 			// Randomize Tier
-			InputItem->Tier = RandomizeTier(CurrentPlayerLevel);
+			CopyItem->Tier = RandomizeTier(CurrentPlayerLevel);
 
 			// Randomize Rarity
-			InputItem->Rarity = RandomizeRarity();
+			CopyItem->Rarity = RandomizeRarity();
 
-			// Add it to the chest
-			Loot.Add(InputItem);
-
+			Loot.Add(CopyItem);
 			AddedItems++;
 			BreakPoint--;
 		}

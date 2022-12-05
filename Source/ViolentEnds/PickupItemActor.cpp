@@ -36,7 +36,7 @@ void APickupItemActor::InitializePickupProperties()
 		this->ContainedItem->World = GEngine->GameViewport->GetWorld();
 
 		this->SkeletalMeshComp->SetSkeletalMesh(this->ContainedItem->PickupMesh);
-		//this->SkeletalMeshComp->SetWorldScale3D(FVector(0.5, 0.5, 0.5));
+		//this->SkeletalMeshComp->SetWorldScale3D(FVector(0.5, 0.5, 0.5));;
 
 		if(!this->bWasItemInitialized)
 		{
@@ -45,65 +45,89 @@ void APickupItemActor::InitializePickupProperties()
 	}
 }
 
-void APickupItemActor::RandomizeIndividualStat(float& CurrentStat, FVector2D CurrentRange)
+FVector2D APickupItemActor::StatsRangeOnTier()
 {
-	// Don't set anything if the range is 0.
-	if(CurrentRange.X == 0 && CurrentRange.Y == 0)
+	FVector2D Result = FVector2D::ZeroVector;
+	float PercentageIncrement = 0;
+
+	switch(this->ContainedItem->MaximalTierAvailable - this->ContainedItem->MinimalTierAvailable)
 	{
-		return;
+		case 1: PercentageIncrement = 50; break; // if tier 1 look <50, other above 50
+		case 2: PercentageIncrement = 33.33; break; // if tier 1 look <33, if tier 2 33<66, other >66
+		case 3: PercentageIncrement = 25; break;
+		case 4: PercentageIncrement = 20; break;
+		default: UE_LOG(LogTemp, Warning, TEXT("Tier difference unknown, PickupActor error..")); return Result;
 	}
 
-	CurrentStat = FMath::RandRange(CurrentRange.X, CurrentRange.Y);
+	// How far are we from the minimal tier sets our lower bound for the range.
+	switch(this->ContainedItem->Tier - this->ContainedItem->MinimalTierAvailable)
+	{
+		case 0: Result.X = 0; break;
+		case 1: Result.X = PercentageIncrement; break;
+		case 2: Result.X = PercentageIncrement * 2; break;
+		case 3: Result.X = PercentageIncrement * 3; break;
+		case 4: Result.X = PercentageIncrement * 4; break;
+		default: UE_LOG(LogTemp, Warning, TEXT("Lower bound unknown, PickupActor error..")); return Result;	
+	}
 
+	// How far are we from the maximal tier sets our upper bound for the range.
+	switch(this->ContainedItem->MaximalTierAvailable - this->ContainedItem->Tier)
+	{
+		case 0: Result.Y = 100; break;
+		case 1: Result.Y = 100 - PercentageIncrement; break;
+		case 2: Result.Y = 100 - PercentageIncrement * 2; break;
+		case 3: Result.Y = 100 - PercentageIncrement * 3; break;
+		case 4: Result.Y = 100 - PercentageIncrement * 4; break;
+		default: UE_LOG(LogTemp, Warning, TEXT("Upper bound unknown, PickupActor error..")); return Result;		
+	}
+
+	Result.X /= 100;
+	Result.Y /= 100;
+
+	return Result;
+}
+
+FVector2D APickupItemActor::StatsRangeOnRarity()
+{
+	FVector2D Result = FVector2D::ZeroVector;
+
+	switch(this->ContainedItem->Rarity)
+	{
+		case EItemRarity::Common:    Result.X = 0; Result.Y = 0.2; break;
+		case EItemRarity::Uncommon:  Result.X = 0.2; Result.Y = 0.4; break;
+		case EItemRarity::Rare: 	 Result.X = 0.4; Result.Y = 0.6; break;
+		case EItemRarity::Epic: 	 Result.X = 0.6; Result.Y = 0.8; break;
+		case EItemRarity::Legendary: Result.X = 0.8; Result.Y = 1; break;
+		default: UE_LOG(LogTemp, Warning, TEXT("Rarity not set. PickupActor Error.")); return Result;
+	}
+
+	return Result;
+}
+
+void APickupItemActor::RandomizeIndividualStat(float& CurrentStat, FVector2D CurrentRange, const FVector2D& TierRange, const FVector2D& RarityRange)
+{
+	// Don't set anything if the range is 0.
+	if(CurrentRange.X == 0 && CurrentRange.Y == 0) { return; }
+
+	if(TierRange.X != 0) { CurrentRange.X = CurrentRange.Y * TierRange.X; }
+	if(TierRange.Y != 1) { CurrentRange.Y *= TierRange.Y; }
+
+	if(CurrentRange.X >= CurrentRange.Y) { UE_LOG(LogTemp, Warning, TEXT("Ranges are messed up because of TIER..")); }
+
+	if(RarityRange.X != 0) { CurrentRange.X = CurrentRange.Y * RarityRange.X; }
+	if(RarityRange.Y != 1) { CurrentRange.Y *= RarityRange.Y; }
+
+	if(CurrentRange.X >= CurrentRange.Y) { UE_LOG(LogTemp, Warning, TEXT("Ranges are messed up because of RARITY..")); }
+
+	CurrentStat = FMath::RandRange(CurrentRange.X, CurrentRange.Y);
 	CurrentStat = FMath::Floor(CurrentStat);
 }
 
 void APickupItemActor::RandomizeItemStats()
 {
-	EItemRarity Rarity = this->ContainedItem->Rarity;
-
-	// Has no functionality right now.
-	switch(Rarity)
-	{
-		case EItemRarity::Common:
-			break;
-		case EItemRarity::Uncommon:
-			break;
-		case EItemRarity::Rare:
-			break;
-		case EItemRarity::Epic:
-			break;
-		case EItemRarity::Legendary:
-			break;
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("Rarity not set. PickupActor Error."));
-			return;
-	}
-
-	EItemTier Tier = this->ContainedItem->Tier;
-
-	// Has no functionality right now.
-	switch(Tier)
-	{
-		case EItemTier::Tier1:
-			break;
-		case EItemTier::Tier2:
-			break;
-		case EItemTier::Tier3:
-			break;
-		case EItemTier::Tier4:
-			break;
-		case EItemTier::Tier5:
-			break;
-		case EItemTier::Tier6:
-			break;
-		case EItemTier::Tier7:
-			break;
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("Tier not set. PickupActor Error."));
-			return;
-	}
-
+	FVector2D TierStatRange = this->StatsRangeOnTier();
+	FVector2D RarityStatRange = this->StatsRangeOnRarity();
+	
 	auto& Stats = this->ContainedItem->ItemStats;
 	auto& StatsRange = this->ContainedItem->ItemStatsRange;
 
@@ -112,20 +136,23 @@ void APickupItemActor::RandomizeItemStats()
 	{
 		Stats.ItemDamageTypes.Add(DamageType.Key);
 
-		this->RandomizeIndividualStat(Stats.ItemDamageTypes[DamageType.Key], StatsRange.DamageTypesRange[DamageType.Key]);
+		this->RandomizeIndividualStat(Stats.ItemDamageTypes[DamageType.Key], StatsRange.DamageTypesRange[DamageType.Key], TierStatRange, RarityStatRange);
 	}
 
-	this->RandomizeIndividualStat(Stats.ItemDamage, StatsRange.DamageRange);
-	this->RandomizeIndividualStat(Stats.ItemFireDamage, StatsRange.FireDamageRange);
-	this->RandomizeIndividualStat(Stats.ItemCriticalChance, StatsRange.CriticalChanceRange);
-	this->RandomizeIndividualStat(Stats.ItemCriticalDamage, StatsRange.CriticalDamageRange);
+	// Damage based stats.
+	this->RandomizeIndividualStat(Stats.ItemDamage, StatsRange.DamageRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemFireDamage, StatsRange.FireDamageRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemCriticalChance, StatsRange.CriticalChanceRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemCriticalDamage, StatsRange.CriticalDamageRange, TierStatRange, RarityStatRange);
 
-	this->RandomizeIndividualStat(Stats.ItemAddHealth, StatsRange.HealthRange);
-	this->RandomizeIndividualStat(Stats.ItemHealthRegen, StatsRange.HealthRegenRange);
-	this->RandomizeIndividualStat(Stats.ItemArmor, StatsRange.ArmorRange);
-	this->RandomizeIndividualStat(Stats.ItemFireResist, StatsRange.FireResistRange);
+	// Defense based stats.
+	this->RandomizeIndividualStat(Stats.ItemAddHealth, StatsRange.HealthRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemHealthRegen, StatsRange.HealthRegenRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemArmor, StatsRange.ArmorRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemFireResist, StatsRange.FireResistRange, TierStatRange, RarityStatRange);
 
-	this->RandomizeIndividualStat(Stats.ItemAddStamina, StatsRange.StaminaRange);
-	this->RandomizeIndividualStat(Stats.ItemStaminaRegen, StatsRange.StaminaRegenRange);
-	this->RandomizeIndividualStat(Stats.ItemDashCost, StatsRange.DashCostRange);
+	// Mobility based stats.
+	this->RandomizeIndividualStat(Stats.ItemAddStamina, StatsRange.StaminaRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemStaminaRegen, StatsRange.StaminaRegenRange, TierStatRange, RarityStatRange);
+	this->RandomizeIndividualStat(Stats.ItemDashCost, StatsRange.DashCostRange, TierStatRange, RarityStatRange);
 }

@@ -11,7 +11,7 @@ class USkeletalMesh;
 class UTexture2D;
 class UInventoryComponent;
 
-UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
+UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class VIOLENTENDS_API UBaseItem : public UObject
 {
 	GENERATED_BODY()
@@ -57,6 +57,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
 	int32 ItemMaxStack;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
+	EItemTier MinimalTierAvailable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Properties")
+	EItemTier MaximalTierAvailable;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bWasInitialized = false;

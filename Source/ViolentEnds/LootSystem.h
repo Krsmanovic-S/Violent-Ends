@@ -6,6 +6,9 @@
 #include "LootSystem.generated.h"
 
 
+class UBaseItem;
+class UDataTable;
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class ULootSystem : public UInterface
@@ -20,8 +23,8 @@ class VIOLENTENDS_API ILootSystem
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	virtual class UBaseItem* PickRandomItem(class UDataTable* LootTable, int32 CurrentPlayerLevel);
+	virtual UBaseItem* PickRandomItem(UDataTable* LootTable, int32 CurrentPlayerLevel);
 	virtual EItemTier RandomizeTier(int32 CurrentPlayerLevel);
 	virtual EItemRarity RandomizeRarity();
-	virtual void InitializeLoot(TArray<class UBaseItem*>& Loot, UDataTable* LootTable, int32 MaximalItems, int32 CurrentPlayerLevel);
+	virtual void InitializeLoot(TArray<UBaseItem*>& Loot, UDataTable* LootTable, int32 MaximalItems, int32 CurrentPlayerLevel);
 };

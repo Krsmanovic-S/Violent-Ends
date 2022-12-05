@@ -23,7 +23,10 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void InitializePickupProperties();
 	
-	void RandomizeIndividualStat(float& CurrentStat, FVector2D CurrentRange);
+	FVector2D StatsRangeOnTier();
+	FVector2D StatsRangeOnRarity();
+
+	void RandomizeIndividualStat(float& CurrentStat, FVector2D CurrentRange, const FVector2D& TierRange, const FVector2D& RarityRange);
 	void RandomizeItemStats();
 	
 public:
@@ -45,6 +48,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	UWidgetComponent* ItemWidgetName;
 
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadWrite, Category = "Pickup", meta = (AllowPrivateAccess = true))
 	bool bWasItemInitialized;
 };

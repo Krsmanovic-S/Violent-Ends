@@ -34,14 +34,19 @@ enum class EItemRarity : uint8
 UENUM(BlueprintType)
 enum class EItemTier : uint8
 {
-    Tier1   UMETA(DisplayName = "Tier 1"),  
-    Tier2   UMETA(DisplayName = "Tier 2"),
-    Tier3   UMETA(DisplayName = "Tier 3"),
-    Tier4   UMETA(DisplayName = "Tier 4"),
-    Tier5   UMETA(DisplayName = "Tier 5"),
-    Tier6   UMETA(DisplayName = "Tier 6"),
-    Tier7   UMETA(DisplayName = "Tier 7") 
+    None  = 0  UMETA(DisplayName = "None"),
+    Tier1 = 1  UMETA(DisplayName = "Tier 1"),  
+    Tier2 = 2  UMETA(DisplayName = "Tier 2"),
+    Tier3 = 3  UMETA(DisplayName = "Tier 3"),
+    Tier4 = 4  UMETA(DisplayName = "Tier 4"),
+    Tier5 = 5  UMETA(DisplayName = "Tier 5"),
 };
+
+// Operator overload for subtracting two EItemTier enums.
+FORCEINLINE uint8 operator-(EItemTier& Input_1, EItemTier& Input_2)
+{ 
+	return (uint8)((uint8)Input_1 - (uint8)Input_2);
+}
 
 // -----------------------------------------------------------------
 // Structs
