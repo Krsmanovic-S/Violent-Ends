@@ -9,6 +9,7 @@ class UStaticMeshComponent;
 class USphereComponent;
 class UBaseCustomDamageType;
 class UParticleSystem;
+class AEnvironmentalDamageActor;
 
 UCLASS()
 class VIOLENTENDS_API AExplosiveCanister : public AActor
@@ -42,4 +43,13 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosive Canister", meta = (AllowPrivateAccess = true))
 	UParticleSystem* CanisterExplosionEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosive Canister|Environmental", meta = (AllowPrivateAccess = true))
+	TSubclassOf<AEnvironmentalDamageActor> ActorToSpawnOnDeath;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosive Canister|Environmental", meta = (AllowPrivateAccess = true))
+	FVector2D LifeSpanRange;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosive Canister|Environmental", meta = (AllowPrivateAccess = true))
+	FVector EnvironmentalDamageBoxExtent;
 };
