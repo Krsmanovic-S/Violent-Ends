@@ -57,13 +57,15 @@ FVector2D APickupItemActor::StatsRangeOnTier()
 
 	float PercentageIncrement = 0;
 
+	// First we calculate the increment that we use for the bottom two calculations.
 	switch(this->ContainedItem->MaximalTierAvailable - this->ContainedItem->MinimalTierAvailable)
 	{
+		case 0: return FVector2D(0, 1); // If they are the same we look at the entire range, from 0% to 100% of the stat.
 		case 1: PercentageIncrement = 50; break;
 		case 2: PercentageIncrement = 33.33; break;
 		case 3: PercentageIncrement = 25; break;
 		case 4: PercentageIncrement = 20; break;
-		default: UE_LOG(LogTemp, Warning, TEXT("Tier difference unknown, PickupActor error..")); return Result;
+		default: UE_LOG(LogTemp, Warning, TEXT("Tier difference unknown, PickupActor error.")); return Result;
 	}
 
 	// How far are we from the minimal tier sets our lower bound for the range.
@@ -74,7 +76,7 @@ FVector2D APickupItemActor::StatsRangeOnTier()
 		case 2: Result.X = PercentageIncrement * 2; break;
 		case 3: Result.X = PercentageIncrement * 3; break;
 		case 4: Result.X = PercentageIncrement * 4; break;
-		default: UE_LOG(LogTemp, Warning, TEXT("Lower bound unknown, PickupActor error..")); return Result;	
+		default: UE_LOG(LogTemp, Warning, TEXT("Lower bound unknown, PickupActor error")); return Result;	
 	}
 
 	// How far are we from the maximal tier sets our upper bound for the range.
@@ -85,9 +87,10 @@ FVector2D APickupItemActor::StatsRangeOnTier()
 		case 2: Result.Y = 100 - PercentageIncrement * 2; break;
 		case 3: Result.Y = 100 - PercentageIncrement * 3; break;
 		case 4: Result.Y = 100 - PercentageIncrement * 4; break;
-		default: UE_LOG(LogTemp, Warning, TEXT("Upper bound unknown, PickupActor error..")); return Result;		
+		default: UE_LOG(LogTemp, Warning, TEXT("Upper bound unknown, PickupActor error.")); return Result;		
 	}
 
+	// Divide by 100 to get the percentage value (e.g. 0.25 for 25%).
 	Result.X /= 100;
 	Result.Y /= 100;
 
@@ -118,12 +121,12 @@ void APickupItemActor::RandomizeIndividualStat(float& CurrentStat, FVector2D Cur
 	if(TierRange.X != 0) { CurrentRange.X = CurrentRange.Y * TierRange.X; }
 	if(TierRange.Y != 1) { CurrentRange.Y *= TierRange.Y; }
 
-	if(CurrentRange.X >= CurrentRange.Y) { UE_LOG(LogTemp, Warning, TEXT("Ranges are messed up because of TIER..")); }
+	if(CurrentRange.X >= CurrentRange.Y) { UE_LOG(LogTemp, Warning, TEXT("Ranges are messed up because of TIER.")); }
 
 	if(RarityRange.X != 0) { CurrentRange.X = CurrentRange.Y * RarityRange.X; }
 	if(RarityRange.Y != 1) { CurrentRange.Y *= RarityRange.Y; }
 
-	if(CurrentRange.X >= CurrentRange.Y) { UE_LOG(LogTemp, Warning, TEXT("Ranges are messed up because of RARITY..")); }
+	if(CurrentRange.X >= CurrentRange.Y) { UE_LOG(LogTemp, Warning, TEXT("Ranges are messed up because of RARITY.")); }
 
 	CurrentStat = FMath::RandRange(CurrentRange.X, CurrentRange.Y);
 	CurrentStat = FMath::Floor(CurrentStat);
@@ -140,8 +143,8 @@ void APickupItemActor::RandomizeItemStats()
 	// Initialize each damage type that exists in StatsRange.
 	for(auto& DamageType : StatsRange.DamageTypesRange)
 	{
+		// First add that damage type to the stats array, then randomize the actual damage stat.
 		Stats.ItemDamageTypes.Add(DamageType.Key);
-
 		this->RandomizeIndividualStat(Stats.ItemDamageTypes[DamageType.Key], StatsRange.DamageTypesRange[DamageType.Key], TierStatRange, RarityStatRange);
 	}
 

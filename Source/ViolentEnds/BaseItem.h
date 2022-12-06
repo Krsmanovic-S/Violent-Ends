@@ -10,6 +10,7 @@ class UWorld;
 class USkeletalMesh;
 class UTexture2D;
 class UInventoryComponent;
+class APlayerCharacter;
 
 UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class VIOLENTENDS_API UBaseItem : public UObject
@@ -26,10 +27,10 @@ public:
 	void InitializeTooltipMap();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Use(class APlayerCharacter* Player);
+	virtual void Use(APlayerCharacter* Player);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnUse(class APlayerCharacter* Player);
+	void OnUse(APlayerCharacter* Player);
 
 	UPROPERTY(Transient)
 	UWorld* World;

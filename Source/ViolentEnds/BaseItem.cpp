@@ -24,7 +24,7 @@ void UBaseItem::InitializeTooltipMap()
 
     if(this->ItemStats.ItemDamageTypes.Find(UFireDamageType::StaticClass()))
     {
-        PhysicalDamage = this->ItemStats.ItemDamageTypes[UFireDamageType::StaticClass()];
+        FireDamage = this->ItemStats.ItemDamageTypes[UFireDamageType::StaticClass()];
     }
 
     this->MapForTooltips = {
@@ -44,7 +44,7 @@ void UBaseItem::InitializeTooltipMap()
     };
 }
 
-void UBaseItem::Use(class APlayerCharacter* Player)
+void UBaseItem::Use(APlayerCharacter* Player)
 {
     int32 SlotIndex;
 
