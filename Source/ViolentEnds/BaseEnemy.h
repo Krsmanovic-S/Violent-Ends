@@ -55,10 +55,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
 	float RunMovementSpeed;
 
-private:
+	bool bCanAttack;
 
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadWrite)
 	ABaseGun* RangedWeapon;
+
+private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
 	UAIPerceptionStimuliSourceComponent* PerceptionStimuliComp;
@@ -78,10 +80,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	int32 MaximalAmountOfItems = 1;
 
-	bool bCanAttack;
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	float ExperienceOnKill;
 
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	FTimerHandle AttackHandle;
-
 	FTimerHandle DeathHandle;
 };

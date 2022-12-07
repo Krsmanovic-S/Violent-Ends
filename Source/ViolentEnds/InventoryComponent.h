@@ -6,8 +6,8 @@
 
 
 // Delegate that Blueprints will use to update the UI.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStatsUpdated);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryUpdate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStatsUpdate);
 
 class UBaseItem;
 class UBaseAmmo;
@@ -98,10 +98,10 @@ public:
 	int32 RelevantObjectiveIndex;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnInventoryUpdated OnInventoryUpdated;
+	FInventoryUpdate OnInventoryUpdated;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnStatsUpdated OnStatsUpdated;
+	FStatsUpdate OnStatsUpdated;
 
 	int32 BasicSlotAmount = 20;
 	int32 WeaponSlotIndex;

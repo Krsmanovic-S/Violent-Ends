@@ -1,6 +1,9 @@
 #include "AttackPlayer.h"
 #include "EnemyAIController.h"
 #include "BaseEnemy.h"
+#include "PlayerCharacter.h"
+#include "Lib/BPFL_Math.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 UAttackPlayer::UAttackPlayer()
@@ -10,11 +13,24 @@ UAttackPlayer::UAttackPlayer()
 
 EBTNodeResult::Type UAttackPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    ABaseEnemy* EnemyPawn = Cast<ABaseEnemy>(OwnerComp.GetAIOwner()->GetPawn());
+    AEnemyAIController* EnemyController = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
 
-    if(EnemyPawn)
+    if(EnemyController != nullptr && EnemyController->ControlledEnemy->bCanAttack)
     {
-        EnemyPawn->Attack();
+        if(EnemyController->ControlledEnemy->RangedWeapon != nullptr)
+        {
+            // Predict where to shoot before you do, the 9000 magic number
+            // is the default projectile velocity from ABaseGun.
+            FRotator PredictedRotation = UBPFL_Math::PredictRotationToMovingActor(
+                EnemyController->ControlledEnemy->GetActorLocation(), 
+                9000, 
+                EnemyController->PlayerCharacter->GetActorLocation(), 
+                EnemyController->PlayerCharacter->GetCharacterMovement()->GetLastUpdateVelocity()
+            );
+
+            EnemyController->ControlledEnemy->SetActorRotation(PredictedRotation);
+        }
+        EnemyController->ControlledEnemy->Attack();
     }
     else
     {

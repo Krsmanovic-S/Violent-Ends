@@ -519,7 +519,10 @@ void UInventoryComponent::ApplyEquippedItemStats(UBaseItem* Item, bool RemoveSta
 	{
 		if(!RemoveStats)
 		{
-			Entity->MaximumHealth += Item->ItemStats.ItemAddHealth;
+			if(Item->ItemStats.ItemAddHealth)
+			{
+				Entity->SetMaximumHealth(Entity->MaximumHealth + Item->ItemStats.ItemAddHealth);
+			}
 			Entity->HealthRegenerationAmount += Item->ItemStats.ItemHealthRegen;
 
 			Entity->MaximumStamina += Item->ItemStats.ItemAddStamina;
@@ -535,7 +538,10 @@ void UInventoryComponent::ApplyEquippedItemStats(UBaseItem* Item, bool RemoveSta
 		}
 		else
 		{
-			Entity->MaximumHealth = FMath::Max(Entity->MaximumHealth - Item->ItemStats.ItemAddHealth, 0);
+			if(Item->ItemStats.ItemAddHealth)
+			{
+				Entity->SetMaximumHealth(FMath::Max(Entity->MaximumHealth - Item->ItemStats.ItemAddHealth, 0));
+			}
 			Entity->HealthRegenerationAmount = FMath::Max(Entity->HealthRegenerationAmount - Item->ItemStats.ItemHealthRegen, 0);
 			
 			Entity->ArmorValue = FMath::Max(Entity->ArmorValue - Item->ItemStats.ItemArmor, 0);

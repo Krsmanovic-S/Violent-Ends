@@ -56,7 +56,7 @@ void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	this->PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	this->PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	this->GetBlackboardComponent()->SetValueAsObject(TEXT("PlayerActor"), this->PlayerCharacter);
 
 	TSubclassOf<ABaseEnemy> EnemyClass;

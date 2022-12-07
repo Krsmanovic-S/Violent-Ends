@@ -11,6 +11,8 @@ class VIOLENTENDS_API UBPFL_Math : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+public:
+
 	/** Predict the aim rotation required to hit a moving target actor */
 	UFUNCTION(BlueprintCallable)
 	static FRotator PredictRotationToMovingActor(

@@ -11,7 +11,7 @@ class UAIPerceptionComponent;
 class UBlackboardComponent;
 class ABaseEnemy;
 class UAIPerceptionComponent;
-
+class APlayerCharacter;
 
 UCLASS()
 class VIOLENTENDS_API AEnemyAIController : public AAIController
@@ -43,6 +43,10 @@ public:
 	// Enemies don't pick locations too close to each other.
 	TArray<AActor*> AllEnemies;
 
+	APlayerCharacter* PlayerCharacter;
+
+	ABaseEnemy* ControlledEnemy;
+
 private:
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
@@ -57,8 +61,4 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UBehaviorTreeComponent* BehaviorTreeComp;
-
-	ABaseEnemy* ControlledEnemy;
-
-	ACharacter* PlayerCharacter;
 };

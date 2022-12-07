@@ -9,7 +9,7 @@ class APlayerCharacter;
 class UBaseItem;
 class UWorld;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnObjectiveUpdated);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObjectiveUpdate);
 
 
 UENUM(BlueprintType)
@@ -146,5 +146,5 @@ public:
 	UWorld* World;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnObjectiveUpdated RefreshObjectives;
+	FObjectiveUpdate RefreshObjectives;
 };

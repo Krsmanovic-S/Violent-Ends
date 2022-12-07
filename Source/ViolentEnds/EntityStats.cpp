@@ -91,3 +91,9 @@ void UEntityStats::HandleStamina()
 		return;
 	}
 }
+
+void UEntityStats::SetMaximumHealth(const float& InputValue)
+{
+	this->MaximumHealth = InputValue;
+	this->OnMaximumHealthUpdated.Broadcast();
+}

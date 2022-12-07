@@ -43,22 +43,19 @@ void ABaseEnemy::BeginPlay()
 
 void ABaseEnemy::Attack()
 {
-	if(this->bCanAttack)
+	this->bCanAttack = false;
+
+	if(this->RangedWeapon != NULL)
 	{
-		this->bCanAttack = false;
-
-		if(this->RangedWeapon != NULL)
-		{
-			this->RangedWeapon->FireOneBullet();
-		}
-		else
-		{
-			// Melee Attack
-		}
-
-		GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, 
-									    this->AttackCooldownTime, false);
+		this->RangedWeapon->FireOneBullet();
 	}
+	else
+	{
+		// Melee Attack
+	}
+
+	GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, 
+									this->AttackCooldownTime, false);
 }
 
 void ABaseEnemy::ResetAttack()
@@ -81,7 +78,16 @@ void ABaseEnemy::InitializeDeathTimer()
 	GetWorldTimerManager().SetTimer(DeathHandle, this, &ABaseEnemy::HandleDestruction, 3, false);
 
 	AEnemyAIController* EnemyController = Cast<AEnemyAIController>(GetController());
-	EnemyController->OnUnPossess();
+
+	if(EnemyController != nullptr)
+	{
+		EnemyController->PlayerCharacter->AddXP(this->ExperienceOnKill);
+		EnemyController->OnUnPossess();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Enemy controller is null."));
+	}
 }
 
 void ABaseEnemy::HandleDestruction()

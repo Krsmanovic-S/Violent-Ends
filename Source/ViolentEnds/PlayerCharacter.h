@@ -8,13 +8,13 @@
 
 
 // Delegate that will be used to update the Pause Menu.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLevelUp);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLevelUp);
 
 // Delegate that Blueprints will use to update the Ammo UI.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAmmoUpdated);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAmmoUpdate);
 
 // Delegate that Blueprints will use to update the Qeuest Widget.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnQuestUpdated);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestUpdate);
 
 class AMainPlayerController;
 class ABaseGun;
@@ -47,6 +47,7 @@ public:
 	void EquipWeapon();
 	void UnequipWeapon();
 	// ------------------------------------------
+	UFUNCTION(BlueprintCallable)
 	void AddXP(float& ExperienceToAdd);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
@@ -91,13 +92,13 @@ public:
 	UAnimMontage* ReloadAnimation;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnLevelUp OnLevelUp;
+	FLevelUp OnLevelUp;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnAmmoUpdated OnAmmoUpdated;
+	FAmmoUpdate OnAmmoUpdated;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnQuestUpdated OnQuestUpdated;
+	FQuestUpdate OnQuestUpdated;
 
 	void ReloadWeapon();
 
