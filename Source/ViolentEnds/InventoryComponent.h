@@ -75,8 +75,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Inventory")
 	int32 InventoryMaxCapacity;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Inventory")
-	TArray<TSubclassOf<UBaseAmmo>> AmmoInventory;
+	UPROPERTY(BlueprintReadWrite)
+	TArray<UBaseAmmo*> AmmoInventory;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UBaseItem*> DefaultItems;

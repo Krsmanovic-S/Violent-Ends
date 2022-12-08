@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "LootSystem.h"
+#include "UtilityPickup.h"
 #include "BaseEnemy.generated.h"
 
 
@@ -12,7 +13,6 @@ class UBaseItem;
 class UEntityStats;
 class UDataTable;
 class UAIPerceptionStimuliSourceComponent;
-
 
 UCLASS()
 class VIOLENTENDS_API ABaseEnemy : public ACharacter, public ILootSystem
@@ -32,6 +32,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void DropLoot();
+
+	UFUNCTION(BlueprintCallable)
+	void DropPickups();
 
 	void InitializeDeathTimer();
 	void HandleDestruction();
@@ -77,11 +80,20 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
 	UDataTable* EnemyLootTable;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Enemy", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
 	int32 MaximalAmountOfItems = 1;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Enemy", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
 	float ExperienceOnKill;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy|Pickups", meta = (AllowPrivateAccess = true))
+	TSubclassOf<AUtilityPickup> UtilityPickupClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy|Pickups", meta = (AllowPrivateAccess = true))
+	int32 MaximalPickupSpawn = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy|Pickups", meta = (AllowPrivateAccess = true))
+	TMap<EUtilityType, int32> EnemyTicketMap;
 
 	FTimerHandle AttackHandle;
 	FTimerHandle DeathHandle;

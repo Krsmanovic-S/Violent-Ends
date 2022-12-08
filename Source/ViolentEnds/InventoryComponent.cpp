@@ -31,20 +31,7 @@ void UInventoryComponent::BeginPlay()
 		{
 			AddItem(StartingItem);
 		}
-	}
-
-	// Ammo stacks should be at 0 when inventory just starts.
-	// This will be changed when save/load system is implemented.
-	UBaseAmmo* CurrentAmmo;
-	for(auto& Ammo : this->AmmoInventory)
-	{
-		CurrentAmmo = Cast<UBaseAmmo>(Ammo.GetDefaultObject());
-
-		// Start with 100 of each ammo, just for debugging purposes.
-		CurrentAmmo->ItemCurrentStack = 100;
-
-		CurrentAmmo->OwningInventory = this;
-	}
+	}	
 
 	// Base slots = 20
 	// Weapon - index 20
@@ -69,15 +56,11 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 {
 	if(!Item)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Item NULL."));
-
+		UE_LOG(LogTemp, Warning, TEXT("Item is NULL."));
 		return false;
 	}
 
-	if(Item->IsA<UBaseAmmo>())
-	{
-		return this->AddAmmo(Item);
-	}
+	if(Item->IsA<UBaseAmmo>()) { return this->AddAmmo(Item); }
 
 	if(InventoryCurrentCapacity == InventoryMaxCapacity &&
 	   CurrentItems[InventoryMaxCapacity - 8]->ItemCurrentStack ==
@@ -155,64 +138,54 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 bool UInventoryComponent::AddAmmo(UBaseItem* InputAmmo)
 {
 	UBaseAmmo* Input = Cast<UBaseAmmo>(InputAmmo);
-	UBaseAmmo* Ammo;
 
 	switch(Input->AmmoFireStyle)
 	{
 		case EFiringStyle::Standard:
-			Ammo = Cast<UBaseAmmo>(this->AmmoInventory[0]->GetDefaultObject());
-			if(Ammo->ItemCurrentStack < Ammo->ItemMaxStack)
+			if(this->AmmoInventory[0]->ItemCurrentStack < this->AmmoInventory[0]->ItemMaxStack)
 			{
-				Ammo->ItemCurrentStack++;
+				this->AmmoInventory[0]->ItemCurrentStack++;
 
 				if(this->PlayerReference->Gun != NULL)
 				{
 					this->PlayerReference->Gun->UpdateAmmo();
 				}
-
 				return true;
 			}
-			
 			break;
 		case EFiringStyle::Burst:
-			Ammo = Cast<UBaseAmmo>(this->AmmoInventory[1]->GetDefaultObject());
-			if(Ammo->ItemCurrentStack < Ammo->ItemMaxStack)
+			if(this->AmmoInventory[1]->ItemCurrentStack < this->AmmoInventory[1]->ItemMaxStack)
 			{
-				Ammo->ItemCurrentStack++;
+				this->AmmoInventory[1]->ItemCurrentStack++;
 
 				if(this->PlayerReference->Gun != NULL)
 				{
 					this->PlayerReference->Gun->UpdateAmmo();
 				}
-
 				return true;
 			}
 			break;
 		case EFiringStyle::Shotgun:
-			Ammo = Cast<UBaseAmmo>(this->AmmoInventory[2]->GetDefaultObject());
-			if(Ammo->ItemCurrentStack < Ammo->ItemMaxStack)
+			if(this->AmmoInventory[2]->ItemCurrentStack < this->AmmoInventory[2]->ItemMaxStack)
 			{
-				Ammo->ItemCurrentStack++;
+				this->AmmoInventory[2]->ItemCurrentStack++;
 
 				if(this->PlayerReference->Gun != NULL)
 				{
 					this->PlayerReference->Gun->UpdateAmmo();
 				}
-
 				return true;
 			}
 			break;
 		case EFiringStyle::Sniper:
-			Ammo = Cast<UBaseAmmo>(this->AmmoInventory[3]->GetDefaultObject());
-			if(Ammo->ItemCurrentStack < Ammo->ItemMaxStack)
+			if(this->AmmoInventory[3]->ItemCurrentStack < this->AmmoInventory[3]->ItemMaxStack)
 			{
-				Ammo->ItemCurrentStack++;
+				this->AmmoInventory[3]->ItemCurrentStack++;
 
 				if(this->PlayerReference->Gun != NULL)
 				{
 					this->PlayerReference->Gun->UpdateAmmo();
 				}
-
 				return true;
 			}
 			break;
@@ -222,7 +195,6 @@ bool UInventoryComponent::AddAmmo(UBaseItem* InputAmmo)
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("Input ammo is at max stack, cannot add more."));
-
 	return false;
 }
 
@@ -233,13 +205,10 @@ int32 UInventoryComponent::GetAmmoStackSize(int32 ArrayIndex) const
 	if(ArrayIndex > this->AmmoInventory.Num() - 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Tried to access AmmoInventory out of bounds."));
-
 		return 0;
 	}
 
-	UBaseAmmo* Ammo = Cast<UBaseAmmo>(this->AmmoInventory[ArrayIndex]->GetDefaultObject());
-
-	return Ammo->ItemCurrentStack;
+	return this->AmmoInventory[ArrayIndex]->ItemCurrentStack;
 }
 
 bool UInventoryComponent::AutoEquipItem(UBaseItem* Item)

@@ -8,6 +8,7 @@
 // Delegate for updating segments of the HP bar whenever MaxHP changes.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHealthBarUpdate);
 
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class VIOLENTENDS_API UEntityStats : public UActorComponent
 {
@@ -22,6 +23,12 @@ public:
 	void HandleHealth();
 
 	void HandleStamina();
+
+	UFUNCTION(BlueprintCallable)
+	void FlatHeal(UPARAM(ref) const float& InputValue);
+
+	UFUNCTION(BlueprintCallable)
+	void FlatStaminaAdd(UPARAM(ref) const float& InputValue);
 
 	void SetMaximumHealth(const float& InputValue);
 

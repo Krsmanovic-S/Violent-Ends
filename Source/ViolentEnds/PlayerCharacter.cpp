@@ -41,11 +41,28 @@ void APlayerCharacter::BeginPlay()
 
 	this->MainPlayerController = Cast<AMainPlayerController>(GetController());
 
+	UBaseAmmo* AmmoItem;
+	uint8 AmmoInventoryIndex = 0;
+
+	// Initialize the UBaseAmmo for the AmmoInventory.
+	for(auto& AmmoClass : this->InitialClassesForAmmo)
+	{
+		AmmoItem = Cast<UBaseAmmo>(AmmoClass->GetDefaultObject());
+
+		// Start with 100 of each ammo, just for debugging purposes.
+		AmmoItem->ItemCurrentStack = 100;
+
+		AmmoItem->OwningInventory = this->PlayerInventory;
+		AmmoItem->World = GetWorld();
+
+		this->PlayerInventory->AmmoInventory[AmmoInventoryIndex] = AmmoItem;
+		AmmoInventoryIndex++;
+	}
+
 	this->bIsAiming = false;
 	this->bHasDashed = false;
 	this->DashDistance = 2500.f;
 	this->DashCooldown = 1.f;
-
 	this->XPForNextLevel = 10;
 
 	this->InteractionZone->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBoxBeginOverlap);
@@ -200,6 +217,14 @@ void APlayerCharacter::Attack()
 	{
 		if(this->Gun->HeldAmmo)
 		{
+			// Play appropriate gun sound.
+			switch(this->Gun->HeldAmmo->AmmoFireStyle)
+			{
+				case EFiringStyle::Burst:
+					UGameplayStatics::PlaySoundAtLocation(GetWorld(), this->GunSounds[0], GetActorLocation());
+					break;
+			}
+
 			this->Gun->PullTrigger();
 
 			if(!GetWorldTimerManager().IsTimerActive(ShootingHandle))
@@ -284,26 +309,25 @@ void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 	if (!CanAcceptAmmo)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Gun doesn't accept this ammo type."));
-
 		return;
 	}
 
 	switch (AmmoFireStyle)
 	{
 		case EFiringStyle::Standard:
-			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[0]->GetDefaultObject());
+			this->Gun->HeldAmmo = this->PlayerInventory->AmmoInventory[0];
 			this->Gun->ReloadTime = 1.25;
 			break;
 		case EFiringStyle::Burst:
-			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[1]->GetDefaultObject());
+			this->Gun->HeldAmmo = this->PlayerInventory->AmmoInventory[1];
 			this->Gun->ReloadTime = 1.75;
 			break;
 		case EFiringStyle::Shotgun:
-			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[2]->GetDefaultObject());
+			this->Gun->HeldAmmo = this->PlayerInventory->AmmoInventory[2];
 			this->Gun->ReloadTime = 1.75;
 			break;
 		case EFiringStyle::Sniper:
-			this->Gun->HeldAmmo = Cast<UBaseAmmo>(this->PlayerInventory->AmmoInventory[3]->GetDefaultObject());
+			this->Gun->HeldAmmo = this->PlayerInventory->AmmoInventory[3];
 			this->Gun->ReloadTime = 2;
 			break;
 		default:
@@ -314,7 +338,6 @@ void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 	if (this->Gun->HeldAmmo != nullptr)
 	{
 		this->Gun->UpdateAmmo();
-
 		this->OnAmmoUpdated.Broadcast();
 	}
 }
@@ -464,7 +487,6 @@ void APlayerCharacter::UnequipWeapon()
 	if (this->Gun != nullptr)
 	{
 		this->Gun->Destroy();
-
 		this->Gun = nullptr;
 	}
 }

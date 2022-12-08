@@ -65,6 +65,38 @@ void ABaseEnemy::ResetAttack()
 	GetWorldTimerManager().ClearTimer(AttackHandle);
 }
 
+void ABaseEnemy::DropPickups()
+{
+	if(this->UtilityPickupClass == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UtilityPickup class not set in BaseEnemy."));
+		return;
+	}
+
+	// Randomly pick how many pickups to spawn.
+	int32 SpawnAmount = FMath::RandRange(1, this->MaximalPickupSpawn);
+	AUtilityPickup* Pickup;
+
+	while(SpawnAmount != 0)
+	{
+		Pickup = GetWorld()->SpawnActor<AUtilityPickup>(
+			this->UtilityPickupClass, 
+			this->GetActorLocation(), 
+			FRotator(0, 0, 0)
+		);
+
+		if(!this->EnemyTicketMap.IsEmpty()) { Pickup->TicketMap = this->EnemyTicketMap; }
+
+		// First we need to get the type since it determines the mesh,
+		// then we initialize the mesh itself and do the drop effect.
+		Pickup->Type = Pickup->RandomizePickupType();
+		Pickup->InitializeUtilityMesh();
+		Pickup->PickupDropEffect();
+		
+		SpawnAmount--;
+	}
+}
+
 void ABaseEnemy::InitializeDeathTimer()
 {
 	if(this->RelevantQuest != NULL && this->RelevantQuest->Objectives[this->DefeatObjectiveIndex].bIsActive)
@@ -72,6 +104,7 @@ void ABaseEnemy::InitializeDeathTimer()
 		this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->DefeatObjectiveIndex]);
 	}
 
+	this->DropPickups();
 	this->DropLoot();
 	this->SetActorEnableCollision(false);
 

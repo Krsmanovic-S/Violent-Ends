@@ -92,6 +92,21 @@ void UEntityStats::HandleStamina()
 	}
 }
 
+void UEntityStats::FlatHeal(UPARAM(ref) const float& InputValue)
+{
+	this->CurrentHealth += InputValue;
+
+	if(this->CurrentHealth > this->MaximumHealth) { this->CurrentHealth = this->MaximumHealth; }
+}
+
+void UEntityStats::FlatStaminaAdd(UPARAM(ref) const float& InputValue)
+{
+	this->CurrentStamina += InputValue;
+	
+	if(this->CurrentStamina > this->MaximumStamina) { this->CurrentStamina = this->MaximumStamina; }
+}
+
+
 void UEntityStats::SetMaximumHealth(const float& InputValue)
 {
 	this->MaximumHealth = InputValue;

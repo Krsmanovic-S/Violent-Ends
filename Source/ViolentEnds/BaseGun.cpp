@@ -98,7 +98,7 @@ void ABaseGun::FireBurst()
 
 	if(this->BurstAmount > 0)
 	{
-		GetWorld()->GetTimerManager().SetTimer(BurstFireHandle, this, &ABaseGun::FireBurst, 0.05, false);            
+		GetWorld()->GetTimerManager().SetTimer(BurstFireHandle, this, &ABaseGun::FireBurst, 0.1, false);            
 	}
 	else
 	{

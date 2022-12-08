@@ -23,10 +23,12 @@ class UBaseQuest;
 class UAIPerceptionStimuliSourceComponent;
 class UEntityStats;
 class UBaseItem;
+class UBaseAmmo;
 class IInteractiveObject;
 class AGrenade;
 class UBoxComponent;
 class UAnimMontage;
+class USoundBase;
 
 
 UCLASS()
@@ -53,15 +55,18 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void DropItem(UBaseItem* Item, bool bItemWasInInventory);
 
+	UPROPERTY(EditAnywhere)
+	TArray<USoundBase*> GunSounds;
+
 	AMainPlayerController* MainPlayerController;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Perception")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UAIPerceptionStimuliSourceComponent* PerceptionStimuliComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UInventoryComponent* PlayerInventory;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UEntityStats* PlayerStats;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
@@ -128,7 +133,6 @@ private:
 	void EquipBurstAmmo();
 	void EquipShotgunAmmo();
 	void EquipSniperAmmo();
-
 	// ------------------------------------------
 	void ThrowGrenade();
 	// ------------------------------------------
@@ -140,6 +144,8 @@ private:
 	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	void OnInteract();
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* InteractionZone;
@@ -171,7 +177,8 @@ private:
 	float DashStaminaCost;
 	// ------------------------------------------
 
-	virtual FGenericTeamId GetGenericTeamId() const override;
+	UPROPERTY(EditDefaultsOnly, Category = "Player|Ammo Types")
+	TArray<TSubclassOf<UBaseAmmo>> InitialClassesForAmmo;
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	bool bAllowedAmmoEquip = true;
