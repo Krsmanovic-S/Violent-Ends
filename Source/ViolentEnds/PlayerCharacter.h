@@ -1,11 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "GenericTeamAgentInterface.h"
-#include "FiringStyle.h"
-#include "PlayerCharacter.generated.h"
 
+#include "FiringStyle.h"
+#include "GameFramework/Character.h"
+#include "GameplayTagAssetInterface.h"
+#include "GenericTeamAgentInterface.h"
+
+#include "PlayerCharacter.generated.h"
 
 // Delegate that will be used to update the Pause Menu.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLevelUp);
@@ -30,9 +32,11 @@ class UBoxComponent;
 class UAnimMontage;
 class USoundBase;
 
-
 UCLASS()
-class VIOLENTENDS_API APlayerCharacter : public ACharacter, public IGenericTeamAgentInterface
+class VIOLENTENDS_API APlayerCharacter :
+	public ACharacter,
+	public IGenericTeamAgentInterface,
+	public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
 
@@ -42,7 +46,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Equipping and Unequipping
@@ -108,7 +112,6 @@ public:
 	void ReloadWeapon();
 
 private:
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// Character Movement and Aiming
@@ -138,11 +141,13 @@ private:
 	// ------------------------------------------
 	// Interaction System
 	UFUNCTION()
-	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
+	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	UFUNCTION()
-	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
+	void OnBoxEndOverlap(
+		UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 	void OnInteract();
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
@@ -191,5 +196,23 @@ private:
 
 	FTimerHandle ShootingHandle;
 	FTimerHandle DashHandle;
+	FTimerHandle InvincibilityHandle;
 	FHitResult MouseHitResult;
+
+protected: // Dash
+	/* Duration to apply invincibility effect after dash is initiated, which blocks all damage being taken */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Dash")
+	float DashInvincibilityDuration = 0.15f;
+
+public: // Gameplay Tags
+	/* Get a copy of all currently owned gameplay tags */
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+
+protected:
+	/* Remove the Invincibility gameplay tag (Status.Invincibility) */
+	void RemoveInvincibility();
+
+	/* Container to hold all gameplay tags applied to the player */
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
+	FGameplayTagContainer GameplayTags;
 };

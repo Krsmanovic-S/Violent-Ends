@@ -1,5 +1,6 @@
 #include "PlayerCharacter.h"
 
+#include "Animation/AnimMontage.h"
 #include "BaseAmmo.h"
 #include "BaseGun.h"
 #include "BaseWeapon.h"
@@ -12,12 +13,13 @@
 #include "InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "MainPlayerController.h"
+#include "NativeGameplayTags.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "TimerManager.h"
-#include "Animation/AnimMontage.h"
+#include "ViolentEnds/GlobalTags.h"
 #include "ViolentEnds/LogMacros.h"
 
-
+// Height difference from center of player character to the gun's barrel
 float GGun_Height = 55;
 
 APlayerCharacter::APlayerCharacter()
@@ -195,6 +197,13 @@ void APlayerCharacter::Dash()
 		LaunchCharacter(DashDirection * this->DashDistance, true, true);
 
 		this->PlayerStats->CurrentStamina -= DashStaminaCost;
+		GameplayTags.AddTag(FGlobalTags::Get().Status_Invincible);
+
+		if (!GetWorldTimerManager().IsTimerActive(InvincibilityHandle))
+		{
+			GetWorldTimerManager().SetTimer(
+				InvincibilityHandle, this, &APlayerCharacter::RemoveInvincibility, DashInvincibilityDuration);
+		}
 
 		if (!this->bHasDashed)
 		{
@@ -213,9 +222,9 @@ void APlayerCharacter::ResetDash()
 
 void APlayerCharacter::Attack()
 {
-	if(this->Gun != nullptr)
+	if (this->Gun != nullptr)
 	{
-		if(this->Gun->HeldAmmo)
+		if (this->Gun->HeldAmmo)
 		{
 			// Play appropriate gun sound.
 			switch(this->Gun->HeldAmmo->AmmoFireStyle)
@@ -227,10 +236,10 @@ void APlayerCharacter::Attack()
 
 			this->Gun->PullTrigger();
 
-			if(!GetWorldTimerManager().IsTimerActive(ShootingHandle))
+			if (!GetWorldTimerManager().IsTimerActive(ShootingHandle))
 			{
-				GetWorldTimerManager().SetTimer(ShootingHandle, this, &APlayerCharacter::Attack,
-					1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
+				GetWorldTimerManager().SetTimer(
+					ShootingHandle, this, &APlayerCharacter::Attack, 1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
 			}
 
 			this->Gun->bIsFiring = true;
@@ -242,15 +251,12 @@ void APlayerCharacter::StopAttacking()
 {
 	if (GetWorldTimerManager().IsTimerActive(ShootingHandle)) { GetWorldTimerManager().ClearTimer(ShootingHandle); }
 
-	if(this->Gun != nullptr)
-	{
-		this->Gun->bIsFiring = false;
-	}
+	if (this->Gun != nullptr) { this->Gun->bIsFiring = false; }
 }
 
 void APlayerCharacter::ReloadWeapon()
 {
-	if(this->Gun && this->ReloadAnimation && this->bAllowedReload && this->Gun->CanReload())
+	if (this->Gun && this->ReloadAnimation && this->bAllowedReload && this->Gun->CanReload())
 	{
 		this->GetMesh()->GetAnimInstance()->Montage_Play(this->ReloadAnimation, this->Gun->ReloadTime);
 	}
@@ -259,31 +265,32 @@ void APlayerCharacter::ReloadWeapon()
 // -------------------------Ammo Equipping & Weapon Swap-------------------------
 void APlayerCharacter::SwapWeapons()
 {
-	if(this->bAllowedAmmoEquip)
+	if (this->bAllowedAmmoEquip)
 	{
 		auto* PrimaryWeapon = this->PlayerInventory->CurrentItems[this->PlayerInventory->WeaponSlotIndex];
 		auto* SecondaryWeapon = this->PlayerInventory->CurrentItems[this->PlayerInventory->SecondaryWeaponSlotIndex];
 
 		// Whatever the case for the swap we need to nullify this guns'ammo.
-		if(this->Gun != nullptr) { this->Gun->HeldAmmo = nullptr; }
+		if (this->Gun != nullptr) { this->Gun->HeldAmmo = nullptr; }
 
 		this->OnAmmoUpdated.Broadcast();
 
-		if(PrimaryWeapon != nullptr)
+		if (PrimaryWeapon != nullptr)
 		{
 			// Both weapons exist so we can just perform a swap.
-			if(SecondaryWeapon != nullptr)
+			if (SecondaryWeapon != nullptr)
 			{
 				this->PlayerInventory->SwapItems(SecondaryWeapon, this->PlayerInventory->WeaponSlotIndex);
 			}
 			// Otherwise we tehnically just unequip the current weapon.
 			else
 			{
-				this->PlayerInventory->MoveItemToEmptySlot(PrimaryWeapon, this->PlayerInventory->SecondaryWeaponSlotIndex);
+				this->PlayerInventory->MoveItemToEmptySlot(
+					PrimaryWeapon, this->PlayerInventory->SecondaryWeaponSlotIndex);
 			}
 		}
 		// Only other possibility is that we don't have a primary weapon but do have a secondary one.
-		else if(SecondaryWeapon != nullptr)
+		else if (SecondaryWeapon != nullptr)
 		{
 			this->PlayerInventory->MoveItemToEmptySlot(SecondaryWeapon, this->PlayerInventory->WeaponSlotIndex);
 		}
@@ -523,4 +530,14 @@ void APlayerCharacter::PlayerLevelUp()
 FGenericTeamId APlayerCharacter::GetGenericTeamId() const
 {
 	return FGenericTeamId(0);
+}
+
+void APlayerCharacter::RemoveInvincibility()
+{
+	GameplayTags.RemoveTag(FGlobalTags::Get().Status_Invincible);
+}
+
+void APlayerCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+{
+	TagContainer.AppendTags(GameplayTags);
 }
