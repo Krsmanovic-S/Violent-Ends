@@ -13,6 +13,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BaseEnemy.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ABaseGun::ABaseGun()
@@ -202,6 +203,7 @@ void ABaseGun::PullTrigger()
 				break;
 			case EFiringStyle::Burst:
 				this->DivideDamageAmount = 2;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), OwningPlayer->GunSounds[0], GetActorLocation());
 				this->FireBurst();
 				break;
 			case EFiringStyle::Shotgun:

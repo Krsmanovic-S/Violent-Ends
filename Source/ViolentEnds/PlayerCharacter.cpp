@@ -213,19 +213,19 @@ void APlayerCharacter::ResetDash()
 
 void APlayerCharacter::Attack()
 {
-	if (this->Gun != nullptr)
+	if (this->bAllowedAttack && this->Gun != nullptr)
 	{
-		if (this->Gun->HeldAmmo)
+		if (this->Gun->HeldAmmo != nullptr && this->bAllowedReload)
 		{
-			// Play appropriate gun sound.
-			switch (this->Gun->HeldAmmo->AmmoFireStyle)
-			{
-				case EFiringStyle::Burst:
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), this->GunSounds[0], GetActorLocation());
-					break;
-			}
+			this->bAllowedAttack = false;
 
 			this->Gun->PullTrigger();
+
+			if (!GetWorldTimerManager().IsTimerActive(AvailableAttackHandle))
+			{
+				GetWorldTimerManager().SetTimer(
+						AvailableAttackHandle, this, &APlayerCharacter::AllowAttack, 1 / this->Gun->HeldAmmo->ShotsPerSecond, false);
+			}
 
 			if (!GetWorldTimerManager().IsTimerActive(ShootingHandle))
 			{
@@ -236,6 +236,11 @@ void APlayerCharacter::Attack()
 			this->Gun->bIsFiring = true;
 		}
 	}
+}
+
+void APlayerCharacter::AllowAttack()
+{
+	this->bAllowedAttack = true;
 }
 
 void APlayerCharacter::StopAttacking()

@@ -127,6 +127,7 @@ private:
 	// ------------------------------------------
 	// Shooting
 	void Attack();
+	void AllowAttack();
 	void StopAttacking();
 	// ------------------------------------------
 	// Ammo & Weapon Swap
@@ -191,9 +192,11 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	bool bAllowedReload = true;
 
+	bool bAllowedAttack = true;
 	bool bIsAiming;
 	bool bHasDashed = false;
 
+	FTimerHandle AvailableAttackHandle;
 	FTimerHandle ShootingHandle;
 	FTimerHandle DashHandle;
 	FTimerHandle InvincibilityHandle;

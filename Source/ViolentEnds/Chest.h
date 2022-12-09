@@ -7,6 +7,12 @@
 #include "Chest.generated.h"
 
 
+class UBoxComponent;
+class USkeletalMeshComponent;
+class UWidgetComponent;
+class UDataTable;
+class UBaseItem;
+
 UCLASS()
 class VIOLENTENDS_API AChest : public AActor, public IInteractiveObject, public ILootSystem
 {
@@ -27,20 +33,20 @@ private:
 	void InitializeChest();
 
 	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* ChestCollision;
+	UBoxComponent* ChestCollision;
 
 	UPROPERTY(VisibleAnywhere)
-	class USkeletalMeshComponent* ChestMesh;
+	USkeletalMeshComponent* ChestMesh;
 
 	UPROPERTY(VisibleAnywhere)
-	class UWidgetComponent* InteractionWidget;
+	UWidgetComponent* InteractionWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Loot", meta = (AllowPrivateAccess = true))
-	class UDataTable* ChestLootTable;
+	UDataTable* ChestLootTable;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Loot", meta = (AllowPrivateAccess = true))
 	int32 MaximalAmountOfItems = 1;
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	TArray<class UBaseItem*> InsideLoot; 
+	TArray<UBaseItem*> InsideLoot; 
 };
