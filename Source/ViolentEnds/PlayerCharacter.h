@@ -199,10 +199,19 @@ private:
 	FTimerHandle InvincibilityHandle;
 	FHitResult MouseHitResult;
 
+protected: // Movement Config
+	/* Speed (in Unreal units/second) the character runs at */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Movement")
+	float RunSpeed = 600;
+
+	/* Speed (in Unreal units/second) the character walks at */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Movement")
+	float WalkSpeed = 400;
+
 protected: // Dash
 	/* Duration to apply invincibility effect after dash is initiated, which blocks all damage being taken */
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Dash")
-	float DashInvincibilityDuration = 0.15f;
+	float DashInvincibilityDuration = 0.15;
 
 public: // Gameplay Tags
 	/* Get a copy of all currently owned gameplay tags */

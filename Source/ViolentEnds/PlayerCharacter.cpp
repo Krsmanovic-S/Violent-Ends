@@ -47,7 +47,7 @@ void APlayerCharacter::BeginPlay()
 	uint8 AmmoInventoryIndex = 0;
 
 	// Initialize the UBaseAmmo for the AmmoInventory.
-	for(auto& AmmoClass : this->InitialClassesForAmmo)
+	for (auto& AmmoClass : this->InitialClassesForAmmo)
 	{
 		AmmoItem = Cast<UBaseAmmo>(AmmoClass->GetDefaultObject());
 
@@ -95,20 +95,11 @@ void APlayerCharacter::Tick(float DeltaTime)
 		RotateCharacterToMouse(Target);
 	}
 
-	if (this->PlayerStats->bIsEntityRunning)
+	if (this->PlayerStats->bIsEntityRunning && this->PlayerStats->CurrentStamina > 0)
 	{
-		if (this->PlayerStats->CurrentStamina > 0)
-		{
-			// Running speed.
-			GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-		}
-		else
-		{
-			// Walking speed.
-			GetCharacterMovement()->MaxWalkSpeed = 400.0f;
-		}
+		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 	}
-	else { GetCharacterMovement()->MaxWalkSpeed = 400.0f; }
+	else { GetCharacterMovement()->MaxWalkSpeed = WalkSpeed; }
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -227,7 +218,7 @@ void APlayerCharacter::Attack()
 		if (this->Gun->HeldAmmo)
 		{
 			// Play appropriate gun sound.
-			switch(this->Gun->HeldAmmo->AmmoFireStyle)
+			switch (this->Gun->HeldAmmo->AmmoFireStyle)
 			{
 				case EFiringStyle::Burst:
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), this->GunSounds[0], GetActorLocation());
