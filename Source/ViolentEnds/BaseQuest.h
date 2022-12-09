@@ -1,9 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
-#include "BaseQuest.generated.h"
 
+#include "UObject/NoExportTypes.h"
+
+#include "BaseQuest.generated.h"
 
 class APlayerCharacter;
 class UBaseItem;
@@ -11,9 +12,8 @@ class UWorld;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObjectiveUpdate);
 
-
 UENUM(BlueprintType)
-enum class EQuestType : uint8 
+enum class EQuestType : uint8
 {
 	Main,
 	Side,
@@ -21,14 +21,13 @@ enum class EQuestType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EObjectiveType : uint8 
+enum class EObjectiveType : uint8
 {
 	Location,
 	Collect,
 	Interact,
 	Defeat
 };
-
 
 USTRUCT(BlueprintType)
 struct FQuestObjective
@@ -80,7 +79,6 @@ struct FQuestObjective
 	bool bIsCompleted = false;
 };
 
-
 USTRUCT(BlueprintType)
 struct FQuestReward
 {
@@ -93,15 +91,13 @@ struct FQuestReward
 	TMap<TSubclassOf<UBaseItem>, int32> ItemReward;
 };
 
-
 UCLASS(BlueprintType, Blueprintable)
 class VIOLENTENDS_API UBaseQuest : public UObject
 {
 	GENERATED_BODY()
-	
-public:
 
-	virtual UWorld* GetWorld() const { return this->World; };
+public:
+	virtual UWorld* GetWorld() const override { return this->World; }
 
 	UFUNCTION(BlueprintCallable)
 	void SetUpObjectives();
@@ -139,7 +135,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
 	TArray<TSubclassOf<UBaseQuest>> PrerequisiteQuests;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Objectives")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Objectives", meta = (TitleProperty = "Name"))
 	TArray<FQuestObjective> Objectives;
 
 	UPROPERTY(Transient)
