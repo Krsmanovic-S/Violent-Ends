@@ -114,7 +114,7 @@ public:
 	void UpdatePlayerQuest(APlayerCharacter* Player);
 
 	UFUNCTION(BlueprintCallable)
-	void SelectNextQuest(APlayerCharacter* Player, UBaseQuest* FollowUpQuest);
+	void SelectNextQuest(APlayerCharacter* Player, TSubclassOf<UBaseQuest> FollowUpQuest);
 
 	UFUNCTION(BlueprintCallable)
 	void OnQuestCompleted(APlayerCharacter* Player);

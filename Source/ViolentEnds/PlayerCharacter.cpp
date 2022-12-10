@@ -16,6 +16,7 @@
 #include "NativeGameplayTags.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "TimerManager.h"
+#include "ViolentEnds/BaseQuest.h"
 #include "ViolentEnds/GlobalTags.h"
 #include "ViolentEnds/LogMacros.h"
 
@@ -541,6 +542,33 @@ FGenericTeamId APlayerCharacter::GetGenericTeamId() const
 void APlayerCharacter::RemoveInvincibility()
 {
 	GameplayTags.RemoveTag(FGlobalTags::Get().Status_Invincible);
+}
+
+void APlayerCharacter::AddQuest(TSubclassOf<UBaseQuest> QuestToAdd, bool bSetActive)
+{
+	auto NewQuest = NewObject<UBaseQuest>(this, QuestToAdd);
+	AllQuests.Add(NewQuest);
+
+	if (bSetActive) { SetActiveQuest(NewQuest); }
+	else { OnQuestUpdated.Broadcast(); } // Avoid double notify, as SetActiveQuest also broadcasts
+}
+
+void APlayerCharacter::SetActiveQuest(UBaseQuest* NewActiveQuest)
+{
+	checkf(AllQuests.Contains(NewActiveQuest), TEXT("Invalid quest being set as the active one"));
+
+	CurrentActiveQuest = NewActiveQuest;
+	OnQuestUpdated.Broadcast();
+}
+
+UBaseQuest* APlayerCharacter::FindQuestByClass(TSubclassOf<UBaseQuest> QuestToFind)
+{
+	for (auto Quest : AllQuests)
+	{
+		if (Quest->GetClass() == QuestToFind) { return Quest; }
+	}
+
+	return nullptr;
 }
 
 void APlayerCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const

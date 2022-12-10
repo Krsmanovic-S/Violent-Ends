@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ObjectiveLocation.h"
 #include "PlayerCharacter.h"
+#include "ViolentEnds/LogMacros.h"
 
 void UBaseQuest::SetUpObjectives()
 {
@@ -139,68 +140,40 @@ void UBaseQuest::UpdatePlayerQuest(APlayerCharacter* Player)
 		{
 			if (!Quest->IsCompleted())
 			{
-				Player->CurrentActiveQuest = Quest;
+				Player->SetActiveQuest(Quest);
 
 				break;
 			}
 		}
 	}
-
-	Player->OnQuestUpdated.Broadcast();
 }
 
-void UBaseQuest::SelectNextQuest(APlayerCharacter* Player, UBaseQuest* FollowUpQuest)
+void UBaseQuest::SelectNextQuest(APlayerCharacter* Player, TSubclassOf<UBaseQuest> FollowUpQuest)
 {
-	UBaseQuest* Prerequisite;
-
-	int32 PrerequisiteIndex;
-
-	for (auto& QuestClass : FollowUpQuest->PrerequisiteQuests)
+	for (TSubclassOf<UBaseQuest> PrerequisiteQuest : FollowUpQuest->GetDefaultObject<UBaseQuest>()->PrerequisiteQuests)
 	{
-		PrerequisiteIndex = -1;
+		UBaseQuest* PlayerQuest = Player->FindQuestByClass(PrerequisiteQuest);
 
-		// Don't check for this quest, we already know it exists and is completed.
-		if (QuestClass != this->GetClass())
+		// If a pre-requisite quest does not exist, need to give it to the player and make it the active one
+		if (PlayerQuest == nullptr)
 		{
-			Prerequisite = Cast<UBaseQuest>(QuestClass->GetDefaultObject());
+			LOG(LogTemp, "Granting quest");
+			Player->AddQuest(FollowUpQuest, true);
+			return;
+		}
 
-			// Try to find the prerequisite quest in the AllQuests array.
-			for (int32 i = 0; i < Player->AllQuests.Num(); i++)
-			{
-				if (Player->AllQuests[i]->GetClass() == QuestClass)
-				{
-					PrerequisiteIndex = i;
-
-					break;
-				}
-			}
-
-			// If the Prerequisite doesn't exist we need to add it
-			// and then just update the active quest for the Player.
-			if (PrerequisiteIndex == -1)
-			{
-				Player->AllQuests.Add(Prerequisite);
-
-				return this->UpdatePlayerQuest(Player);
-			}
-			// If the prerequisite exists but isn't completed, that is
-			// our next active quest. Signal to the UI and start the new quest.
-			if (!Player->AllQuests[PrerequisiteIndex]->IsCompleted())
-			{
-				Player->CurrentActiveQuest = Player->AllQuests[PrerequisiteIndex];
-				Player->OnQuestUpdated.Broadcast();
-
-				return;
-			}
+		// If the pre-requisite quest does exist but is not completed, mark it as active
+		if (!PlayerQuest->IsCompleted())
+		{
+			LOG(LogTemp, "Updating active quest");
+			Player->SetActiveQuest(PlayerQuest);
+			return;
 		}
 	}
 
-	// Everything above going through means that the only left
-	// possibility is to just continue to our desired next quest.
-	Player->AllQuests.Add(FollowUpQuest);
-	Player->CurrentActiveQuest = Player->AllQuests[Player->AllQuests.Num() - 1];
-
-	Player->OnQuestUpdated.Broadcast();
+	// If all pre-requisites are taken care of, grant the followup quest
+	LOG(LogTemp, "Granting followup");
+	Player->AddQuest(FollowUpQuest, true);
 }
 
 void UBaseQuest::OnQuestCompleted(APlayerCharacter* Player)
@@ -236,20 +209,13 @@ void UBaseQuest::OnQuestCompleted(APlayerCharacter* Player)
 	Player->PlayerInventory->CollectionObjectiveIndexes.Empty();
 	this->QuestType = EQuestType::Completed;
 
-	if (this->NextQuest != nullptr)
-	{
-		UBaseQuest* FollowUpQuest = Cast<UBaseQuest>(this->NextQuest->GetDefaultObject());
+	if (this->NextQuest == nullptr) { return; }
 
-		// Only this quest was a prerequisite for the next one.
-		// Means we can just go to it immediately.
-		if (FollowUpQuest->PrerequisiteQuests.Num() <= 1)
-		{
-			Player->AllQuests.Add(FollowUpQuest);
-			Player->CurrentActiveQuest = Player->AllQuests[Player->AllQuests.Num() - 1];
-			Player->OnQuestUpdated.Broadcast();
-		}
-		else { this->SelectNextQuest(Player, FollowUpQuest); }
-	}
+	UBaseQuest* FollowupQuest = this->NextQuest->GetDefaultObject<UBaseQuest>();
+	// Only this quest was a prerequisite for the next one.
+	// Means we can just go to it immediately.
+	if (FollowupQuest->PrerequisiteQuests.Num() <= 1) { Player->AddQuest(this->NextQuest, true); }
+	else { this->SelectNextQuest(Player, this->NextQuest); }
 }
 
 bool UBaseQuest::IsCompleted()

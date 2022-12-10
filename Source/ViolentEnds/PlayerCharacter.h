@@ -76,15 +76,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UEntityStats* PlayerStats;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
-	TSubclassOf<UBaseQuest> TestingQuest;
-
-	UPROPERTY(BlueprintReadWrite)
-	TArray<UBaseQuest*> AllQuests;
-
-	UPROPERTY(BlueprintReadWrite)
-	UBaseQuest* CurrentActiveQuest;
-
 	UPROPERTY(BlueprintReadWrite)
 	ABaseGun* Gun;
 
@@ -108,9 +99,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FAmmoUpdate OnAmmoUpdated;
-
-	UPROPERTY(BlueprintAssignable)
-	FQuestUpdate OnQuestUpdated;
 
 	void ReloadWeapon();
 
@@ -205,6 +193,39 @@ private:
 	FTimerHandle DashHandle;
 	FTimerHandle InvincibilityHandle;
 	FHitResult MouseHitResult;
+
+public: // Quest
+	/**
+	 * Add a quest to the player's quest list
+	 * @param QuestToAdd the quest class to instantiate
+	 * @param bSetActive if enabled, will also mark it as the active one
+	 */
+	void AddQuest(TSubclassOf<UBaseQuest> QuestToAdd, bool bSetActive = false);
+
+	/**
+	 * Update the currently active quest
+	 * @param NewActiveQuest pointer to the quest in AllQuests
+	 */
+	void SetActiveQuest(UBaseQuest* NewActiveQuest);
+
+	/**
+	 * Find a quest of the given class in AllQuests
+	 * @param QuestToFind class of quest to look for
+	 * @return pointer to the quest if found, nullptr otherwise
+	 */
+	UBaseQuest* FindQuestByClass(TSubclassOf<UBaseQuest> QuestToFind);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	TSubclassOf<UBaseQuest> TestingQuest;
+
+	UPROPERTY(BlueprintReadWrite)
+	TArray<UBaseQuest*> AllQuests;
+
+	UPROPERTY(BlueprintReadWrite)
+	UBaseQuest* CurrentActiveQuest;
+
+	UPROPERTY(BlueprintAssignable)
+	FQuestUpdate OnQuestUpdated;
 
 protected: // Movement Config
 	/* Speed (in Unreal units/second) the character runs at */
