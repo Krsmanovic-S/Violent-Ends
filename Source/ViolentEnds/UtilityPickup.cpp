@@ -1,11 +1,11 @@
 #include "UtilityPickup.h"
+
+#include "BaseAmmo.h"
 #include "Components/StaticMeshComponent.h"
-#include "PlayerCharacter.h"
 #include "EntityStats.h"
 #include "InventoryComponent.h"
-#include "BaseAmmo.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "PlayerCharacter.h"
 
 AUtilityPickup::AUtilityPickup()
 {
@@ -21,7 +21,7 @@ void AUtilityPickup::BeginPlay()
 
 	this->PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
-	if(this->PlayerReference == nullptr)
+	if (this->PlayerReference == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player ref not set for UtilityPickup."));
 		this->Destroy();
@@ -32,14 +32,14 @@ void AUtilityPickup::BeginPlay()
 
 void AUtilityPickup::InitializeUtilityMesh()
 {
-	if(this->UtilityPossibleMeshes.Num() < 3) 
+	if (this->UtilityPossibleMeshes.Num() < 3)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Not all possible meshes set for Utility Actor"));
 		return;
 	}
 
 	// Initialize the static mesh based on pickup type.
-	switch(this->Type)
+	switch (this->Type)
 	{
 		case EUtilityType::Health:
 			this->UtilityActorMesh->SetStaticMesh(this->UtilityPossibleMeshes[0]);
@@ -61,15 +61,18 @@ EUtilityType AUtilityPickup::RandomizePickupType()
 	TArray<uint8> AllTickets;
 	uint8 TicketInteger = 0;
 
-	for(auto& MapValue : this->TicketMap)
+	for (auto& MapValue : this->TicketMap)
 	{
 		// Add this ticket as many times as the map specifies
 		// and then change the ticket (just increment is fine).
-		for(int32 i = 0; i < MapValue.Value; i++) { AllTickets.Add(TicketInteger); }
+		for (int32 i = 0; i < MapValue.Value; i++)
+		{
+			AllTickets.Add(TicketInteger);
+		}
 		TicketInteger++;
 	}
 
-	if(AllTickets.Num() == 0)
+	if (AllTickets.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UtilityPickup RandomizePickupType() method error."));
 		return EUtilityType::None;
@@ -78,14 +81,20 @@ EUtilityType AUtilityPickup::RandomizePickupType()
 	// Pick one of the tickets at random from the above array.
 	int32 RandomNumber = AllTickets[FMath::RandRange(0, AllTickets.Num() - 1)];
 
-	switch(RandomNumber)
+	switch (RandomNumber)
 	{
-		case 0: return EUtilityType::Health; 
-		case 1: return EUtilityType::Stamina; 
-		case 2: return EUtilityType::StandardAmmo;
-		case 3: return EUtilityType::BurstAmmo; 
-		case 4: return EUtilityType::ShotgunAmmo;
-		case 5: return EUtilityType::SniperAmmo;
+		case 0:
+			return EUtilityType::Health;
+		case 1:
+			return EUtilityType::Stamina;
+		case 2:
+			return EUtilityType::StandardAmmo;
+		case 3:
+			return EUtilityType::BurstAmmo;
+		case 4:
+			return EUtilityType::ShotgunAmmo;
+		case 5:
+			return EUtilityType::SniperAmmo;
 	}
 	return EUtilityType::None;
 }
@@ -95,9 +104,9 @@ void AUtilityPickup::ReplenishAmmo()
 	float IncreaseAmount = 0;
 	UBaseAmmo* AmmoItem;
 
-	switch(this->Type)
+	switch (this->Type)
 	{
-		case EUtilityType::StandardAmmo: 
+		case EUtilityType::StandardAmmo:
 			AmmoItem = this->PlayerReference->PlayerInventory->AmmoInventory[0];
 			IncreaseAmount = AmmoItem->ItemMaxStack * (this->StandardAmmoAmount / 100);
 
@@ -124,24 +133,22 @@ void AUtilityPickup::ReplenishAmmo()
 
 	int32 IntegerIncrease = FMath::RoundToInt(IncreaseAmount);
 
-	if(AmmoItem->ItemCurrentStack + IntegerIncrease > AmmoItem->ItemMaxStack)
+	if (AmmoItem->ItemCurrentStack + IntegerIncrease > AmmoItem->ItemMaxStack)
 	{
 		AmmoItem->ItemCurrentStack = AmmoItem->ItemMaxStack;
 	}
-	else
-	{
-		AmmoItem->ItemCurrentStack += IntegerIncrease;
-	}
+	else { AmmoItem->ItemCurrentStack += IntegerIncrease; }
 }
 
-void AUtilityPickup::OnUtilityOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AUtilityPickup::OnUtilityOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Only execute further if we overlapped the Player.
-	if(!OtherActor->IsA<APlayerCharacter>()) { return; }
+	if (!OtherActor->IsA<APlayerCharacter>()) { return; }
 
 	float IncreaseAmount = 0;
 
-	switch(this->Type)
+	switch (this->Type)
 	{
 		case EUtilityType::Health:
 			IncreaseAmount = this->PlayerReference->PlayerStats->MaximumHealth * (this->HealthReplenish / 100);
@@ -155,7 +162,7 @@ void AUtilityPickup::OnUtilityOverlap(UPrimitiveComponent* OverlappedComp, AActo
 			break;
 		default:
 			this->ReplenishAmmo();
-			break;		
+			break;
 	}
 	this->Destroy();
 }

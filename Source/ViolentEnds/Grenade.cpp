@@ -1,11 +1,11 @@
 #include "Grenade.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/SphereComponent.h"
-#include "TimerManager.h"
-#include "EntityStats.h"
-#include "BaseCustomDamageType.h"
-#include "Kismet/GameplayStatics.h"
 
+#include "BaseCustomDamageType.h"
+#include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "EntityStats.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 AGrenade::AGrenade()
 {
@@ -14,7 +14,7 @@ AGrenade::AGrenade()
 	this->DamageSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Damage Sphere"));
 	RootComponent = this->DamageSphere;
 
-	this->GrenadeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Grenade Mesh"));	
+	this->GrenadeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Grenade Mesh"));
 	this->GrenadeMesh->SetupAttachment(this->DamageSphere);
 }
 
@@ -22,7 +22,7 @@ void AGrenade::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(!this->GrenadeDamageType)
+	if (!this->GrenadeDamageType)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Damage Type Class for Grenades is not set."));
 		return;
@@ -30,10 +30,10 @@ void AGrenade::BeginPlay()
 
 	FTimerHandle ExplodeHandle;
 	// Set the delay after which the grenade will explode.
-	GetWorldTimerManager().SetTimer(ExplodeHandle, this, &AGrenade::Explode, FuseLength, false);
+	GetWorldTimerManager().SetTimer(ExplodeHandle, this, &AGrenade::GrenadeExplode, FuseLength, false);
 }
 
-void AGrenade::Explode()
+void AGrenade::GrenadeExplode()
 {
 	TArray<AActor*> OverlappingActors;
 
@@ -44,24 +44,24 @@ void AGrenade::Explode()
 	this->SetCanBeDamaged(false);
 
 	// For the enemies we do a for loop and apply the damage to all of them.
-	for(AActor* Actor : OverlappingActors)
+	for (AActor* Actor : OverlappingActors)
 	{
-		if(Actor->CanBeDamaged())
+		if (Actor->CanBeDamaged())
 		{
-			if(Actor->FindComponentByClass<UEntityStats>())
+			if (Actor->FindComponentByClass<UEntityStats>())
 			{
 				DamageToInflict = this->GrenadeDamageType.GetDefaultObject()->ReturnDamageAmount(
-								Actor->FindComponentByClass<UEntityStats>(), this->GrenadeDamage);
+					Actor->FindComponentByClass<UEntityStats>(), this->GrenadeDamage);
 			}
 			Actor->TakeDamage(DamageToInflict, DamageEvent, NULL, this);
 		}
 	}
 
-	if(this->GrenadeExplosionEffect)
+	if (this->GrenadeExplosionEffect)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), this->GrenadeExplosionEffect, this->GetActorTransform(), true);
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(), this->GrenadeExplosionEffect, this->GetActorTransform(), true);
 	}
 
 	this->Destroy();
 }
-

@@ -1,13 +1,13 @@
 #include "InventoryComponent.h"
-#include "BaseItem.h"
-#include "EntityStats.h"
-#include "PlayerCharacter.h"
-#include "BaseGun.h"
-#include "BaseWeapon.h"
-#include "BaseAmmo.h"
-#include "BaseQuest.h"
-#include "Kismet/GameplayStatics.h"
 
+#include "BaseAmmo.h"
+#include "BaseGun.h"
+#include "BaseItem.h"
+#include "BaseQuest.h"
+#include "BaseWeapon.h"
+#include "EntityStats.h"
+#include "Kismet/GameplayStatics.h"
+#include "PlayerCharacter.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -25,13 +25,10 @@ void UInventoryComponent::BeginPlay()
 	this->InventoryMaxCapacity = 27;
 	this->CurrentItems.Init(NULL, this->InventoryMaxCapacity);
 
-	for(auto& StartingItem : DefaultItems)
+	for (auto& StartingItem : DefaultItems)
 	{
-		if(StartingItem)
-		{
-			AddItem(StartingItem);
-		}
-	}	
+		if (StartingItem) { AddItem(StartingItem); }
+	}
 
 	// Base slots = 20
 	// Weapon - index 20
@@ -54,43 +51,43 @@ void UInventoryComponent::BeginPlay()
 
 bool UInventoryComponent::AddItem(UBaseItem* Item)
 {
-	if(!Item)
+	if (!Item)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item is NULL."));
 		return false;
 	}
 
-	if(Item->IsA<UBaseAmmo>()) { return this->AddAmmo(Item); }
+	if (Item->IsA<UBaseAmmo>()) { return this->AddAmmo(Item); }
 
-	if(InventoryCurrentCapacity == InventoryMaxCapacity &&
-	   CurrentItems[InventoryMaxCapacity - 8]->ItemCurrentStack ==
-	   CurrentItems[InventoryMaxCapacity - 8]->ItemMaxStack	)
+	if (InventoryCurrentCapacity == InventoryMaxCapacity
+		&& CurrentItems[InventoryMaxCapacity - 8]->ItemCurrentStack
+			   == CurrentItems[InventoryMaxCapacity - 8]->ItemMaxStack)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Inventory is full."));
-		return false;		
+		this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Inventory is full.")));
+		return false;
 	}
-	
-	// Increasing an items stack if the same type of item is 
+
+	// Increasing an items stack if the same type of item is
 	// already there, this can only be done in the base slots.
 	// Equipment cannot be stacked anyways so just pass on it.
-	if(!Item->bIsEquipment)
+	if (!Item->bIsEquipment)
 	{
-		for(int i = 0; i < this->BasicSlotAmount; i++)
+		for (int i = 0; i < this->BasicSlotAmount; i++)
 		{
-			if(this->CurrentItems[i] != NULL &&
-			this->CurrentItems[i]->GetClass() == Item->GetClass() &&
-			this->CurrentItems[i]->ItemCurrentStack < this->CurrentItems[i]->ItemMaxStack)
+			if (this->CurrentItems[i] != NULL && this->CurrentItems[i]->GetClass() == Item->GetClass()
+				&& this->CurrentItems[i]->ItemCurrentStack < this->CurrentItems[i]->ItemMaxStack)
 			{
 				this->CurrentItems[i]->ItemCurrentStack++;
 
-				if(this->bItemRelevantToObjective)
+				if (this->bItemRelevantToObjective)
 				{
-					this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
+					this->RelevantQuest->UpdateObjective(
+						this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
 				}
 
 				OnInventoryUpdated.Broadcast();
 				return true;
-			}		
+			}
 		}
 	}
 
@@ -104,9 +101,9 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 
 	// If we can auto equip something we should just
 	// do it here and immidiatelly return true.
-	if(this->AutoEquipItem(CopyItem))
+	if (this->AutoEquipItem(CopyItem))
 	{
-		if(this->bItemRelevantToObjective)
+		if (this->bItemRelevantToObjective)
 		{
 			this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
 		}
@@ -114,17 +111,18 @@ bool UInventoryComponent::AddItem(UBaseItem* Item)
 	}
 
 	// Adds a new item into the inventory.
-	for(int i = 0; i < this->BasicSlotAmount; i++)
+	for (int i = 0; i < this->BasicSlotAmount; i++)
 	{
-		if(this->CurrentItems[i] == NULL)
+		if (this->CurrentItems[i] == NULL)
 		{
 			this->CurrentItems[i] = CopyItem;
 			this->CurrentItems[i]->ItemSlotIndex = i;
 			this->InventoryCurrentCapacity++;
 
-			if(this->bItemRelevantToObjective)
+			if (this->bItemRelevantToObjective)
 			{
-				this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
+				this->RelevantQuest->UpdateObjective(
+					this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], true);
 			}
 
 			OnInventoryUpdated.Broadcast();
@@ -139,70 +137,60 @@ bool UInventoryComponent::AddAmmo(UBaseItem* InputAmmo)
 {
 	UBaseAmmo* Input = Cast<UBaseAmmo>(InputAmmo);
 
-	switch(Input->AmmoFireStyle)
+	switch (Input->AmmoFireStyle)
 	{
 		case EFiringStyle::Standard:
-			if(this->AmmoInventory[0]->ItemCurrentStack < this->AmmoInventory[0]->ItemMaxStack)
+			if (this->AmmoInventory[0]->ItemCurrentStack < this->AmmoInventory[0]->ItemMaxStack)
 			{
 				this->AmmoInventory[0]->ItemCurrentStack++;
 
-				if(this->PlayerReference->Gun != NULL)
-				{
-					this->PlayerReference->Gun->UpdateAmmo();
-				}
+				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
+			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Standard Ammo Maxed Out."))); }
 			break;
 		case EFiringStyle::Burst:
-			if(this->AmmoInventory[1]->ItemCurrentStack < this->AmmoInventory[1]->ItemMaxStack)
+			if (this->AmmoInventory[1]->ItemCurrentStack < this->AmmoInventory[1]->ItemMaxStack)
 			{
 				this->AmmoInventory[1]->ItemCurrentStack++;
 
-				if(this->PlayerReference->Gun != NULL)
-				{
-					this->PlayerReference->Gun->UpdateAmmo();
-				}
+				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
+			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Burst Ammo Maxed Out."))); }
 			break;
 		case EFiringStyle::Shotgun:
-			if(this->AmmoInventory[2]->ItemCurrentStack < this->AmmoInventory[2]->ItemMaxStack)
+			if (this->AmmoInventory[2]->ItemCurrentStack < this->AmmoInventory[2]->ItemMaxStack)
 			{
 				this->AmmoInventory[2]->ItemCurrentStack++;
 
-				if(this->PlayerReference->Gun != NULL)
-				{
-					this->PlayerReference->Gun->UpdateAmmo();
-				}
+				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
+			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Shotgun Ammo Maxed Out."))); }
 			break;
 		case EFiringStyle::Sniper:
-			if(this->AmmoInventory[3]->ItemCurrentStack < this->AmmoInventory[3]->ItemMaxStack)
+			if (this->AmmoInventory[3]->ItemCurrentStack < this->AmmoInventory[3]->ItemMaxStack)
 			{
 				this->AmmoInventory[3]->ItemCurrentStack++;
 
-				if(this->PlayerReference->Gun != NULL)
-				{
-					this->PlayerReference->Gun->UpdateAmmo();
-				}
+				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
+			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Sniper Ammo Maxed Out."))); }
 			break;
 		default:
 			UE_LOG(LogTemp, Warning, TEXT("Ammo type wasn't recognized."));
 			break;
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Input ammo is at max stack, cannot add more."));
 	return false;
 }
 
 int32 UInventoryComponent::GetAmmoStackSize(int32 ArrayIndex) const
 {
-	// This is used by the AmmoDisplay widget to get  
+	// This is used by the AmmoDisplay widget to get
 	// the stack size of each individual ammo.
-	if(ArrayIndex > this->AmmoInventory.Num() - 1)
+	if (ArrayIndex > this->AmmoInventory.Num() - 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Tried to access AmmoInventory out of bounds."));
 		return 0;
@@ -213,43 +201,43 @@ int32 UInventoryComponent::GetAmmoStackSize(int32 ArrayIndex) const
 
 bool UInventoryComponent::AutoEquipItem(UBaseItem* Item)
 {
-	switch(Item->Type)
+	switch (Item->Type)
 	{
 		case EItemType::Weapon:
-			if(!this->CurrentItems[this->WeaponSlotIndex])
+			if (!this->CurrentItems[this->WeaponSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->WeaponSlotIndex);
 			}
-			break;	
+			break;
 		case EItemType::Helmet:
-			if(!this->CurrentItems[this->HelmetSlotIndex])
+			if (!this->CurrentItems[this->HelmetSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->HelmetSlotIndex);
 			}
 			break;
 		case EItemType::BodyArmor:
-			if(!this->CurrentItems[this->BodyArmorSlotIndex])
+			if (!this->CurrentItems[this->BodyArmorSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->BodyArmorSlotIndex);
 			}
 			break;
 		case EItemType::Legs:
-			if(!this->CurrentItems[this->LegsSlotIndex])
+			if (!this->CurrentItems[this->LegsSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->LegsSlotIndex);
-			}	
+			}
 			break;
 		case EItemType::Boots:
-			if(!this->CurrentItems[this->BootsSlotIndex])
+			if (!this->CurrentItems[this->BootsSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->BootsSlotIndex);
-			}	
+			}
 			break;
 		case EItemType::Arms:
-			if(!this->CurrentItems[this->ArmsSlotIndex])
+			if (!this->CurrentItems[this->ArmsSlotIndex])
 			{
 				return this->MoveItemToEmptySlot(Item, this->ArmsSlotIndex);
-			}	
+			}
 			break;
 		default:
 			UE_LOG(LogTemp, Warning, TEXT("Item Type Not Recognized."));
@@ -264,29 +252,27 @@ bool UInventoryComponent::RemoveItem(const int32& ItemIndex, bool DropItem)
 
 	// Function for removing items from the inventory, DropItem bool
 	// determines do we want to entire drop the entire item stack.
-	if(this->CurrentItems[ItemIndex])
+	if (this->CurrentItems[ItemIndex])
 	{
-		if(this->CurrentItems[ItemIndex]->ItemCurrentStack == 1 || DropItem)
+		if (this->CurrentItems[ItemIndex]->ItemCurrentStack == 1 || DropItem)
 		{
 			// Handle dropping of equipped items.
-			if(ItemIndex >= this->BasicSlotAmount)
+			if (ItemIndex >= this->BasicSlotAmount)
 			{
 				this->ApplyEquippedItemStats(this->CurrentItems[ItemIndex], true);
 			}
 
 			// Unequip the weapon if we dropped it.
-			if(ItemIndex == this->WeaponSlotIndex)
-			{
-				this->InteractionWithWeaponSlot(ItemIndex, 0);
-			}
+			if (ItemIndex == this->WeaponSlotIndex) { this->InteractionWithWeaponSlot(ItemIndex, 0); }
 
 			// Dropping the entire item will decrease objective progress
 			// more than once. Depends on the items current stack.
-			if(this->bItemRelevantToObjective)
+			if (this->bItemRelevantToObjective)
 			{
-				for(int i = 0; i < this->CurrentItems[ItemIndex]->ItemCurrentStack; i++)
+				for (int i = 0; i < this->CurrentItems[ItemIndex]->ItemCurrentStack; i++)
 				{
-					this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], false);
+					this->RelevantQuest->UpdateObjective(
+						this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], false);
 				}
 			}
 
@@ -299,9 +285,10 @@ bool UInventoryComponent::RemoveItem(const int32& ItemIndex, bool DropItem)
 		{
 			this->CurrentItems[ItemIndex]->ItemCurrentStack -= 1;
 
-			if(this->bItemRelevantToObjective)
+			if (this->bItemRelevantToObjective)
 			{
-				this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], false);
+				this->RelevantQuest->UpdateObjective(
+					this->RelevantQuest->Objectives[this->RelevantObjectiveIndex], false);
 			}
 		}
 
@@ -314,9 +301,9 @@ bool UInventoryComponent::RemoveItem(const int32& ItemIndex, bool DropItem)
 
 bool UInventoryComponent::MoveItemToEmptySlot(UBaseItem* Item, const int32& IndexToMoveTo)
 {
-	// Function for when we take an item and drop it to 
+	// Function for when we take an item and drop it to
 	// another slot in the inventory that is empty.
-	if(Item == NULL || IndexToMoveTo > this->InventoryMaxCapacity)
+	if (Item == NULL || IndexToMoveTo > this->InventoryMaxCapacity)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("MoveItemToEmptySlot Function Error."));
 		return false;
@@ -326,9 +313,9 @@ bool UInventoryComponent::MoveItemToEmptySlot(UBaseItem* Item, const int32& Inde
 
 	this->CurrentItems[IndexToMoveTo] = Item;
 
-	// Slot index can be -1 if we are using the auto equip 
+	// Slot index can be -1 if we are using the auto equip
 	// method, that is why we need this check here.
-	if(FromWhereIndex != -1)
+	if (FromWhereIndex != -1)
 	{
 		this->CurrentItems[Item->ItemSlotIndex]->OwningInventory = nullptr;
 		this->CurrentItems[Item->ItemSlotIndex]->World = nullptr;
@@ -336,20 +323,14 @@ bool UInventoryComponent::MoveItemToEmptySlot(UBaseItem* Item, const int32& Inde
 	}
 
 	// We interacted with the Weapon slot.
-	if(FromWhereIndex == this->WeaponSlotIndex || IndexToMoveTo == this->WeaponSlotIndex)
+	if (FromWhereIndex == this->WeaponSlotIndex || IndexToMoveTo == this->WeaponSlotIndex)
 	{
 		this->InteractionWithWeaponSlot(FromWhereIndex, IndexToMoveTo);
 	}
 
 	// Handle whenever we equip or de-equip an item in a slot.
-	if(IndexToMoveTo >= this->BasicSlotAmount)
-	{
-		this->ApplyEquippedItemStats(Item);
-	}
-	else if(FromWhereIndex >= this->BasicSlotAmount)
-	{
-		this->ApplyEquippedItemStats(Item, true);
-	}
+	if (IndexToMoveTo >= this->BasicSlotAmount) { this->ApplyEquippedItemStats(Item); }
+	else if (FromWhereIndex >= this->BasicSlotAmount) { this->ApplyEquippedItemStats(Item, true); }
 
 	OnInventoryUpdated.Broadcast();
 
@@ -360,7 +341,7 @@ bool UInventoryComponent::SwapItems(UBaseItem* Item, const int32& ToWhereIndex)
 {
 	// Function for when we take an item and drop it onto another
 	// and we want them to swap places in the inventory.
-	if(!this->CurrentItems[Item->ItemSlotIndex])
+	if (!this->CurrentItems[Item->ItemSlotIndex])
 	{
 		UE_LOG(LogTemp, Warning, TEXT("First item doesn't exist."));
 		return false;
@@ -371,13 +352,10 @@ bool UInventoryComponent::SwapItems(UBaseItem* Item, const int32& ToWhereIndex)
 	this->CurrentItems[Item->ItemSlotIndex] = this->CurrentItems[ToWhereIndex];
 	this->CurrentItems[ToWhereIndex] = Item;
 
-	if(ToWhereIndex == this->WeaponSlotIndex)
-	{
-		this->InteractionWithWeaponSlot(FromWhereIndex, ToWhereIndex, true);
-	}
+	if (ToWhereIndex == this->WeaponSlotIndex) { this->InteractionWithWeaponSlot(FromWhereIndex, ToWhereIndex, true); }
 
 	// Handle the swapping of equipped items.
-	if(FromWhereIndex >= this->BasicSlotAmount)
+	if (FromWhereIndex >= this->BasicSlotAmount)
 	{
 		this->ApplyEquippedItemStats(this->CurrentItems[FromWhereIndex]);
 
@@ -392,26 +370,23 @@ bool UInventoryComponent::SwapItems(UBaseItem* Item, const int32& ToWhereIndex)
 bool UInventoryComponent::MergeItems(const int32& WhereToMerge, class UBaseItem* Item)
 {
 	// Function for when we drop an item onto a same type item.
-	if(!this->CurrentItems[WhereToMerge] || Item == NULL)
+	if (!this->CurrentItems[WhereToMerge] || Item == NULL)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("MergeItems Function Error."));
-		return false;		
+		return false;
 	}
 
 	int32 FromWhereMerge = Item->ItemSlotIndex;
 
-	while(this->CurrentItems[WhereToMerge]->ItemCurrentStack < this->CurrentItems[WhereToMerge]->ItemMaxStack 
-	      && Item->ItemCurrentStack != 0)
+	while (this->CurrentItems[WhereToMerge]->ItemCurrentStack < this->CurrentItems[WhereToMerge]->ItemMaxStack
+		   && Item->ItemCurrentStack != 0)
 	{
 		this->CurrentItems[WhereToMerge]->ItemCurrentStack++;
 		Item->ItemCurrentStack--;
 	}
 
-	if(Item->ItemCurrentStack == 0)
-	{
-		this->RemoveItem(Item->ItemSlotIndex, true);
-	}
-	
+	if (Item->ItemCurrentStack == 0) { this->RemoveItem(Item->ItemSlotIndex, true); }
+
 	OnInventoryUpdated.Broadcast();
 
 	return true;
@@ -421,7 +396,7 @@ bool UInventoryComponent::SplitItemStack(UBaseItem* Item, const int32& SlotToSpl
 {
 	// Function for spliting an item stack from one slot
 	// to another, uses an UMG to set the amount to split.
-	if(Item == NULL)
+	if (Item == NULL)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SplitItemStack Function Error."));
 		return false;
@@ -437,9 +412,9 @@ bool UInventoryComponent::SplitItemStack(UBaseItem* Item, const int32& SlotToSpl
 
 	this->CurrentItems[SlotToSplitTo] = CopyItem;
 
-	if(AmountToSplit == 0)
+	if (AmountToSplit == 0)
 	{
-		if(StackAmount % 2 != 0)
+		if (StackAmount % 2 != 0)
 		{
 			Item->ItemCurrentStack = (StackAmount + 1) / 2;
 
@@ -466,12 +441,9 @@ bool UInventoryComponent::SplitItemStack(UBaseItem* Item, const int32& SlotToSpl
 
 bool UInventoryComponent::UnequipItem(UBaseItem* Item)
 {
-	for(int i = 0; i < this->BasicSlotAmount; i++)
+	for (int i = 0; i < this->BasicSlotAmount; i++)
 	{
-		if(this->CurrentItems[i] == NULL)
-		{
-			return this->MoveItemToEmptySlot(Item, i);
-		}
+		if (this->CurrentItems[i] == NULL) { return this->MoveItemToEmptySlot(Item, i); }
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("No free slots available."));
@@ -484,11 +456,11 @@ void UInventoryComponent::ApplyEquippedItemStats(UBaseItem* Item, bool RemoveSta
 	// Handles applying/de-applying stats in case of equipping/de-equipping.
 	auto& Entity = this->PlayerReference->PlayerStats;
 
-	if(Item != NULL)
+	if (Item != NULL)
 	{
-		if(!RemoveStats)
+		if (!RemoveStats)
 		{
-			if(Item->ItemStats.ItemAddHealth)
+			if (Item->ItemStats.ItemAddHealth)
 			{
 				Entity->SetMaximumHealth(Entity->MaximumHealth + Item->ItemStats.ItemAddHealth);
 			}
@@ -496,7 +468,7 @@ void UInventoryComponent::ApplyEquippedItemStats(UBaseItem* Item, bool RemoveSta
 
 			Entity->MaximumStamina += Item->ItemStats.ItemAddStamina;
 			Entity->StaminaRegenerationAmount += Item->ItemStats.ItemStaminaRegen;
-		
+
 			Entity->ArmorValue += Item->ItemStats.ItemArmor;
 			Entity->FireResistance += Item->ItemStats.ItemFireResist;
 
@@ -507,58 +479,54 @@ void UInventoryComponent::ApplyEquippedItemStats(UBaseItem* Item, bool RemoveSta
 		}
 		else
 		{
-			if(Item->ItemStats.ItemAddHealth)
+			if (Item->ItemStats.ItemAddHealth)
 			{
 				Entity->SetMaximumHealth(FMath::Max(Entity->MaximumHealth - Item->ItemStats.ItemAddHealth, 0));
 			}
-			Entity->HealthRegenerationAmount = FMath::Max(Entity->HealthRegenerationAmount - Item->ItemStats.ItemHealthRegen, 0);
-			
+			Entity->HealthRegenerationAmount =
+				FMath::Max(Entity->HealthRegenerationAmount - Item->ItemStats.ItemHealthRegen, 0);
+
 			Entity->ArmorValue = FMath::Max(Entity->ArmorValue - Item->ItemStats.ItemArmor, 0);
 			Entity->FireResistance = FMath::Max(Entity->FireResistance - Item->ItemStats.ItemFireResist, 0);
-			
+
 			Entity->MaximumStamina = FMath::Max(Entity->MaximumStamina - Item->ItemStats.ItemAddStamina, 0);
-			Entity->StaminaRegenerationAmount = FMath::Max(Entity->StaminaRegenerationAmount - Item->ItemStats.ItemStaminaRegen, 0);
+			Entity->StaminaRegenerationAmount =
+				FMath::Max(Entity->StaminaRegenerationAmount - Item->ItemStats.ItemStaminaRegen, 0);
 
 			Entity->GlobalDamageBonus = FMath::Max(Entity->GlobalDamageBonus - Item->ItemStats.ItemDamage, 0);
 			Entity->FireDamageBonus = FMath::Max(Entity->FireDamageBonus - Item->ItemStats.ItemFireDamage, 0);
 			Entity->CriticalHitChance = FMath::Max(Entity->CriticalHitChance - Item->ItemStats.ItemCriticalChance, 0);
-			Entity->CriticalHitDamageMultiplier = FMath::Max(Entity->CriticalHitDamageMultiplier - Item->ItemStats.ItemCriticalDamage, 0);
+			Entity->CriticalHitDamageMultiplier =
+				FMath::Max(Entity->CriticalHitDamageMultiplier - Item->ItemStats.ItemCriticalDamage, 0);
 		}
 
 		this->OnStatsUpdated.Broadcast();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NULL Item passed in ApplyEquippedItemStats()."));
-	}
+	else { UE_LOG(LogTemp, Warning, TEXT("NULL Item passed in ApplyEquippedItemStats().")); }
 }
 
-void UInventoryComponent::InteractionWithWeaponSlot(const int32& FromWhereIndex, const int32& ToWhereIndex, const bool bSwapping)
+void UInventoryComponent::InteractionWithWeaponSlot(
+	const int32& FromWhereIndex, const int32& ToWhereIndex, const bool bSwapping)
 {
 	// We took a gun and unequiped it.
-	if(FromWhereIndex == this->WeaponSlotIndex || bSwapping)
-	{
-		this->PlayerReference->UnequipWeapon();
-	}
+	if (FromWhereIndex == this->WeaponSlotIndex || bSwapping) { this->PlayerReference->UnequipWeapon(); }
 
 	// We equipped a gun.
-	if(ToWhereIndex == this->WeaponSlotIndex)
-	{
-		this->PlayerReference->EquipWeapon();
-	}
+	if (ToWhereIndex == this->WeaponSlotIndex) { this->PlayerReference->EquipWeapon(); }
 }
 
 void UInventoryComponent::IsItemRelevantToAnObjective(const UBaseItem* ItemToCheck)
 {
-	if(this->RelevantQuest != NULL)
+	if (this->RelevantQuest != NULL)
 	{
 		UBaseItem* ObjectiveItem;
 
-		for(int32 ObjectiveIndex : this->CollectionObjectiveIndexes)
+		for (int32 ObjectiveIndex : this->CollectionObjectiveIndexes)
 		{
-			ObjectiveItem = Cast<UBaseItem>(this->RelevantQuest->Objectives[ObjectiveIndex].ItemToCollect->GetDefaultObject());
+			ObjectiveItem =
+				Cast<UBaseItem>(this->RelevantQuest->Objectives[ObjectiveIndex].ItemToCollect->GetDefaultObject());
 
-			if(ItemToCheck->ItemDisplayName.ToString().Equals(ObjectiveItem->ItemDisplayName.ToString()))
+			if (ItemToCheck->ItemDisplayName.ToString().Equals(ObjectiveItem->ItemDisplayName.ToString()))
 			{
 				this->bItemRelevantToObjective = true;
 

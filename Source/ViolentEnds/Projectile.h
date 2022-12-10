@@ -1,9 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Projectile.generated.h"
 
+#include "GameFramework/Actor.h"
+
+#include "Projectile.generated.h"
 
 class ABaseGun;
 class UProjectileMovementComponent;
@@ -12,26 +13,22 @@ UCLASS()
 class VIOLENTENDS_API AProjectile : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
 
+public:
 	AProjectile();
 
-protected:
+	friend class ABaseGun;
 
+protected:
 	virtual void BeginPlay() override;
 
-public:	
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UProjectileMovementComponent* ProjectileMovementComponent;
+	UFUNCTION()
+	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
 
 private:
-
-	UFUNCTION()
-	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
-
-	void DestroyProjectileAtMaxRange();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* ProjectileMesh;

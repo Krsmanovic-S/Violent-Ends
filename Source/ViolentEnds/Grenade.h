@@ -1,9 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Grenade.generated.h"
 
+#include "GameFramework/Actor.h"
+
+#include "Grenade.generated.h"
 
 class UStaticMeshComponent;
 class USphereComponent;
@@ -14,28 +15,30 @@ UCLASS()
 class VIOLENTENDS_API AGrenade : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AGrenade();
 
 protected:
 	virtual void BeginPlay() override;
 
+	/* Deals damage to any overlapping actor inside the damage radius */
+	void GrenadeExplode();
+
 public:
-
-	void Explode();
-
-	UPROPERTY(VisibleAnywhere, Category = "Grenade")
+	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* GrenadeMesh;
 
 private:
-
-	UPROPERTY(VisibleAnywhere, Category = "Grenade")
+	/* Radius in which actors will get damaged by the grenade */
+	UPROPERTY(VisibleAnywhere)
 	USphereComponent* DamageSphere;
 
+	/* Time in seconds after which the grenade will explode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
 	float FuseLength = 2.f;
 
+	/* What type of damage will the grenade do upon explosion */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade", meta = (AllowPrivateAccess = true))
 	TSubclassOf<UBaseCustomDamageType> GrenadeDamageType;
 

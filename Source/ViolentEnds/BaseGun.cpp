@@ -1,20 +1,19 @@
 #include "BaseGun.h"
+
+#include "BaseAmmo.h"
+#include "BaseCustomDamageType.h"
+#include "BaseEnemy.h"
+#include "BaseItem.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "TimerManager.h"
-#include "Kismet/GameplayStatics.h"
 #include "EntityStats.h"
+#include "FiringStyle.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "InventoryComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
 #include "Projectile.h"
-#include "BaseCustomDamageType.h"
-#include "InventoryComponent.h"
-#include "BaseItem.h"
-#include "BaseAmmo.h"
-#include "FiringStyle.h"
-#include "GameFramework/ProjectileMovementComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "BaseEnemy.h"
-#include "Kismet/GameplayStatics.h"
-
+#include "TimerManager.h"
 
 ABaseGun::ABaseGun()
 {
@@ -34,11 +33,11 @@ void ABaseGun::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(GetOwner()->IsA<APlayerCharacter>())
+	if (GetOwner()->IsA<APlayerCharacter>())
 	{
 		this->OwningPlayer = Cast<APlayerCharacter>(GetOwner());
 
-		this->InitializeGunProperties();
+		this->InitializeGunDamage();
 	}
 	// Aside from the Player, only enemies so far can carry guns.
 	else
@@ -53,38 +52,23 @@ void ABaseGun::BeginPlay()
 	}
 }
 
-void ABaseGun::InitializeGunProperties()
-{
-	int32 WeaponIndex = this->OwningPlayer->PlayerInventory->WeaponSlotIndex;
-	auto* WeaponItem = this->OwningPlayer->PlayerInventory->CurrentItems[WeaponIndex];
-
-	this->GunDamageTypes = WeaponItem->ItemStats.ItemDamageTypes;
-}
-
 void ABaseGun::FireOneBullet(FVector ProjectileDirection)
 {
-	if(GetOwner()->IsA<APlayerCharacter>() && this->CurrentAmmo == 0)
-	{
-		return;
-	}
+	if (GetOwner()->IsA<APlayerCharacter>() && this->CurrentAmmo == 0) { return; }
 
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = this;
 
-	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(
-		ProjectileClass,
-		ProjectileSpawnPoint->GetComponentLocation(),
-		ProjectileSpawnPoint->GetComponentRotation(),
-		SpawnParameters
-	);
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass,
+		ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation(), SpawnParameters);
 
-	if(Projectile)
+	if (Projectile)
 	{
 		Projectile->SetLifeSpan(this->MaximumRange / ProjectileDirection.X);
 		Projectile->ProjectileMovementComponent->SetVelocityInLocalSpace(ProjectileDirection);
 	}
 
-	if(!GetOwner()->IsA<ABaseEnemy>())
+	if (!GetOwner()->IsA<ABaseEnemy>())
 	{
 		this->CurrentAmmo--;
 		this->HeldAmmo->ItemCurrentStack--;
@@ -94,23 +78,17 @@ void ABaseGun::FireOneBullet(FVector ProjectileDirection)
 void ABaseGun::FireBurst()
 {
 	this->FireOneBullet();
-	
+
 	this->BurstAmount--;
 
-	if(this->BurstAmount > 0)
+	if (this->BurstAmount > 0)
 	{
-		GetWorld()->GetTimerManager().SetTimer(BurstFireHandle, this, &ABaseGun::FireBurst, 0.1, false);            
+		GetWorld()->GetTimerManager().SetTimer(BurstFireHandle, this, &ABaseGun::FireBurst, 0.1, false);
 	}
 	else
 	{
-		if(this->HeldAmmo != NULL)
-		{
-			this->BurstAmount = this->HeldAmmo->AmountToFire;
-		}
-		else
-		{
-			this->BurstAmount = 0;
-		}
+		if (this->HeldAmmo != NULL) { this->BurstAmount = this->HeldAmmo->AmountToFire; }
+		else { this->BurstAmount = 0; }
 
 		GetWorldTimerManager().ClearTimer(BurstFireHandle);
 	}
@@ -123,12 +101,12 @@ void ABaseGun::FireShotgun()
 	int32 FireAmount = this->HeldAmmo->AmountToFire;
 
 	// For those cases when the Player doesn't have enough ammo for a full magazine.
-	if(this->HeldAmmo->AmountToFire > this->HeldAmmo->ItemCurrentStack)
+	if (this->HeldAmmo->AmountToFire > this->HeldAmmo->ItemCurrentStack)
 	{
 		FireAmount = this->HeldAmmo->ItemCurrentStack;
 	}
 
-	for(int i = 0; i < FireAmount; i++)
+	for (int i = 0; i < FireAmount; i++)
 	{
 		// VelocityPitch is how we get a shotgun like pattern for bullets.
 		this->FireOneBullet(FVector(7000, VelocityPitch, 0.0));
@@ -139,7 +117,7 @@ void ABaseGun::FireShotgun()
 
 void ABaseGun::FireSniper()
 {
-	if(this->OwningPlayer && this->OwningPlayer->GetCharacterMovement() && this->CurrentAmmo)
+	if (this->OwningPlayer && this->OwningPlayer->GetCharacterMovement() && this->CurrentAmmo)
 	{
 		this->OwningPlayer->GetCharacterMovement()->SetMovementMode(MOVE_None, 0);
 
@@ -151,53 +129,25 @@ void ABaseGun::EnableMovement()
 {
 	this->FireOneBullet(FVector(11000.0, 0.0, 0.0));
 
-	if(this->OwningPlayer && this->OwningPlayer->GetCharacterMovement())
+	if (this->OwningPlayer && this->OwningPlayer->GetCharacterMovement())
 	{
 		this->OwningPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking, 1);
 	}
 }
 
-bool ABaseGun::CanReload()
-{
-	// This is called whenever the reload input key is pressed.
-	if(this->HeldAmmo && this->ReserveAmmo && this->CurrentAmmo != this->MagazineSize
-	   && (!bIsFiring || this->CurrentAmmo == 0))
-	{
-		return true;
-	}
-	
-	return false;
-}
-
-void ABaseGun::Reload()
-{	
-	if(this->ReserveAmmo > (this->MagazineSize - this->CurrentAmmo))
-	{
-		this->ReserveAmmo -= (this->MagazineSize - this->CurrentAmmo);
-
-		CurrentAmmo = this->MagazineSize;
-	}
-	else
-	{
-		this->CurrentAmmo += this->ReserveAmmo;
-
-		this->ReserveAmmo = 0;
-	}
-}
-
 void ABaseGun::PullTrigger()
 {
-	if(!this->ProjectileClass)
+	if (!this->ProjectileClass)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Forgot to assign Projectile Class in BP."));
 		return;
 	}
 
-	if(this->CurrentAmmo)
+	if (this->CurrentAmmo)
 	{
-		switch(this->HeldAmmo->AmmoFireStyle)
+		switch (this->HeldAmmo->AmmoFireStyle)
 		{
-			case EFiringStyle::Standard: 
+			case EFiringStyle::Standard:
 				this->DivideDamageAmount = 1;
 				this->FireOneBullet();
 				break;
@@ -214,13 +164,35 @@ void ABaseGun::PullTrigger()
 				this->DivideDamageAmount = 1;
 				this->FireSniper();
 				break;
-			default: break;
+			default:
+				break;
 		}
 	}
-	else
+	else { this->OwningPlayer->ReloadWeapon(); }
+}
+
+bool ABaseGun::CanReload()
+{
+	if (this->HeldAmmo != nullptr)
 	{
-		this->OwningPlayer->ReloadWeapon();
+		if (this->HeldAmmo->ItemCurrentStack == 0)
+		{
+			this->OwningPlayer->AddInfoMessage(FText::FromString(TEXT("Insufficient Ammo")));
+			return false;
+		}
+		else if (this->CurrentAmmo != this->MagazineSize && (!bIsFiring || this->CurrentAmmo == 0)) { return true; }
 	}
+
+	return false;
+}
+
+void ABaseGun::Reload()
+{
+	if (this->HeldAmmo->ItemCurrentStack > (this->MagazineSize - this->CurrentAmmo))
+	{
+		CurrentAmmo = this->MagazineSize;
+	}
+	else { this->CurrentAmmo += this->HeldAmmo->ItemCurrentStack; }
 }
 
 float ABaseGun::CalculateDamage(class UEntityStats* OtherEntity)
@@ -228,12 +200,14 @@ float ABaseGun::CalculateDamage(class UEntityStats* OtherEntity)
 	float CurrentDamageFromType = 0;
 	float ResultingDamage = 0;
 
-	for(auto& DamageType : GunDamageTypes)
+	for (auto& DamageType : GunDamageTypes)
 	{
-		CurrentDamageFromType = DamageType.Key.GetDefaultObject()->ReturnDamageAmount(GetOwner()->FindComponentByClass<UEntityStats>(), DamageType.Value);
+		CurrentDamageFromType = DamageType.Key.GetDefaultObject()->ReturnDamageAmount(
+			GetOwner()->FindComponentByClass<UEntityStats>(), DamageType.Value);
 
 		// Criticals are calculated from whomever fired the projectile.
-		DamageType.Key.GetDefaultObject()->CriticalHit(GetOwner()->FindComponentByClass<UEntityStats>(), CurrentDamageFromType);
+		DamageType.Key.GetDefaultObject()->CriticalHit(
+			GetOwner()->FindComponentByClass<UEntityStats>(), CurrentDamageFromType);
 
 		ResultingDamage += CurrentDamageFromType;
 	}
@@ -245,10 +219,8 @@ void ABaseGun::UpdateAmmo()
 {
 	this->CurrentAmmo = 0;
 
-	if(this->HeldAmmo)
+	if (this->HeldAmmo)
 	{
-		this->ReserveAmmo = this->HeldAmmo->ItemCurrentStack;
-
 		this->MagazineSize = this->HeldAmmo->AmmoMagazineSize;
 
 		this->BurstAmount = this->HeldAmmo->AmountToFire;
@@ -257,12 +229,14 @@ void ABaseGun::UpdateAmmo()
 
 		this->BulletPierceAmount = this->HeldAmmo->AmmoPierceAmount;
 	}
-	else
-	{
-		this->ReserveAmmo = 0;
-	}
-
-	
 
 	this->OwningPlayer->OnAmmoUpdated.Broadcast();
+}
+
+void ABaseGun::InitializeGunDamage()
+{
+	int32 WeaponIndex = this->OwningPlayer->PlayerInventory->WeaponSlotIndex;
+	auto* WeaponItem = this->OwningPlayer->PlayerInventory->CurrentItems[WeaponIndex];
+
+	this->GunDamageTypes = WeaponItem->ItemStats.ItemDamageTypes;
 }

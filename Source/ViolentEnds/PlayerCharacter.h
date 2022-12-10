@@ -59,6 +59,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void DropItem(UBaseItem* Item, bool bItemWasInInventory);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void AddInfoMessage(const FText& InfoMessageName);
+
 	UPROPERTY(EditAnywhere)
 	TArray<USoundBase*> GunSounds;
 
@@ -127,6 +130,7 @@ private:
 	// ------------------------------------------
 	// Shooting
 	void Attack();
+	void ContiniousAttack();
 	void AllowAttack();
 	void StopAttacking();
 	// ------------------------------------------

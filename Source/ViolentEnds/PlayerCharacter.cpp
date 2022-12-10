@@ -171,7 +171,11 @@ void APlayerCharacter::MoveRight(float AxisValue)
 
 void APlayerCharacter::Run()
 {
-	this->PlayerStats->bIsEntityRunning = true;
+	if (this->PlayerStats->CurrentStamina > this->PlayerStats->StaminaDecreaseAmount)
+	{
+		this->PlayerStats->bIsEntityRunning = true;
+	}
+	else { this->AddInfoMessage(FText::FromString(TEXT("Insufficient Stamina."))); }
 }
 
 void APlayerCharacter::StopRunning()
@@ -215,27 +219,27 @@ void APlayerCharacter::Attack()
 {
 	if (this->bAllowedAttack && this->Gun != nullptr)
 	{
-		if (this->Gun->HeldAmmo != nullptr && this->bAllowedReload)
+		if (this->Gun->HeldAmmo != nullptr && this->Gun->HeldAmmo->ItemCurrentStack != 0 && this->bAllowedReload)
 		{
 			this->bAllowedAttack = false;
 
 			this->Gun->PullTrigger();
 
-			if (!GetWorldTimerManager().IsTimerActive(AvailableAttackHandle))
+			if (!GetWorldTimerManager().IsTimerActive(this->ShootingHandle))
 			{
-				GetWorldTimerManager().SetTimer(
-						AvailableAttackHandle, this, &APlayerCharacter::AllowAttack, 1 / this->Gun->HeldAmmo->ShotsPerSecond, false);
-			}
-
-			if (!GetWorldTimerManager().IsTimerActive(ShootingHandle))
-			{
-				GetWorldTimerManager().SetTimer(
-					ShootingHandle, this, &APlayerCharacter::Attack, 1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
+				GetWorldTimerManager().SetTimer(this->ShootingHandle, this, &APlayerCharacter::ContiniousAttack,
+					1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
 			}
 
 			this->Gun->bIsFiring = true;
 		}
 	}
+}
+
+void APlayerCharacter::ContiniousAttack()
+{
+	this->bAllowedAttack = true;
+	this->Attack();
 }
 
 void APlayerCharacter::AllowAttack()
@@ -246,6 +250,12 @@ void APlayerCharacter::AllowAttack()
 void APlayerCharacter::StopAttacking()
 {
 	if (GetWorldTimerManager().IsTimerActive(ShootingHandle)) { GetWorldTimerManager().ClearTimer(ShootingHandle); }
+
+	if (this->Gun != nullptr && this->Gun->HeldAmmo != nullptr)
+	{
+		GetWorldTimerManager().SetTimer(this->AvailableAttackHandle, this, &APlayerCharacter::AllowAttack,
+			1 / this->Gun->HeldAmmo->ShotsPerSecond, false);
+	}
 
 	if (this->Gun != nullptr) { this->Gun->bIsFiring = false; }
 }
@@ -311,7 +321,7 @@ void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 
 	if (!CanAcceptAmmo)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Gun doesn't accept this ammo type."));
+		this->AddInfoMessage(FText::FromString(TEXT("Gun Cannot Accept This Ammo")));
 		return;
 	}
 
@@ -535,5 +545,5 @@ void APlayerCharacter::RemoveInvincibility()
 
 void APlayerCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
-	TagContainer.AppendTags(GameplayTags);
+	TagContainer.AppendTags(this->GameplayTags);
 }

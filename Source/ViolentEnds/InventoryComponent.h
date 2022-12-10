@@ -1,9 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
-#include "InventoryComponent.generated.h"
 
+#include "Components/ActorComponent.h"
+
+#include "InventoryComponent.generated.h"
 
 // Delegate that Blueprints will use to update the UI.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryUpdate);
@@ -14,20 +15,18 @@ class UBaseAmmo;
 class APlayerCharacter;
 class UBaseQuest;
 
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class VIOLENTENDS_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UInventoryComponent();
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-
+public:
 	// -----------------------------------------------------------------------------------------------
 	// Functions
 	UFUNCTION(BlueprintCallable)
@@ -64,7 +63,8 @@ public:
 	void ApplyEquippedItemStats(UBaseItem* Item, bool RemoveStats = false);
 
 	UFUNCTION(BlueprintCallable)
-	void InteractionWithWeaponSlot(const int32& FromWhereIndex, const int32& ToWhereIndex, const bool bSwapping = false);
+	void InteractionWithWeaponSlot(
+		const int32& FromWhereIndex, const int32& ToWhereIndex, const bool bSwapping = false);
 
 	UFUNCTION(BlueprintCallable)
 	void IsItemRelevantToAnObjective(const UBaseItem* ItemToCheck);
