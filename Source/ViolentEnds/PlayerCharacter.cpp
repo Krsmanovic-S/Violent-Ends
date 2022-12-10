@@ -224,6 +224,12 @@ void APlayerCharacter::Attack()
 		{
 			this->bAllowedAttack = false;
 
+			if (this->GameplayTags.HasTag(FGlobalTags::Get().Weapon_BouncyBullets))
+			{
+				this->Gun->bShouldProjectilesBounce = true;
+			}
+			else { this->Gun->bShouldProjectilesBounce = false; }
+
 			this->Gun->PullTrigger();
 
 			if (!GetWorldTimerManager().IsTimerActive(this->ShootingHandle))

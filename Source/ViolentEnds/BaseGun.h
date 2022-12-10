@@ -108,6 +108,10 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	bool bIsFiring;
 
+	/* Assigned by the Player if he has the appropriate gameplay tag (Weapon.BouncyBullets) */
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	bool bShouldProjectilesBounce = false;
+
 	APlayerCharacter* OwningPlayer;
 
 	FTimerHandle BurstFireHandle;

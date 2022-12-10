@@ -14,4 +14,5 @@ void FGlobalTags::AddTags()
 	UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
 
 	Status_Invincible = Manager.AddNativeGameplayTag(TEXT("Status.Invincible"));
+	Weapon_BouncyBullets = Manager.AddNativeGameplayTag(TEXT("Weapon.BouncyBullets"));
 }

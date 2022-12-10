@@ -22,10 +22,13 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	this->ProjectileMesh->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnProjectileOverlap);
+	this->OnActorHit.AddDynamic(this, &AProjectile::OnProjectileBlockingHit);
 
 	this->GunOwner = Cast<ABaseGun>(GetOwner());
 
 	this->ProjectilePierceAmount = this->GunOwner->BulletPierceAmount;
+
+	if (this->GunOwner->bShouldProjectilesBounce) { this->ProjectileMovementComponent->bShouldBounce = true; }
 }
 
 void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -51,8 +54,27 @@ void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, 
 		UGameplayStatics::ApplyDamage(
 			OtherActor, ProjectileDamage, this->GunOwner->GetInstigatorController(), this, UDamageType::StaticClass());
 
+		if (this->OverlapImpactEffect != nullptr)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(), this->OverlapImpactEffect, this->GetActorTransform(), true);
+		}
+
 		this->ProjectilePierceAmount--;
 	}
 
 	if (this->ProjectilePierceAmount <= 0) { this->Destroy(); }
+}
+
+void AProjectile::OnProjectileBlockingHit(
+	AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (this->HitImpactEffect != nullptr)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), this->HitImpactEffect, this->GetActorTransform(), true);
+		UE_LOG(LogTemp, Warning, TEXT("LOL"));
+	}
+
+	if (this->PossibleBounceHits != 0) { this->PossibleBounceHits--; }
+	else { this->Destroy(); }
 }

@@ -8,6 +8,7 @@
 
 class ABaseGun;
 class UProjectileMovementComponent;
+class UParticleSystem;
 
 UCLASS()
 class VIOLENTENDS_API AProjectile : public AActor
@@ -22,9 +23,14 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	/* Binding function for what happens when the projectile mesh overlaps something */
 	UFUNCTION()
 	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit);
+
+	/* Binding function for what happens when the projectile actor hits something */
+	UFUNCTION()
+	void OnProjectileBlockingHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
@@ -33,7 +39,21 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* ProjectileMesh;
 
+	/* Gun which shot this projectile, this is set on projectile spawn in the gun class */
 	ABaseGun* GunOwner;
 
+	/* How many entities can this projectile overlap before being destroyed */
 	int32 ProjectilePierceAmount = 0;
+
+	/* How many times can this projectile bounce on hit */
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	int32 PossibleBounceHits = 3;
+
+	/* Effect that plays on a blocking hit */
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile Effects")
+	UParticleSystem* HitImpactEffect;
+
+	/* Effect that plays on an overlapping hit */
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile Effects")
+	UParticleSystem* OverlapImpactEffect;
 };

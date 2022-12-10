@@ -250,6 +250,6 @@ protected:
 	void RemoveInvincibility();
 
 	/* Container to hold all gameplay tags applied to the player */
-	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly)
 	FGameplayTagContainer GameplayTags;
 };

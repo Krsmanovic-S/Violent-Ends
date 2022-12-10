@@ -7,6 +7,7 @@
 struct VIOLENTENDS_API FGlobalTags : public FGameplayTagNativeAdder
 {
 	FGameplayTag Status_Invincible;
+	FGameplayTag Weapon_BouncyBullets;
 
 	static const FGlobalTags& Get();
 

@@ -1,30 +1,29 @@
 #include "BaseAbility.h"
-#include "TimerManager.h"
 
+#include "TimerManager.h"
 
 bool UBaseAbility::CanCastAbility(UPARAM(ref) float& CurrentStamina, const bool bFreeCast)
 {
-    if(bFreeCast)
-    {
-        return true;
-    }
+	if (bFreeCast) { return true; }
 
-    if(CurrentStamina >= this->StaminaCostToCast && !this->bIsOnCooldown)
-    {
-        CurrentStamina -= this->StaminaCostToCast;
-        return true;
-    }
+	if (!this->bIsOnCooldown && CurrentStamina >= this->StaminaCostToCast)
+	{
+		CurrentStamina -= this->StaminaCostToCast;
+		this->StartAbilityCooldown();
 
-    return false;
+		return true;
+	}
+
+	return false;
 }
 
 void UBaseAbility::StartAbilityCooldown()
 {
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &UBaseAbility::ResetAbility, 
-									            this->Cooldown, false);
+	this->bIsOnCooldown = true;
+	GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &UBaseAbility::ResetAbility, this->Cooldown, false);
 }
 
 void UBaseAbility::ResetAbility()
 {
-    this->bIsOnCooldown = false;
+	this->bIsOnCooldown = false;
 }

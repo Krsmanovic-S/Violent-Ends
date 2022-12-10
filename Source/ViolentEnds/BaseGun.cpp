@@ -148,12 +148,13 @@ void ABaseGun::PullTrigger()
 		switch (this->HeldAmmo->AmmoFireStyle)
 		{
 			case EFiringStyle::Standard:
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), OwningPlayer->GunSounds[0], GetActorLocation());
 				this->DivideDamageAmount = 1;
 				this->FireOneBullet();
 				break;
 			case EFiringStyle::Burst:
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), OwningPlayer->GunSounds[1], GetActorLocation());
 				this->DivideDamageAmount = 2;
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), OwningPlayer->GunSounds[0], GetActorLocation());
 				this->FireBurst();
 				break;
 			case EFiringStyle::Shotgun:
