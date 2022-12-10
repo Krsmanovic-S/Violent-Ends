@@ -30,6 +30,7 @@ enum class EObjectiveType : uint8
 };
 
 USTRUCT(BlueprintType)
+
 struct FQuestObjective
 {
 	GENERATED_BODY()
@@ -80,6 +81,7 @@ struct FQuestObjective
 };
 
 USTRUCT(BlueprintType)
+
 struct FQuestReward
 {
 	GENERATED_BODY()
@@ -138,9 +140,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Objectives", meta = (TitleProperty = "Name"))
 	TArray<FQuestObjective> Objectives;
 
+	UPROPERTY(BlueprintAssignable)
+	FObjectiveUpdate RefreshObjectives;
+
+protected:
 	UPROPERTY(Transient)
 	UWorld* World;
 
-	UPROPERTY(BlueprintAssignable)
-	FObjectiveUpdate RefreshObjectives;
+public: // Helpers
+	/** Has this quest been completed? */
+	UFUNCTION(BlueprintCallable)
+	bool IsCompleted();
 };
