@@ -218,53 +218,21 @@ void APlayerCharacter::ResetDash()
 
 void APlayerCharacter::Attack()
 {
-	if (this->bAllowedAttack && this->Gun != nullptr)
-	{
-		if (this->Gun->HeldAmmo != nullptr && this->Gun->HeldAmmo->ItemCurrentStack != 0 && this->bAllowedReload)
-		{
-			this->bAllowedAttack = false;
+	if (!IsValid(Gun)) { return; }
 
-			if (this->GameplayTags.HasTag(FGlobalTags::Get().Weapon_BouncyBullets))
-			{
-				this->Gun->bShouldProjectilesBounce = true;
-			}
-			else { this->Gun->bShouldProjectilesBounce = false; }
-
-			this->Gun->PullTrigger();
-
-			if (!GetWorldTimerManager().IsTimerActive(this->ShootingHandle))
-			{
-				GetWorldTimerManager().SetTimer(this->ShootingHandle, this, &APlayerCharacter::ContiniousAttack,
-					1 / this->Gun->HeldAmmo->ShotsPerSecond, true);
-			}
-
-			this->Gun->bIsFiring = true;
-		}
-	}
-}
-
-void APlayerCharacter::ContiniousAttack()
-{
-	this->bAllowedAttack = true;
-	this->Attack();
-}
-
-void APlayerCharacter::AllowAttack()
-{
-	this->bAllowedAttack = true;
+	Gun->StartFiring();
 }
 
 void APlayerCharacter::StopAttacking()
 {
-	if (GetWorldTimerManager().IsTimerActive(ShootingHandle)) { GetWorldTimerManager().ClearTimer(ShootingHandle); }
+	if (!IsValid(Gun)) { return; }
 
-	if (this->Gun != nullptr && this->Gun->HeldAmmo != nullptr)
-	{
-		GetWorldTimerManager().SetTimer(this->AvailableAttackHandle, this, &APlayerCharacter::AllowAttack,
-			1 / this->Gun->HeldAmmo->ShotsPerSecond, false);
-	}
+	Gun->StopFiring();
+}
 
-	if (this->Gun != nullptr) { this->Gun->bIsFiring = false; }
+bool APlayerCharacter::CanAttack()
+{
+	return bAllowedAttack;
 }
 
 void APlayerCharacter::ReloadWeapon()
@@ -273,6 +241,11 @@ void APlayerCharacter::ReloadWeapon()
 	{
 		this->GetMesh()->GetAnimInstance()->Montage_Play(this->ReloadAnimation, this->Gun->ReloadTime);
 	}
+}
+
+bool APlayerCharacter::CanReload()
+{
+	return bAllowedReload;
 }
 
 // -------------------------Ammo Equipping & Weapon Swap-------------------------

@@ -119,4 +119,21 @@ private:
 
 	FTimerHandle BurstFireHandle;
 	FTimerHandle SniperHandle;
+
+public: // Weapon firing
+	/** Begin firing sequence, till StopFiring is called, or the ammo runs out */
+	void StartFiring();
+
+	/** Stop the firing sequence */
+	void StopFiring();
+
+protected:
+	FTimerHandle FiringHandle;
+
+	/**
+	 * Handle firing logic
+	 * Will keep firing until StopFiring is called
+	 * If the ammo runs out, can reload and continue firing
+	 */
+	void HandleFiring();
 };

@@ -14,6 +14,7 @@
 #include "PlayerCharacter.h"
 #include "Projectile.h"
 #include "TimerManager.h"
+#include "ViolentEnds/GlobalTags.h"
 
 ABaseGun::ABaseGun()
 {
@@ -87,7 +88,7 @@ void ABaseGun::FireBurst()
 	}
 	else
 	{
-		if (this->HeldAmmo != NULL) { this->BurstAmount = this->HeldAmmo->AmountToFire; }
+		if (this->HeldAmmo != nullptr) { this->BurstAmount = this->HeldAmmo->AmountToFire; }
 		else { this->BurstAmount = 0; }
 
 		GetWorldTimerManager().ClearTimer(BurstFireHandle);
@@ -181,7 +182,7 @@ bool ABaseGun::CanReload()
 			this->OwningPlayer->AddInfoMessage(FText::FromString(TEXT("Insufficient Ammo")));
 			return false;
 		}
-		else if (this->CurrentAmmo != this->MagazineSize && (!bIsFiring || this->CurrentAmmo == 0)) { return true; }
+		if (this->CurrentAmmo != this->MagazineSize && (!bIsFiring || this->CurrentAmmo == 0)) { return true; }
 	}
 
 	return false;
@@ -240,4 +241,41 @@ void ABaseGun::InitializeGunDamage()
 	auto* WeaponItem = this->OwningPlayer->PlayerInventory->CurrentItems[WeaponIndex];
 
 	this->GunDamageTypes = WeaponItem->ItemStats.ItemDamageTypes;
+}
+
+void ABaseGun::StartFiring()
+{
+	bIsFiring = true;
+
+	bShouldProjectilesBounce = OwningPlayer->HasMatchingGameplayTag(FGlobalTags::Get().Weapon_BouncyBullets);
+
+	HandleFiring();
+}
+
+void ABaseGun::StopFiring()
+{
+	bIsFiring = false;
+}
+
+void ABaseGun::HandleFiring()
+{
+	if (HeldAmmo == nullptr) { return; }
+
+	if (HeldAmmo->ItemCurrentStack <= 0 && CanReload())
+	{
+		OwningPlayer->ReloadWeapon();
+
+		// Schedule firing again after the reload is completed
+		GetWorldTimerManager().SetTimer(FiringHandle, this, &ABaseGun::HandleFiring, ReloadTime, false);
+		return;
+	}
+
+	if (!bIsFiring) { return; }
+
+	if (OwningPlayer->CanAttack()) { PullTrigger(); }
+
+	// Schedule fire again according to rate of fire
+	// This will also end up retrying to attack if all checks passed, but the player was unable to attack
+	//   EG due to a stun
+	GetWorldTimerManager().SetTimer(FiringHandle, this, &ABaseGun::HandleFiring, 1 / HeldAmmo->ShotsPerSecond, false);
 }

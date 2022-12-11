@@ -102,6 +102,12 @@ public:
 
 	void ReloadWeapon();
 
+	/** Can this character attack currently? */
+	bool CanAttack();
+
+	/** Can this character reload currently? */
+	bool CanReload();
+
 private:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -118,8 +124,6 @@ private:
 	// ------------------------------------------
 	// Shooting
 	void Attack();
-	void ContiniousAttack();
-	void AllowAttack();
 	void StopAttacking();
 	// ------------------------------------------
 	// Ammo & Weapon Swap
