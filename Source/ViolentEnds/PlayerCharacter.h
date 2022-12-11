@@ -102,10 +102,10 @@ public:
 
 	void ReloadWeapon();
 
-	/** Can this character attack currently? */
+	/** Can this character attack? */
 	bool CanAttack();
 
-	/** Can this character reload currently? */
+	/** Can this character reload? */
 	bool CanReload();
 
 private:
@@ -192,8 +192,6 @@ private:
 	bool bIsAiming;
 	bool bHasDashed = false;
 
-	FTimerHandle AvailableAttackHandle;
-	FTimerHandle ShootingHandle;
 	FTimerHandle DashHandle;
 	FTimerHandle InvincibilityHandle;
 	FHitResult MouseHitResult;
