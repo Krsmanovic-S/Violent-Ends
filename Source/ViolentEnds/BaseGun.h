@@ -41,7 +41,9 @@ protected:
 	/* Calls a shooting method depending on the currently equipped ammo */
 	void PullTrigger();
 
-	/* This is called whenever the reload input key is pressed */
+	/* Called whenever the reload input key is pressed,
+	   checks if we have ammo to reload with, is current
+	   ammo less than the magazine and are we not firing */
 	UFUNCTION(BlueprintCallable)
 	bool CanReload();
 
@@ -50,11 +52,12 @@ protected:
 	void Reload();
 
 	/* Called by the Projectile to calculate the damage, this is done by
-	 *   calling the ReturnDamageAmount() method for each damage type of the gun
+	 * calling the ReturnDamageAmount() method for each damage type of the gun
 	 */
 	float CalculateDamage(UEntityStats* OtherEntity);
 
-	/* Called from the Player class upon equipping a new type of ammo */
+	/* Initializes the magazine size, burst amount, projectile pierce and 
+	   maximum range depending on the held ammo. Also updates the ammo widget UI */
 	UFUNCTION(BlueprintCallable)
 	void UpdateAmmo();
 

@@ -1,15 +1,15 @@
 #include "BaseEnemy.h"
-#include "BaseGun.h"
-#include "EntityStats.h"
-#include "BaseItem.h"
-#include "PlayerCharacter.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "Kismet/GameplayStatics.h"
-#include "TimerManager.h"
-#include "Perception/AIPerceptionStimuliSourceComponent.h"
-#include "BaseQuest.h"
-#include "EnemyAIController.h"
 
+#include "BaseGun.h"
+#include "BaseItem.h"
+#include "BaseQuest.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "EnemyAIController.h"
+#include "EntityStats.h"
+#include "Kismet/GameplayStatics.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "PlayerCharacter.h"
+#include "TimerManager.h"
 
 ABaseEnemy::ABaseEnemy()
 {
@@ -17,45 +17,44 @@ ABaseEnemy::ABaseEnemy()
 
 	this->EnemyStats = CreateDefaultSubobject<UEntityStats>(TEXT("Enemy Stats"));
 
-	this->PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));
+	this->PerceptionStimuliComp =
+		CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));
 }
 
 void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(this->BlueprintGunClass != NULL)
+	if (this->BlueprintGunClass != NULL)
 	{
 		FActorSpawnParameters SpawnParameters;
 
 		SpawnParameters.Owner = this;
 
 		this->RangedWeapon = GetWorld()->SpawnActor<ABaseGun>(this->BlueprintGunClass, SpawnParameters);
-		this->RangedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
+		this->RangedWeapon->AttachToComponent(
+			GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
 	}
 
 	this->bCanAttack = true;
 
 	APlayerCharacter* PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
-	this->InitializeLoot(this->EnemyLoot, this->EnemyLootTable, this->MaximalAmountOfItems, PlayerReference->CurrentLevel);
+	this->InitializeLoot(
+		this->EnemyLoot, this->EnemyLootTable, this->MaximalAmountOfItems, PlayerReference->CurrentLevel);
 }
 
 void ABaseEnemy::Attack()
 {
 	this->bCanAttack = false;
 
-	if(this->RangedWeapon != NULL)
-	{
-		this->RangedWeapon->FireOneBullet();
-	}
+	if (this->RangedWeapon != NULL) { this->RangedWeapon->FireOneBullet(); }
 	else
 	{
 		// Melee Attack
 	}
 
-	GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, 
-									this->AttackCooldownTime, false);
+	GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, this->AttackCooldownTime, false);
 }
 
 void ABaseEnemy::ResetAttack()
@@ -67,7 +66,7 @@ void ABaseEnemy::ResetAttack()
 
 void ABaseEnemy::DropPickups()
 {
-	if(this->UtilityPickupClass == nullptr)
+	if (this->UtilityPickupClass == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UtilityPickup class not set in BaseEnemy."));
 		return;
@@ -77,29 +76,26 @@ void ABaseEnemy::DropPickups()
 	int32 SpawnAmount = FMath::RandRange(1, this->MaximalPickupSpawn);
 	AUtilityPickup* Pickup;
 
-	while(SpawnAmount != 0)
+	while (SpawnAmount != 0)
 	{
 		Pickup = GetWorld()->SpawnActor<AUtilityPickup>(
-			this->UtilityPickupClass, 
-			this->GetActorLocation(), 
-			FRotator(0, 0, 0)
-		);
+			this->UtilityPickupClass, this->GetActorLocation(), FRotator(0, 0, 0));
 
-		if(!this->EnemyTicketMap.IsEmpty()) { Pickup->TicketMap = this->EnemyTicketMap; }
+		if (!this->EnemyTicketMap.IsEmpty()) { Pickup->TicketMap = this->EnemyTicketMap; }
 
 		// First we need to get the type since it determines the mesh,
 		// then we initialize the mesh itself and do the drop effect.
 		Pickup->Type = Pickup->RandomizePickupType();
 		Pickup->InitializeUtilityMesh();
 		Pickup->PickupDropEffect();
-		
+
 		SpawnAmount--;
 	}
 }
 
 void ABaseEnemy::InitializeDeathTimer()
 {
-	if(this->RelevantQuest != NULL && this->RelevantQuest->Objectives[this->DefeatObjectiveIndex].bIsActive)
+	if (this->RelevantQuest != NULL && this->RelevantQuest->Objectives[this->DefeatObjectiveIndex].bIsActive)
 	{
 		this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->DefeatObjectiveIndex]);
 	}
@@ -112,23 +108,17 @@ void ABaseEnemy::InitializeDeathTimer()
 
 	AEnemyAIController* EnemyController = Cast<AEnemyAIController>(GetController());
 
-	if(EnemyController != nullptr)
+	if (EnemyController != nullptr)
 	{
 		EnemyController->PlayerCharacter->AddXP(this->ExperienceOnKill);
 		EnemyController->OnUnPossess();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Enemy controller is null."));
-	}
+	else { UE_LOG(LogTemp, Warning, TEXT("Enemy controller is null.")); }
 }
 
 void ABaseEnemy::HandleDestruction()
 {
-	if(this->RangedWeapon != NULL)
-	{
-		this->RangedWeapon->Destroy();
-	}
+	if (this->RangedWeapon != NULL) { this->RangedWeapon->Destroy(); }
 
 	this->Destroy();
 }
