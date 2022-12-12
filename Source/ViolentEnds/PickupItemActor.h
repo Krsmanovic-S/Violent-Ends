@@ -10,6 +10,7 @@ class UBaseItem;
 class USkeletalMeshComponent;
 class UBoxComponent;
 class UWidgetComponent;
+class UMaterialInterface;
 
 UCLASS()
 class VIOLENTENDS_API APickupItemActor : public AActor
@@ -26,6 +27,8 @@ protected:
 	   and randomizes the stats if the item hasn't been initialized */
 	UFUNCTION(BlueprintCallable)
 	void InitializePickupProperties();
+
+	void InitializeMeshMaterials();
 
 	/* Calculates the bottom and upper bound (% wise) that we will take into
 	   consideration for the bounds of a stat that we are randomizing */
@@ -53,6 +56,12 @@ private:
 	/* Display widget for showing the name of the contained item */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	UWidgetComponent* ItemWidgetName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup", meta = (AllowPrivateAccess = true))
+	TArray<UMaterialInterface*> BoxMaterialInstances;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup", meta = (AllowPrivateAccess = true))
+	TArray<UMaterialInterface*> BeamMaterialInstances;
 
 	/* Item that this pickup actor represents, can be set as an instance or via blueprints on spawn */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Pickup", meta = (AllowPrivateAccess = true))

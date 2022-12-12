@@ -37,7 +37,45 @@ void APickupItemActor::InitializePickupProperties()
 
 		this->SkeletalMeshComp->SetSkeletalMesh(this->ContainedItem->PickupMesh);
 
+		this->InitializeMeshMaterials();
+
 		if (!this->bWasItemInitialized) { this->RandomizeItemStats(); }
+	}
+}
+
+void APickupItemActor::InitializeMeshMaterials()
+{
+	if (this->BoxMaterialInstances.Num() != 5 || this->BeamMaterialInstances.Num() != 5)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Box or Beam Materials not set up properly."));
+		return;
+	}
+
+	if (this->ContainedItem != nullptr)
+	{
+		switch (this->ContainedItem->Rarity)
+		{
+			case EItemRarity::Common:
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("ItemBox1")), this->BoxMaterialInstances[0]);
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("LightBeam")), this->BeamMaterialInstances[0]);
+				break;
+			case EItemRarity::Uncommon:
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("ItemBox1")), this->BoxMaterialInstances[1]);
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("LightBeam")), this->BeamMaterialInstances[1]);
+				break;
+			case EItemRarity::Rare:
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("ItemBox1")), this->BoxMaterialInstances[2]);
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("LightBeam")), this->BeamMaterialInstances[2]);
+				break;
+			case EItemRarity::Epic:
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("ItemBox1")), this->BoxMaterialInstances[3]);
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("LightBeam")), this->BeamMaterialInstances[3]);
+				break;
+			case EItemRarity::Legendary:
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("ItemBox1")), this->BoxMaterialInstances[4]);
+				this->SkeletalMeshComp->SetMaterialByName(FName(TEXT("LightBeam")), this->BeamMaterialInstances[4]);
+				break;
+		}
 	}
 }
 
