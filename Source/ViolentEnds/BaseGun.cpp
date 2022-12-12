@@ -247,8 +247,6 @@ void ABaseGun::StartFiring()
 {
 	bIsFiring = true;
 
-	bShouldProjectilesBounce = OwningPlayer->HasMatchingGameplayTag(FGlobalTags::Get().Weapon_BouncyBullets);
-
 	// If a firing operation is already pending, let the current schedule apply
 	// This fixes a bug where you can spam-click the fire button to exceed rate of fire
 	if (!GetWorldTimerManager().IsTimerActive(FiringHandle)) { HandleFiring(); }
@@ -273,6 +271,8 @@ void ABaseGun::HandleFiring()
 	}
 
 	if (!bIsFiring) { return; }
+
+	bShouldProjectilesBounce = OwningPlayer->HasMatchingGameplayTag(FGlobalTags::Get().Weapon_BouncyBullets);
 
 	if (OwningPlayer->CanAttack()) { PullTrigger(); }
 
