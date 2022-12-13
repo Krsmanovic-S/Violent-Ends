@@ -1,4 +1,5 @@
 #include "BaseWeapon.h"
+#include "BaseMeleeWeapon.h"
 #include "PlayerCharacter.h"
 #include "InventoryComponent.h"
 

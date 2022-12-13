@@ -2,6 +2,7 @@
 
 #include "BaseGun.h"
 #include "BaseItem.h"
+#include "BaseMeleeWeapon.h"
 #include "BaseQuest.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "EnemyAIController.h"
@@ -34,9 +35,19 @@ void ABaseEnemy::BeginPlay()
 		this->RangedWeapon = GetWorld()->SpawnActor<ABaseGun>(this->BlueprintGunClass, SpawnParameters);
 		this->RangedWeapon->AttachToComponent(
 			GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
+		bCanAttack = true;
+	}
+	if (MeleeWeaponClass)
+	{
+		FActorSpawnParameters SpawnParams;
+
+		SpawnParams.Owner = this;
+
+		MeleeWeapon = GetWorld()->SpawnActor<ABaseMeleeWeapon>(MeleeWeaponClass, SpawnParams);
+		MeleeWeapon->AttachToComponent(
+			GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
 	}
 
-	this->bCanAttack = true;
 
 	APlayerCharacter* PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
@@ -48,13 +59,16 @@ void ABaseEnemy::Attack()
 {
 	this->bCanAttack = false;
 
-	if (this->RangedWeapon != NULL) { this->RangedWeapon->FireOneBullet(); }
+	if (this->RangedWeapon != NULL)
+	{
+		this->RangedWeapon->FireOneBullet();
+		GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, this->AttackCooldownTime, false);
+	}
 	else
 	{
 		// Melee Attack
+		if (MeleeWeapon) { MeleeWeapon->Attack(); }
 	}
-
-	GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, this->AttackCooldownTime, false);
 }
 
 void ABaseEnemy::ResetAttack()
@@ -121,4 +135,29 @@ void ABaseEnemy::HandleDestruction()
 	if (this->RangedWeapon != NULL) { this->RangedWeapon->Destroy(); }
 
 	this->Destroy();
+}
+
+bool ABaseEnemy::HasRangedWeapon() const
+{
+	return RangedWeapon ? true : false;
+}
+
+bool ABaseEnemy::HasMeleeWeapon() const
+{
+	return MeleeWeapon ? true : false;
+}
+
+bool ABaseEnemy::TryAttackRanged()
+{
+	if (!RangedWeapon) { return false; }
+	Attack();
+	return true;
+}
+
+bool ABaseEnemy::TryAttackMelee()
+{
+	if (!MeleeWeapon) { return false; }
+
+	bool Success = MeleeWeapon->Attack();
+	return Success;
 }

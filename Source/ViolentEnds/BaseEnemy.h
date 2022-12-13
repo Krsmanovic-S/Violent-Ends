@@ -2,13 +2,17 @@
 
 #include "CoreMinimal.h"
 
-#include "GameFramework/Character.h"
+// Interfaces
 #include "LootSystem.h"
+#include "WeaponSystem.h"
+
+#include "GameFramework/Character.h"
 #include "UtilityPickup.h"
 
 #include "BaseEnemy.generated.h"
 
 class ABaseGun;
+class ABaseMeleeWeapon;
 class UBaseCustomDamageType;
 class UBaseItem;
 class UEntityStats;
@@ -16,7 +20,7 @@ class UDataTable;
 class UAIPerceptionStimuliSourceComponent;
 
 UCLASS()
-class VIOLENTENDS_API ABaseEnemy : public ACharacter, public ILootSystem
+class VIOLENTENDS_API ABaseEnemy : public ACharacter, public ILootSystem, public IWeaponSystem
 {
 	GENERATED_BODY()
 
@@ -72,7 +76,10 @@ public:
 	bool bCanAttack;
 
 	UPROPERTY(BlueprintReadWrite)
-	ABaseGun* RangedWeapon;
+	ABaseGun* RangedWeapon;	
+	
+	UPROPERTY(BlueprintReadWrite)
+	ABaseMeleeWeapon* MeleeWeapon;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
@@ -84,7 +91,11 @@ private:
 	/* If set, determines which gun will the enemy spawn and use,
 	   RangedWeapon variable will point to the created gun */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
-	TSubclassOf<ABaseGun> BlueprintGunClass;
+	TSubclassOf<ABaseGun> BlueprintGunClass;	
+	
+	/* The base class of the melee weapon, ranged weapon take precedence over melee weapon */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
+	TSubclassOf<ABaseMeleeWeapon> MeleeWeaponClass;
 
 	/* How often, in seconds, can this enemy attack? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy", meta = (AllowPrivateAccess = true))
@@ -122,4 +133,10 @@ private:
 
 	FTimerHandle AttackHandle;
 	FTimerHandle DeathHandle;
+
+	// Inherited via IWeaponSystem
+	virtual bool HasRangedWeapon() const override;
+	virtual bool HasMeleeWeapon() const override;
+	virtual bool TryAttackRanged() override;
+	virtual bool TryAttackMelee() override;
 };
