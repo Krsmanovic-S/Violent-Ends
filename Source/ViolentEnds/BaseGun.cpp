@@ -1,12 +1,10 @@
 #include "BaseGun.h"
 
-#include "BaseAmmo.h"
 #include "BaseCustomDamageType.h"
 #include "BaseEnemy.h"
 #include "BaseItem.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EntityStats.h"
-#include "FiringStyle.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "InventoryComponent.h"

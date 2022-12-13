@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "MoveDirectlyToTarget.h"
 
 #include "AIController.h"
@@ -8,8 +6,6 @@
 UBTTask_MoveDirectlyToTarget::UBTTask_MoveDirectlyToTarget()
 {
 	NodeName = "MoveDirectlyToTarget";
-
-
 }
 
 EBTNodeResult::Type UBTTask_MoveDirectlyToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -47,4 +43,9 @@ EBTNodeResult::Type UBTTask_MoveDirectlyToTarget::ExecuteTask(UBehaviorTreeCompo
 EBTNodeResult::Type UBTTask_MoveDirectlyToTarget::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	return Super::AbortTask(OwnerComp, NodeMemory);
+}
+
+FString UBTTask_MoveDirectlyToTarget::GetStaticDescription() const
+{
+	return FString::Printf(TEXT("Move Directly To Target Actor"));
 }

@@ -143,8 +143,6 @@ bool UInventoryComponent::AddAmmo(UBaseItem* InputAmmo)
 			if (this->AmmoInventory[0]->ItemCurrentStack < this->AmmoInventory[0]->ItemMaxStack)
 			{
 				this->AmmoInventory[0]->ItemCurrentStack++;
-
-				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
 			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Standard Ammo Maxed Out."))); }
@@ -153,8 +151,6 @@ bool UInventoryComponent::AddAmmo(UBaseItem* InputAmmo)
 			if (this->AmmoInventory[1]->ItemCurrentStack < this->AmmoInventory[1]->ItemMaxStack)
 			{
 				this->AmmoInventory[1]->ItemCurrentStack++;
-
-				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
 			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Burst Ammo Maxed Out."))); }
@@ -163,8 +159,6 @@ bool UInventoryComponent::AddAmmo(UBaseItem* InputAmmo)
 			if (this->AmmoInventory[2]->ItemCurrentStack < this->AmmoInventory[2]->ItemMaxStack)
 			{
 				this->AmmoInventory[2]->ItemCurrentStack++;
-
-				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
 			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Shotgun Ammo Maxed Out."))); }
@@ -173,8 +167,6 @@ bool UInventoryComponent::AddAmmo(UBaseItem* InputAmmo)
 			if (this->AmmoInventory[3]->ItemCurrentStack < this->AmmoInventory[3]->ItemMaxStack)
 			{
 				this->AmmoInventory[3]->ItemCurrentStack++;
-
-				//if (this->PlayerReference->Gun != NULL) { this->PlayerReference->Gun->UpdateAmmo(); }
 				return true;
 			}
 			else { this->PlayerReference->AddInfoMessage(FText::FromString(TEXT("Sniper Ammo Maxed Out."))); }

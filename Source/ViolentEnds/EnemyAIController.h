@@ -22,23 +22,38 @@ class VIOLENTENDS_API AEnemyAIController : public AAIController
 public:
 	AEnemyAIController();
 
+	/* For now just calls the destroy method for this controller */
 	virtual void OnUnPossess() override;
 
 protected:
+	/* Initializes the controlled enemy, its origin
+	   and runs the selected behavior tree
+	*/
 	virtual void OnPossess(APawn* InPawn) override;
 
 	virtual void BeginPlay() override;
 
+	/**
+	 * Called whenever something is updated for the perception component,
+	   for now only has functionality for responding to the Player.
+	   Sets the appropriate blackboard keys if the Player is sensed and
+	   clears them if the Player just left the perception range.
+
+	 * @param UpdatedActors actors that have interacted with the perception component  
+	 */
 	UFUNCTION(BlueprintCallable)
 	void OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedActors);
 
 public:
-	// Controller needs this for the FindRandomLocation task.
+	/* Starting point for the controlled pawn, used with the random
+	   patrolling to keep it always within a certain distance from this value
+	*/
 	UPROPERTY(BlueprintReadWrite)
 	FVector EnemyOrigin;
 
-	// This is used inside the Strafing EQS to make sure that
-	// Enemies don't pick locations too close to each other.
+	/* This is used inside the Strafing EQS to make sure that
+	   Enemies don't pick locations too close to each other
+	*/
 	TArray<AActor*> AllEnemies;
 
 	APlayerCharacter* PlayerCharacter;

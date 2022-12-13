@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "FiringStyle.h"
+#include "BaseAmmo.h"
 #include "GameFramework/Character.h"
 #include "GameplayTagAssetInterface.h"
 #include "GenericTeamAgentInterface.h"

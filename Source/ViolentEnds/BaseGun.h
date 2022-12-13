@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-#include "FiringStyle.h"
+#include "BaseAmmo.h"
 #include "GameFramework/Actor.h"
 
 #include "BaseGun.generated.h"
@@ -24,8 +24,11 @@ public:
 	friend class APlayerCharacter;
 	friend class AProjectile;
 
-	/* Shoot one bullet and lower the ammo if the Player called.
-	 *   Projectile velocity is defaulted but can be specified as well
+	/**
+	 * Shoot one bullet and lower the ammo if the Player called.
+	 * Projectile velocity is defaulted but can be specified as well
+
+	 * @param ProjectileDirection default value for the projectile velocity
 	 */
 	void FireOneBullet(FVector ProjectileDirection = { 9000.0, 0.0, 0.0 });
 
@@ -43,7 +46,8 @@ protected:
 
 	/* Called whenever the reload input key is pressed,
 	   checks if we have ammo to reload with, is current
-	   ammo less than the magazine and are we not firing */
+	   ammo less than the magazine and are we not firing
+	*/
 	UFUNCTION(BlueprintCallable)
 	bool CanReload();
 
@@ -56,13 +60,15 @@ protected:
 	 */
 	float CalculateDamage(UEntityStats* OtherEntity);
 
-	/* Initializes the magazine size, burst amount, projectile pierce and 
-	   maximum range depending on the held ammo. Also updates the ammo widget UI */
+	/* Initializes the magazine size, burst amount, projectile pierce and
+	   maximum range depending on the held ammo. Also updates the ammo widget UI
+	*/
 	UFUNCTION(BlueprintCallable)
 	void UpdateAmmo();
 
 	/* Copy over the damage values from the associated weapon item.
-	 * 	Only fired if the owner of the gun is the Player. */
+	   Only fired if the owner of the gun is the Player
+	*/
 	void InitializeGunDamage();
 
 private:

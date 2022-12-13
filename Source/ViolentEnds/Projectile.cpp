@@ -72,7 +72,6 @@ void AProjectile::OnProjectileBlockingHit(
 	if (this->HitImpactEffect != nullptr)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), this->HitImpactEffect, this->GetActorTransform(), true);
-		UE_LOG(LogTemp, Warning, TEXT("LOL"));
 	}
 
 	if (this->PossibleBounceHits != 0) { this->PossibleBounceHits--; }

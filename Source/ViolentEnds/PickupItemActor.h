@@ -24,22 +24,39 @@ protected:
 	virtual void BeginPlay() override;
 
 	/* Initializes the skeletal mesh based on the contained item
-	   and randomizes the stats if the item hasn't been initialized */
+	   and randomizes the stats if the item hasn't been initialized
+	*/
 	UFUNCTION(BlueprintCallable)
 	void InitializePickupProperties();
 
+	/* Initializes the materials of the mesh to suit the rarity of the item */
 	void InitializeMeshMaterials();
 
-	/* Calculates the bottom and upper bound (% wise) that we will take into
-	   consideration for the bounds of a stat that we are randomizing */
+	/**
+	 * Calculates the bottom and upper bound (% wise) that we will take into
+	   consideration for the bounds of a stat that we are randomizin
+
+	 * @return range that determines the min and max possible value for a stat
+	 */
 	FVector2D StatsRangeOnTier();
 
-	/* Calculates a new percentile based range which will determine the new upper and lower
-	   bound of a stat. This comes after the tier function has processed a range first */
+	/**
+	 * Calculates a new percentile based range which will determine the new upper and lower
+	   bound of a stat. This comes after the tier function has processed a range first
+
+	 * @return range that determines the min and max possible value for a stat
+	 */
 	FVector2D StatsRangeOnRarity();
 
-	/* Takes a single stat and passes its range through the tier and rarity randomization
-	   after which it finally picks the resulting value for the passed stat */
+	/**
+	 * Selects a value for the passed in stat after taking
+	   the range through the tier and rarity calculation
+
+	 * @param CurrentStat stat that is randomized
+	 * @param CurrentRange base EItemStats range set in blueprints
+	 * @param TierRange range calculated from the tier method
+	 * @param RarityRange range calculated from the rarity mehod
+	 */
 	void RandomizeIndividualStat(
 		float& CurrentStat, FVector2D CurrentRange, const FVector2D& TierRange, const FVector2D& RarityRange);
 
@@ -57,9 +74,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	UWidgetComponent* ItemWidgetName;
 
+	/* Materials for all different rarities */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup", meta = (AllowPrivateAccess = true))
 	TArray<UMaterialInterface*> BoxMaterialInstances;
 
+	/* Materials for all different rarities */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup", meta = (AllowPrivateAccess = true))
 	TArray<UMaterialInterface*> BeamMaterialInstances;
 
@@ -68,12 +87,14 @@ private:
 	UBaseItem* ContainedItem;
 
 	/* Amount of the item to add to upon overlap, this is here to not mess with the item stack or the
-	   for-loop in blueprints which is used to add a certain amount of this item to the inventory */
+	   for-loop in blueprints which is used to add a certain amount of this item to the inventory
+	*/
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Pickup", meta = (AllowPrivateAccess = true))
 	int32 AmountToAdd = 1;
 
 	/* Determines if we should randomize an item stats or were they
-	   already generated. Prevents re-randomizing already existing items */
+	   already generated. Prevents re-randomizing already existing items
+	*/
 	UPROPERTY(BlueprintReadWrite, Category = "Pickup", meta = (AllowPrivateAccess = true))
 	bool bWasItemInitialized;
 };

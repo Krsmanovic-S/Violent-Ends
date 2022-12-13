@@ -1,13 +1,14 @@
 #include "ObjectiveLocation.h"
-#include "Components/BoxComponent.h"
 
+#include "BaseQuest.h"
+#include "Components/BoxComponent.h"
 
 AObjectiveLocation::AObjectiveLocation()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
 	this->OverlapZone = CreateDefaultSubobject<UBoxComponent>(TEXT("Overlap Zone"));
-	RootComponent = this->OverlapZone;
+	SetRootComponent(this->OverlapZone);
 
 	this->OverlapZone->SetGenerateOverlapEvents(true);
 }
@@ -19,11 +20,11 @@ void AObjectiveLocation::BeginPlay()
 	this->OverlapZone->OnComponentBeginOverlap.AddDynamic(this, &AObjectiveLocation::OnBoxBeginOverlap);
 }
 
-void AObjectiveLocation::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AObjectiveLocation::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if(this->RelevantQuest != NULL && this->RelevantQuest->Objectives[this->LocationObjectiveIndex].bIsActive)
+	if (this->RelevantQuest != nullptr && this->RelevantQuest->Objectives[this->LocationObjectiveIndex].bIsActive)
 	{
 		this->RelevantQuest->UpdateObjective(this->RelevantQuest->Objectives[this->LocationObjectiveIndex]);
 	}
 }
-

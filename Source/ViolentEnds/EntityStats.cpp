@@ -23,7 +23,7 @@ void UEntityStats::BeginPlay()
 void UEntityStats::TickComponent(
 	float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	if (this->bShouldRegenHealth) { this->HandleHealth(); }
+	if (this->bShouldRegenHealth) { this->RegenerateHealth(); }
 
 	if (this->bShouldRegenStamina) { this->HandleStamina(); }
 }
@@ -60,7 +60,7 @@ void UEntityStats::DamageTaken(
 	}
 }
 
-void UEntityStats::HandleHealth()
+void UEntityStats::RegenerateHealth()
 {
 	this->CurrentHealth += HealthRegenerationAmount * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
 
@@ -88,16 +88,15 @@ void UEntityStats::FlatHeal(UPARAM(ref) const float& InputValue)
 {
 	this->CurrentHealth += InputValue;
 
-	if(this->CurrentHealth > this->MaximumHealth) { this->CurrentHealth = this->MaximumHealth; }
+	if (this->CurrentHealth > this->MaximumHealth) { this->CurrentHealth = this->MaximumHealth; }
 }
 
 void UEntityStats::FlatStaminaAdd(UPARAM(ref) const float& InputValue)
 {
 	this->CurrentStamina += InputValue;
-	
-	if(this->CurrentStamina > this->MaximumStamina) { this->CurrentStamina = this->MaximumStamina; }
-}
 
+	if (this->CurrentStamina > this->MaximumStamina) { this->CurrentStamina = this->MaximumStamina; }
+}
 
 void UEntityStats::SetMaximumHealth(const float& InputValue)
 {

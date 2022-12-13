@@ -1,20 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BaseMeleeWeapon.h"
-#include "PlayerCharacter.h"
+
+#include "BaseCustomDamageType.h"
+#include "BaseEnemy.h"
+#include "BaseItem.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "InventoryComponent.h"
-#include "BaseCustomDamageType.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "BaseItem.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "PlayerCharacter.h"
 
-//EDITOR only headers
+// EDITOR only headers
 
-//#if WITH_EDITOR
-   #include "DrawDebugHelpers.h"
-//#endif
+// #if WITH_EDITOR
+#include "DrawDebugHelpers.h"
+// #endif
 
 // Sets default values
 ABaseMeleeWeapon::ABaseMeleeWeapon()
@@ -27,57 +28,70 @@ ABaseMeleeWeapon::ABaseMeleeWeapon()
 
 	SetRootComponent(MeleeWeaponMesh);
 
-//#if WITH_EDITOR
+	// #if WITH_EDITOR
 	bShowMeleeDebug = true;
-//#endif
-
+	// #endif
 }
 
-bool ABaseMeleeWeapon::Attack() 
+void ABaseMeleeWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+	AActor* WeaponOwner = GetOwner();
+	if (auto PlayerCharacter = Cast<APlayerCharacter>(WeaponOwner))
+	{
+		int32 WeaponIndex = PlayerCharacter->PlayerInventory->WeaponSlotIndex;
+		auto* WeaponItem = PlayerCharacter->PlayerInventory->CurrentItems[WeaponIndex];
+
+		WeaponDamageTypes = WeaponItem->ItemStats.ItemDamageTypes;
+	}
+}
+
+bool ABaseMeleeWeapon::Attack()
 {
 	// The owner of this component
 	AActor* WeaponOwner = GetOwner();
 
 	// Check if the actor is alive or this component is attached to an actor
-	if (!WeaponOwner || !bCanUseMelee) return false;
+	if (!WeaponOwner || !bCanUseMelee) { return false; }
 
 	//----------------------------
 	//	DEBUG
-//#if WITH_EDITOR
+	// #if WITH_EDITOR
 
-
-	if (bShowMeleeDebug) 
-	{ 
+	if (bShowMeleeDebug)
+	{
 		AActor* TransformRef = GetOwner() ? GetOwner() : this;
-		DrawDebugCone(GetWorld(), TransformRef->GetActorLocation(), TransformRef->GetActorForwardVector(), MeleeRange, FMath::Cos(Angle), FMath::Cos(Angle), 12, FColor::Green,false, DebugDuration);
+		DrawDebugCone(GetWorld(), TransformRef->GetActorLocation(), TransformRef->GetActorForwardVector(), MeleeRange,
+			FMath::Cos(Angle), FMath::Cos(Angle), 12, FColor::Green, false, DebugDuration);
 	}
 
-//#endif // WITH_EDITOR
+	// #endif // WITH_EDITOR
 	//----------------------------
 
-
-
-	if (OnMeleeWeaponAttack.IsBound()) 
-	{
-		OnMeleeWeaponAttack.Broadcast();
-	}
+	if (OnMeleeWeaponAttack.IsBound()) { OnMeleeWeaponAttack.Broadcast(); }
 
 	bCanUseMelee = false;
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	if (!TimerManager.IsTimerActive(MeleeCooldown)) { TimerManager.SetTimer(MeleeCooldown,this, &ABaseMeleeWeapon::AttackReset ,MeleeCooldownDuration, false);
+	if (!TimerManager.IsTimerActive(MeleeCooldown))
+	{
+		TimerManager.SetTimer(MeleeCooldown, this, &ABaseMeleeWeapon::AttackReset, MeleeCooldownDuration, false);
 	}
 
 	// Parameters for sphere overlap function
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn) }; // Object types
-	UClass* TargetClass = AActor::StaticClass(); // The sphere overlap class check
-	TArray<AActor*> IgnoreActors = { WeaponOwner }; // List of actors to ignore
-	TArray<AActor*> HitResults; // Overlap result
+	UClass* TargetClass = AActor::StaticClass();	// The sphere overlap class check
+
+	TArray<AActor*> IgnoreActors; // List of actors to ignore
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), WeaponOwner->GetClass(), IgnoreActors); 
+	
+	TArray<AActor*> HitResults;						// Overlap result
 
 	// Sphere overlap check to see if there are any applicable "enemies" nearby
-	bool Success = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), Owner->GetActorLocation(), MeleeRange, ObjectTypes,TargetClass, IgnoreActors, HitResults);
+	bool Success = UKismetSystemLibrary::SphereOverlapActors(
+		GetWorld(), Owner->GetActorLocation(), MeleeRange, ObjectTypes, TargetClass, IgnoreActors, HitResults);
 
 	// Did not overlap with anything
-	if (!Success) return true; 
+	if (!Success) { return true; }
 
 	// Convert the angle from degrees to dot product
 	float MeleeDotAngle = FMath::Cos(Angle);
@@ -89,7 +103,7 @@ bool ABaseMeleeWeapon::Attack()
 	// The final array of actors to apply damage to
 	TArray<AActor*> ActorInDamageRange;
 
-	for (int32 i = 0; i < HitResults.Num(); i++) 
+	for (int32 i = 0; i < HitResults.Num(); i++)
 	{
 		FVector CurrentTargetLocation = HitResults[i]->GetActorLocation();
 		FVector DirectionFromOwnerToTarget = (CurrentTargetLocation - OwnerCurrentLocation);
@@ -97,13 +111,10 @@ bool ABaseMeleeWeapon::Attack()
 
 		float DotAngle = FVector::DotProduct(OwnerForwardDirection, DirectionFromOwnerToTarget);
 
-		if (DotAngle >= MeleeDotAngle) 
-		{
-			ActorInDamageRange.Add(HitResults[i]);
-		}
+		if (DotAngle >= MeleeDotAngle) { ActorInDamageRange.Add(HitResults[i]); }
 	}
 
-	for (int32 i = 0; i < ActorInDamageRange.Num(); i++) 
+	for (int32 i = 0; i < ActorInDamageRange.Num(); i++)
 	{
 		DealDamage(ActorInDamageRange[i]);
 	}
@@ -115,39 +126,17 @@ void ABaseMeleeWeapon::AttackReset()
 {
 	bCanUseMelee = true;
 
-	if (OnMeleeWeaponAttackCooldownCleared.IsBound()) 
-	{ 
-		OnMeleeWeaponAttackCooldownCleared.Broadcast();
-	}
+	if (OnMeleeWeaponAttackCooldownCleared.IsBound()) { OnMeleeWeaponAttackCooldownCleared.Broadcast(); }
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	if (TimerManager.IsTimerActive(MeleeCooldown))
-	{ 
-		TimerManager.ClearTimer(MeleeCooldown);
-	}
-
-}
-
-// Called when the game starts or when spawned
-void ABaseMeleeWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-	AActor* WeaponOwner = GetOwner();
-	if (auto PlayerCharacter = Cast<APlayerCharacter>(WeaponOwner)) {
-		int32 WeaponIndex = PlayerCharacter->PlayerInventory->WeaponSlotIndex;
-		auto* WeaponItem = PlayerCharacter->PlayerInventory->CurrentItems[WeaponIndex];
-
-		WeaponDamageTypes = WeaponItem->ItemStats.ItemDamageTypes;
-	}
-
+	if (TimerManager.IsTimerActive(MeleeCooldown)) { TimerManager.ClearTimer(MeleeCooldown); }
 }
 
 void ABaseMeleeWeapon::DealDamage(AActor* Target)
 {
 	AActor* WeaponOwner = GetOwner();
-	for (auto& Item : WeaponDamageTypes) 
+	for (auto& Item : WeaponDamageTypes)
 	{
 		UGameplayStatics::ApplyDamage(Target, Item.Value, nullptr, WeaponOwner, Item.Key);
 	}
 }
-
