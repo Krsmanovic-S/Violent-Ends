@@ -23,6 +23,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	/* Event for spawning particles on hit (the current assets look very bad
+	   with a call from C++ so we do it here) */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SpawnParticleEffect();
+
 	/* Binding function for what happens when the projectile mesh overlaps something */
 	UFUNCTION()
 	void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -48,6 +53,9 @@ private:
 	/* How many times can this projectile bounce on hit */
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	int32 PossibleBounceHits = 3;
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	bool bShouldSpawnParticles = true;
 
 	/* Effect that plays on a blocking hit */
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile Effects")

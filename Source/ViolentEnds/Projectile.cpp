@@ -1,17 +1,20 @@
 #include "Projectile.h"
 
+#include "BaseEnemy.h"
 #include "BaseGun.h"
 #include "EntityStats.h"
 #include "ExplosiveCanister.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerCharacter.h"
+#include "Shield.h"
 
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
 	this->ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
-	RootComponent = ProjectileMesh;
+	SetRootComponent(this->ProjectileMesh);
 
 	this->ProjectileMovementComponent =
 		CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
@@ -40,10 +43,29 @@ void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, 
 		return;
 	}
 
+	if (OtherActor->IsA<AShield>())
+	{
+		AShield* ShieldActor = Cast<AShield>(OtherActor);
+
+		// Players bullets should ignore his own Shield.
+		if (this->GunOwner->GetOwner()->IsA<APlayerCharacter>() && ShieldActor->bIgnorePlayerShield)
+		{
+			this->bShouldSpawnParticles = false;
+			return;
+		}
+
+		// Enemy bullets should ignore their own Shield.
+		if (this->GunOwner->GetOwner()->IsA<ABaseEnemy>() && ShieldActor->bIgnoreEnemyShield)
+		{
+			this->bShouldSpawnParticles = false;
+			return;
+		}
+	}
+
 	float ProjectileDamage = 1;
 
-	// If we hit an explosive canister or an actor that can be damaged
-	// (has an UEntityStats component) then we damage that actor and reduce our pierce.
+	// If we hit an actor that can be damaged, we first look if we should calculate the damage
+	// (actor has an UEntityStats component), then we damage that actor and reduce our pierce.
 	if (OtherActor && OtherActor != this && OtherActor != this->GunOwner && OtherActor->CanBeDamaged())
 	{
 		if (OtherActor->FindComponentByClass<UEntityStats>())
@@ -54,7 +76,8 @@ void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, 
 		UGameplayStatics::ApplyDamage(
 			OtherActor, ProjectileDamage, this->GunOwner->GetInstigatorController(), this, UDamageType::StaticClass());
 
-		if (this->OverlapImpactEffect != nullptr)
+		// Currently obsolete as the assets look bad compared to the blueprint call.
+		if (this->OverlapImpactEffect != nullptr && this->bShouldSpawnParticles)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(
 				GetWorld(), this->OverlapImpactEffect, this->GetActorTransform(), true);
@@ -63,12 +86,15 @@ void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, 
 		this->ProjectilePierceAmount--;
 	}
 
+	this->SpawnParticleEffect();
+
 	if (this->ProjectilePierceAmount <= 0) { this->Destroy(); }
 }
 
 void AProjectile::OnProjectileBlockingHit(
 	AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
+	// Currently obsolete as the assets look bad compared to the blueprint call.
 	if (this->HitImpactEffect != nullptr)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), this->HitImpactEffect, this->GetActorTransform(), true);

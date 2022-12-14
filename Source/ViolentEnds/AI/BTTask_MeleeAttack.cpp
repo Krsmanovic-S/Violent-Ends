@@ -1,11 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "BTTask_MeleeAttack.h"
 
 #include "AIController.h"
-#include "BaseMeleeWeapon.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "WeaponSystem.h"
+#include "ViolentEnds/BaseMeleeWeapon.h"
+#include "ViolentEnds/WeaponSystem.h"
 
 UBTTask_MeleeAttack::UBTTask_MeleeAttack()
 {

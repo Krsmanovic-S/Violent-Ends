@@ -67,6 +67,9 @@ void APlayerCharacter::BeginPlay()
 	this->DashCooldown = 1.f;
 	this->XPForNextLevel = 10;
 
+	// Temporary for testing purposes
+	this->AvailableSkillPoints = 100;
+
 	this->InteractionZone->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBoxBeginOverlap);
 	this->InteractionZone->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnBoxEndOverlap);
 }

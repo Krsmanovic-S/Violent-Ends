@@ -1,11 +1,10 @@
 #include "AttackPlayer.h"
 
-#include "Lib/BPFL_Math.h"
-
-#include "BaseEnemy.h"
-#include "EnemyAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "PlayerCharacter.h"
+#include "ViolentEnds/BaseEnemy.h"
+#include "ViolentEnds/EnemyAIController.h"
+#include "ViolentEnds/Lib/BPFL_Math.h"
+#include "ViolentEnds/PlayerCharacter.h"
 
 UAttackPlayer::UAttackPlayer()
 {

@@ -9,6 +9,8 @@
 // Delegate for updating segments of the HP bar whenever MaxHP changes.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHealthBarUpdate);
 
+class UParticleSystem;
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class VIOLENTENDS_API UEntityStats : public UActorComponent
 {
@@ -72,61 +74,61 @@ protected:
 		float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Health")
 	float MaximumHealth;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Health")
 	float CurrentHealth;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Health")
 	float HealthRegenerationAmount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Health")
 	bool bShouldRegenHealth;
 
 	//-------------------------------------------------------------------
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	float MaximumStamina;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	float CurrentStamina;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	float StaminaRegenerationAmount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	float StaminaDecreaseAmount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	bool bIsEntityRunning;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	bool bShouldRegenStamina;
 
 	//-------------------------------------------------------------------
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Defence")
 	int32 ArmorValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Defence")
 	int32 FireResistance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Defence")
 	int32 ExplosiveResistance;
 
 	//-------------------------------------------------------------------
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offence")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Offence")
 	float GlobalDamageBonus;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offence")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Offence")
 	float FireDamageBonus;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offence")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Offence")
 	float CriticalHitChance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offence")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Offence")
 	float CriticalHitDamageMultiplier = 1;
 
 	//-------------------------------------------------------------------

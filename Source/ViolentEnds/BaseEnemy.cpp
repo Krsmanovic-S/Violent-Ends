@@ -59,7 +59,7 @@ void ABaseEnemy::Attack()
 {
 	this->bCanAttack = false;
 
-	if (this->RangedWeapon != NULL)
+	if (this->RangedWeapon != nullptr)
 	{
 		this->RangedWeapon->FireOneBullet();
 		GetWorldTimerManager().SetTimer(AttackHandle, this, &ABaseEnemy::ResetAttack, this->AttackCooldownTime, false);
@@ -67,7 +67,7 @@ void ABaseEnemy::Attack()
 	else
 	{
 		// Melee Attack
-		if (MeleeWeapon) { MeleeWeapon->Attack(); }
+		if (this->MeleeWeapon != nullptr) { MeleeWeapon->Attack(); }
 	}
 }
 

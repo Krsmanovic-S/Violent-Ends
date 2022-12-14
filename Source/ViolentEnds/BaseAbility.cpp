@@ -1,6 +1,14 @@
 #include "BaseAbility.h"
 
+#include "PlayerCharacter.h"
 #include "TimerManager.h"
+
+void UBaseAbility::InitializeWorldFromPlayer(APawn* PlayerPawn)
+{
+	this->World = PlayerPawn->GetWorld();
+
+	if (this->World == nullptr) { UE_LOG(LogTemp, Warning, TEXT("World not set for ability class.")); }
+}
 
 bool UBaseAbility::CanCastAbility(UPARAM(ref) float& CurrentStamina, const bool bFreeCast)
 {
@@ -20,7 +28,12 @@ bool UBaseAbility::CanCastAbility(UPARAM(ref) float& CurrentStamina, const bool 
 void UBaseAbility::StartAbilityCooldown()
 {
 	this->bIsOnCooldown = true;
-	GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &UBaseAbility::ResetAbility, this->Cooldown, false);
+
+	if (this->World != nullptr)
+	{
+		GetWorld()->GetTimerManager().SetTimer(
+			CooldownHandle, this, &UBaseAbility::ResetAbility, this->Cooldown, false);
+	}
 }
 
 void UBaseAbility::ResetAbility()

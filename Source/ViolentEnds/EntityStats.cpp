@@ -3,6 +3,7 @@
 #include "BaseEnemy.h"
 #include "GameplayTagAssetInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "Shield.h"
 #include "ViolentEnds/GlobalTags.h"
 #include "ViolentEnds/LogMacros.h"
 
@@ -31,12 +32,9 @@ void UEntityStats::TickComponent(
 void UEntityStats::DamageTaken(
 	AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* Instigator, AActor* DamageCauser)
 {
-	// Only apply damage if we have any health left.
-	if (this->CurrentHealth <= 0) { return; }
-
 	if (Damage <= 0.f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Tried to apply damage of value 0."));
+		LOG_WARNING(LogTemp, "Tried to apply damage of value 0.");
 		return;
 	}
 
@@ -57,6 +55,7 @@ void UEntityStats::DamageTaken(
 
 			EnemyCharacter->InitializeDeathTimer();
 		}
+		else if (GetOwner()->IsA<AShield>()) { DamagedActor->Destroy(); }
 	}
 }
 

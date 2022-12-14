@@ -49,6 +49,9 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	UWorld* GetWorldFromPlayer() const { return this->GetWorld(); };
+
 	// Equipping and Unequipping
 	void EquipWeapon();
 	void UnequipWeapon();
