@@ -33,7 +33,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* ChestCollision;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	USkeletalMeshComponent* ChestMesh;
 
 	/* Small widget showing the interact input key
