@@ -20,9 +20,11 @@
 // Sets default values
 ABaseMeleeWeapon::ABaseMeleeWeapon()
 {
+
 	PrimaryActorTick.bCanEverTick = false;
 
 	bCanUseMelee = true;
+	MeleeCooldownDuration = INFINITY;
 
 	MeleeWeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeleeWeaponMesh"));
 
@@ -30,6 +32,7 @@ ABaseMeleeWeapon::ABaseMeleeWeapon()
 
 	// #if WITH_EDITOR
 	bShowMeleeDebug = true;
+	DebugDuration = 2.f;
 	// #endif
 }
 
@@ -77,6 +80,16 @@ bool ABaseMeleeWeapon::Attack()
 		TimerManager.SetTimer(MeleeCooldown, this, &ABaseMeleeWeapon::AttackReset, MeleeCooldownDuration, false);
 	}
 
+	HitTargets();
+
+	return true;
+}
+
+void ABaseMeleeWeapon::HitTargets() {
+	
+	// The owner of this component
+	AActor* WeaponOwner = GetOwner();
+
 	// Parameters for sphere overlap function
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn) }; // Object types
 	UClass* TargetClass = AActor::StaticClass();	// The sphere overlap class check
@@ -91,7 +104,7 @@ bool ABaseMeleeWeapon::Attack()
 		GetWorld(), Owner->GetActorLocation(), MeleeRange, ObjectTypes, TargetClass, IgnoreActors, HitResults);
 
 	// Did not overlap with anything
-	if (!Success) { return true; }
+	if (!Success) { return ; }
 
 	// Convert the angle from degrees to dot product
 	float MeleeDotAngle = FMath::Cos(Angle);
@@ -111,7 +124,12 @@ bool ABaseMeleeWeapon::Attack()
 
 		float DotAngle = FVector::DotProduct(OwnerForwardDirection, DirectionFromOwnerToTarget);
 
-		if (DotAngle >= MeleeDotAngle) { ActorInDamageRange.Add(HitResults[i]); }
+		if (DotAngle >= MeleeDotAngle // Target is within the acceptable radius
+			&& FVector::DistSquared(OwnerCurrentLocation, CurrentTargetLocation) >= FMath::Pow(DeadZoneRadius, 2) // Target is not in the dead zone
+			) 
+		{ 
+			ActorInDamageRange.Add(HitResults[i]); 
+		}
 	}
 
 	for (int32 i = 0; i < ActorInDamageRange.Num(); i++)
@@ -119,7 +137,6 @@ bool ABaseMeleeWeapon::Attack()
 		DealDamage(ActorInDamageRange[i]);
 	}
 
-	return true;
 }
 
 void ABaseMeleeWeapon::AttackReset()

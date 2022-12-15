@@ -12,10 +12,17 @@ UBTTask_MeleeAttack::UBTTask_MeleeAttack()
 
 EBTNodeResult::Type UBTTask_MeleeAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	EBTNodeResult::Type NodeResult = EBTNodeResult::Failed;
 
+	EBTNodeResult::Type NodeResult = Super::ExecuteTask(OwnerComp, NodeMemory);
+	// Get the AI pawn
 	APawn* AIActor = OwnerComp.GetAIOwner()->GetPawn();
-	if (auto WeaponSystem = Cast<IWeaponSystem>(AIActor)) { WeaponSystem->TryAttackMelee(); }
+
+	// Try to use melee attack
+	// return successful if the pawn successfully use a melee attack
+	if (auto WeaponSystem = Cast<IWeaponSystem>(AIActor)) { 
+		bool Success = WeaponSystem->TryAttackMelee();
+		if (Success) NodeResult = EBTNodeResult::Succeeded;
+	}
 
 	return NodeResult;
 }

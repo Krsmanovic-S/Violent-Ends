@@ -8,6 +8,9 @@
 
 class UBehaviorTree;
 
+/**
+* Task used for melee attack on the target pawn
+*/
 UCLASS()
 class VIOLENTENDS_API UBTTask_MeleeAttack : public UBTTask_BlackboardBase
 {
@@ -15,9 +18,6 @@ class VIOLENTENDS_API UBTTask_MeleeAttack : public UBTTask_BlackboardBase
 
 public:
 	UBTTask_MeleeAttack();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FBlackboardKeySelector TargetActorKey;
 
 private:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
