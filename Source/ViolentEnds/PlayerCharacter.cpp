@@ -117,6 +117,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &APlayerCharacter::Run);
 	PlayerInputComponent->BindAction(TEXT("Run"), IE_Released, this, &APlayerCharacter::StopRunning);
 
+	PlayerInputComponent->BindAction(TEXT("ToggleRun"), IE_Pressed, this, &APlayerCharacter::ToggleRunning);
+
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Pressed, this, &APlayerCharacter::Aim);
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Released, this, &APlayerCharacter::StopAiming);
 
