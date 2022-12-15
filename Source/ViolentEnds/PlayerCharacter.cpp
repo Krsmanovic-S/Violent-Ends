@@ -174,16 +174,27 @@ void APlayerCharacter::MoveRight(float AxisValue)
 
 void APlayerCharacter::Run()
 {
-	if (this->PlayerStats->CurrentStamina > this->PlayerStats->StaminaDecreaseAmount)
+	if (PlayerStats->CurrentStamina > PlayerStats->StaminaDecreaseAmount)
 	{
-		this->PlayerStats->bIsEntityRunning = true;
+		PlayerStats->bIsEntityRunning = true;
+		PlayerStats->bRunIsToggled = false;
 	}
-	else { this->AddInfoMessage(FText::FromString(TEXT("Insufficient Stamina."))); }
+	else { AddInfoMessage(FText::FromString(TEXT("Insufficient Stamina."))); }
 }
 
 void APlayerCharacter::StopRunning()
 {
-	this->PlayerStats->bIsEntityRunning = false;
+	PlayerStats->bIsEntityRunning = false;
+}
+
+void APlayerCharacter::ToggleRunning()
+{
+	if (PlayerStats->CurrentStamina > PlayerStats->StaminaDecreaseAmount)
+	{
+		PlayerStats->bIsEntityRunning = !PlayerStats->bIsEntityRunning;
+		PlayerStats->bRunIsToggled = true;
+	}
+	else { AddInfoMessage(FText::FromString(TEXT("Insufficient Stamina."))); }
 }
 
 void APlayerCharacter::Dash()

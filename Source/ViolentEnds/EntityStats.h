@@ -32,7 +32,7 @@ public:
 	/* Handles the regeneration/reduction of stamina based
 	   on whether the owner actor is running
 	*/
-	void HandleStamina();
+	void HandleStamina(float DeltaTime);
 
 	/**
 	 * Increases the health by a flat amount and checks
@@ -71,7 +71,7 @@ protected:
 	   so we do the neccessary calls here for both of them
 	*/
 	virtual void TickComponent(
-		float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
+		float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Health")
@@ -102,6 +102,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	bool bIsEntityRunning;
+
+	/** Was the last sprint activated by a toggle or a hold input? */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Stamina")
+	bool bRunIsToggled;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats|Stamina")
 	bool bShouldRegenStamina;
