@@ -26,7 +26,7 @@ void UEntityStats::TickComponent(
 {
 	if (this->bShouldRegenHealth) { this->RegenerateHealth(); }
 
-	if (this->bShouldRegenStamina) { this->HandleStamina(); }
+	if (this->bShouldRegenStamina) { this->HandleStamina(DeltaTime); }
 }
 
 void UEntityStats::DamageTaken(
@@ -66,21 +66,16 @@ void UEntityStats::RegenerateHealth()
 	if (this->CurrentHealth > this->MaximumHealth) { this->CurrentHealth = this->MaximumHealth; }
 }
 
-void UEntityStats::HandleStamina()
+void UEntityStats::HandleStamina(float DeltaTime)
 {
-	if (this->bIsEntityRunning && this->CurrentStamina && GetOwner()->GetVelocity().Size() > 0)
-	{
-		this->CurrentStamina -= this->StaminaDecreaseAmount * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
+	bool bIsMoving = GetOwner()->GetVelocity().Size() > 0;
 
-		if (this->CurrentStamina < 0) { this->CurrentStamina = 0; }
-	}
-	else if (GetOwner()->GetVelocity().Size() == 0
-			 || (!this->bIsEntityRunning && this->CurrentStamina < this->MaximumStamina))
-	{
-		this->CurrentStamina += this->StaminaRegenerationAmount * UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
+	if (bIsEntityRunning && bIsMoving) { CurrentStamina -= StaminaDecreaseAmount * DeltaTime; }
+	else { CurrentStamina += StaminaRegenerationAmount * DeltaTime; }
 
-		if (this->CurrentStamina >= this->MaximumStamina) { this->CurrentStamina = this->MaximumStamina; }
-	}
+	CurrentStamina = FMath::Clamp(CurrentStamina, 0.f, MaximumStamina);
+
+	if (bRunIsToggled && CurrentStamina == 0) { bIsEntityRunning = false; }
 }
 
 void UEntityStats::FlatHeal(UPARAM(ref) const float& InputValue)

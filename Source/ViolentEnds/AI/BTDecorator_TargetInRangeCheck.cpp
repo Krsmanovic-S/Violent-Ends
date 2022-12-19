@@ -3,7 +3,10 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UBTDecorator_TargetInRangeCheck::UBTDecorator_TargetInRangeCheck() {}
+UBTDecorator_TargetInRangeCheck::UBTDecorator_TargetInRangeCheck() {
+
+	RangeModifierMultiplier = 1.f;
+}
 
 bool UBTDecorator_TargetInRangeCheck::CalculateRawConditionValue(
 	UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const

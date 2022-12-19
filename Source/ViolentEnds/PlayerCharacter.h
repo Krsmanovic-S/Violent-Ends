@@ -126,6 +126,8 @@ private:
 	void MoveRight(float AxisValue);
 	void Run();
 	void StopRunning();
+	/** Switches the current running desire */
+	void ToggleRunning();
 	void Dash();
 	void ResetDash();
 	// ------------------------------------------
