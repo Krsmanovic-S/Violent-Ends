@@ -18,6 +18,7 @@
 #include "ViolentEnds/BaseQuest.h"
 #include "ViolentEnds/GlobalTags.h"
 #include "ViolentEnds/LogMacros.h"
+#include "WorldMapComponent.h"
 
 // Height difference from center of player character to the gun's barrel
 float GGun_Height = 55;
@@ -29,6 +30,8 @@ APlayerCharacter::APlayerCharacter()
 	this->PlayerStats = CreateDefaultSubobject<UEntityStats>(TEXT("Player Stats"));
 
 	this->PlayerInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Player Inventory"));
+
+	this->PlayerMap = CreateDefaultSubobject<UWorldMapComponent>(TEXT("MapComp"));
 
 	this->PerceptionStimuliComp =
 		CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));

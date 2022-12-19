@@ -31,6 +31,7 @@ class AGrenade;
 class UBoxComponent;
 class UAnimMontage;
 class USoundBase;
+class UWorldMapComponent;
 
 UCLASS()
 class VIOLENTENDS_API APlayerCharacter :
@@ -64,6 +65,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void AddInfoMessage(const FText& InfoMessageName);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UWorldMapComponent* PlayerMap;
 
 	UPROPERTY(EditAnywhere)
 	TArray<USoundBase*> GunSounds;
