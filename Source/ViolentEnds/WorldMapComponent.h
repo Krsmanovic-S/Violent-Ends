@@ -7,6 +7,7 @@
 #include "WorldMapComponent.generated.h"
 
 class UTexture2D;
+class ATargetPoint;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class VIOLENTENDS_API UWorldMapComponent : public UActorComponent
