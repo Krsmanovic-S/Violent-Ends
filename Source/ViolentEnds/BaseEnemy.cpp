@@ -7,6 +7,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "EnemyAIController.h"
 #include "EntityStats.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "PlayerCharacter.h"
@@ -20,6 +21,10 @@ ABaseEnemy::ABaseEnemy()
 
 	this->PerceptionStimuliComp =
 		CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Perception Stimulus"));
+
+	// Prevents the pawn from snapping rotation
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 360.f, 0.f);
 }
 
 void ABaseEnemy::BeginPlay()
@@ -47,7 +52,6 @@ void ABaseEnemy::BeginPlay()
 		MeleeWeapon->AttachToComponent(
 			GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
 	}
-
 
 	APlayerCharacter* PlayerReference = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
