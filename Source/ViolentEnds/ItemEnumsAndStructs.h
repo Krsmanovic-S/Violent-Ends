@@ -113,39 +113,39 @@ struct FItemStatsRange
     //-------------------------------------------------------------------
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Offence Stats")
-    FVector2D DamageRange = 0;
+    FVector2D DamageRange = FVector2D::Zero();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Offence Stats")
-    FVector2D FireDamageRange = 0;
+    FVector2D FireDamageRange = FVector2D::Zero();
     
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Offence Stats")
-    FVector2D CriticalChanceRange = 0;
+    FVector2D CriticalChanceRange = FVector2D::Zero();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Offence Stats")
-    FVector2D CriticalDamageRange = 0;
+    FVector2D CriticalDamageRange = FVector2D::Zero();
     //-------------------------------------------------------------------
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defense Stats")
-    FVector2D HealthRange = 0;
+    FVector2D HealthRange = FVector2D::Zero();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defense Stats")
-    FVector2D HealthRegenRange = 0;
+    FVector2D HealthRegenRange = FVector2D::Zero();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defense Stats")
-    FVector2D ArmorRange = 0;
+    FVector2D ArmorRange = FVector2D::Zero();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defense Stats")
-    FVector2D FireResistRange = 0;
+    FVector2D FireResistRange = FVector2D::Zero();
     //-------------------------------------------------------------------
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mobility Stats")
-    FVector2D StaminaRange = 0;
+    FVector2D StaminaRange = FVector2D::Zero();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mobility Stats")
-    FVector2D StaminaRegenRange = 0;
+    FVector2D StaminaRegenRange = FVector2D::Zero();
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mobility Stats")
-    FVector2D DashCostRange = 0;
+    FVector2D DashCostRange = FVector2D::Zero();
     //-------------------------------------------------------------------
 };
 

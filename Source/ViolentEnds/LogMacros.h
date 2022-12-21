@@ -16,7 +16,11 @@ char* class_func(const char* c, const char* f)
 	free(demangled);
 	return buff;
 }
-	#define __CLASS_FUNCTION__ class_func(typeid(*this).name(), __func__)
+	#if __APPLE__
+		#define __CLASS_FUNCTION__ __func__
+	#else
+		#define __CLASS_FUNCTION__ class_func(typeid(*this).name(), __func__)
+	#endif
 #endif
 
 /* ClassName::FunctionName where this is called. */

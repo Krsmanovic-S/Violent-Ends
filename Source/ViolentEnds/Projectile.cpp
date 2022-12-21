@@ -8,6 +8,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
 #include "Shield.h"
+#include "Perception/AIPerceptionSystem.h"
+#include "Perception/AIPerceptionTypes.h"
+#include "Perception/AISenseEvent_Damage.h"
 
 AProjectile::AProjectile()
 {
@@ -76,6 +79,9 @@ void AProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, 
 		UGameplayStatics::ApplyDamage(
 			OtherActor, ProjectileDamage, this->GunOwner->GetInstigatorController(), this, UDamageType::StaticClass());
 
+		// Report Damage Sense to the AI Perception System
+		UAISense_Damage::ReportDamageEvent(OtherActor, OtherActor, this->GunOwner, 1.0, this->GunOwner->GetActorLocation(), Hit.Location);
+		
 		// Currently obsolete as the assets look bad compared to the blueprint call.
 		if (this->OverlapImpactEffect != nullptr && this->bShouldSpawnParticles)
 		{

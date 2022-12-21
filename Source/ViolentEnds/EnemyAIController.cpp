@@ -1,6 +1,8 @@
 #include "EnemyAIController.h"
 
 #include "BaseEnemy.h"
+#include "LogMacros.h"
+#include "Engine/GameEngine.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -11,12 +13,7 @@
 
 AEnemyAIController::AEnemyAIController()
 {
-	this->BehaviorTreeComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
-
-	this->AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
-	this->AIPerceptionComponent->bEditableWhenInherited = true;
-	this->AIPerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdatedImpl);
-	SetPerceptionComponent(*this->AIPerceptionComponent);
+	InitAIPerceptionSenses();
 }
 
 void AEnemyAIController::OnUnPossess()
@@ -35,8 +32,6 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	if (this->BehaviorTree)
 	{
 		RunBehaviorTree(this->BehaviorTree);
-
-		this->BehaviorTreeComp->StartTree(*this->BehaviorTree);
 	}
 	else
 	{
@@ -55,43 +50,50 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 void AEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	this->PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	this->GetBlackboardComponent()->SetValueAsObject(TEXT("PlayerActor"), this->PlayerCharacter);
-
-	TSubclassOf<ABaseEnemy> EnemyClass;
-	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), EnemyClass, this->AllEnemies);
+	
+	// TSubclassOf<ABaseEnemy> EnemyClass;
+	// UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), EnemyClass, this->AllEnemies);
 }
 
 void AEnemyAIController::OnPerceptionUpdatedImpl(const TArray<AActor*>& UpdatedActors)
 {
 	for (auto&& CurrentActor : UpdatedActors)
 	{
-		if (CurrentActor->IsA<APlayerCharacter>())
+		FActorPerceptionBlueprintInfo Info;
+		PerceptionComponent->GetActorsPerception(CurrentActor, Info);
+		for (auto Sense : Info.LastSensedStimuli)
 		{
-			FActorPerceptionBlueprintInfo Info;
-			this->AIPerceptionComponent->GetActorsPerception(CurrentActor, Info);
-
-			if (Info.LastSensedStimuli[0].WasSuccessfullySensed())
+			const bool NewlySensed = Sense.WasSuccessfullySensed();
+			if (Sense.Type == DamageID || Sense.Type == HearID)
 			{
-				// Sensed actor enters the sense range
-				this->GetBlackboardComponent()->SetValueAsVector(
-					TEXT("PlayerLocation"), this->PlayerCharacter->GetActorLocation());
-				this->SetFocus(this->PlayerCharacter);
-				this->ControlledEnemy->GetCharacterMovement()->MaxWalkSpeed = this->ControlledEnemy->RunMovementSpeed;
+				if (NewlySensed && EnemyState < EAIEnemyState::VisualPursuit)
+				{
+					ClearFocus(EAIFocusPriority::Gameplay);
+					GetBlackboardComponent()->SetValueAsVector(TEXT("LocationInterest"), CurrentActor->GetActorLocation());
+					EnemyState = EAIEnemyState::AlertedToLocation;
+					GetBlackboardComponent()->SetValueAsEnum(TEXT("EnemyState"), static_cast<uint8>(EAIEnemyState::AlertedToLocation));
+				}
 			}
-			else
+			else if (Sense.Type ==  SightID)
 			{
-				// Sensed actor leaves the sense range
-				UE_LOG(LogTemp, Warning, TEXT("Player Left Focus."));
-
-				this->GetBlackboardComponent()->ClearValue(TEXT("PlayerLocation"));
-				this->GetBlackboardComponent()->SetValueAsVector(
-					TEXT("LastKnownPlayerLocation"), this->PlayerCharacter->GetActorLocation());
-				this->ClearFocus(EAIFocusPriority::Gameplay);
+				if (NewlySensed)
+				{
+					PlayerCharacter = static_cast<APlayerCharacter*>(CurrentActor);
+					GetBlackboardComponent()->SetValueAsObject(TEXT("PlayerActor"), CurrentActor);
+					SetFocus(CurrentActor);
+					EnemyState = EAIEnemyState::VisualPursuit;
+					GetBlackboardComponent()->SetValueAsEnum(TEXT("EnemyState"), static_cast<uint8>(EAIEnemyState::VisualPursuit));
+				}
+				else
+				{
+					PlayerCharacter = nullptr;
+					GetBlackboardComponent()->ClearValue(TEXT("PlayerActor"));
+					ClearFocus(EAIFocusPriority::Gameplay);
+					GetBlackboardComponent()->SetValueAsVector(TEXT("LocationInterest"), CurrentActor->GetActorLocation());
+					EnemyState = EAIEnemyState::LostVisualPursuit;
+					GetBlackboardComponent()->SetValueAsEnum(TEXT("EnemyState"), static_cast<uint8>(EAIEnemyState::LostVisualPursuit));
+				}
 			}
-
-			return;
 		}
 	}
 }
@@ -126,4 +128,32 @@ ETeamAttitude::Type AEnemyAIController::GetTeamAttitudeTowards(const AActor& Oth
 	else if (OtherActorTeamId == ThisEntitiesTeamId) { return ETeamAttitude::Friendly; }
 
 	return ETeamAttitude::Hostile;
+}
+
+// Consolidate the setup of the perception system for this AI Controller in a method
+void AEnemyAIController::InitAIPerceptionSenses()
+{
+	UAIPerceptionComponent* AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
+	AIPerceptionComponent->bEditableWhenInherited = true;
+
+	//Create a Damage Sense
+	UAISenseConfig_Damage* Config_Damage = CreateDefaultSubobject<UAISenseConfig_Damage>(FName("Damage Config"));
+
+	//Create a Sight Sense
+	UAISenseConfig_Sight* Config_Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(FName("Sight Config"));
+	Config_Sight->SightRadius = 1000.f;
+	Config_Sight->LoseSightRadius = 1500.f;
+	Config_Sight->PeripheralVisionAngleDegrees = 90.f;
+	Config_Sight->DetectionByAffiliation.bDetectEnemies = true;
+
+	UAISenseConfig_Hearing* Config_Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(FName("Hearing Config"));
+	Config_Hearing->HearingRange = 1500.f;
+	Config_Hearing->DetectionByAffiliation.bDetectEnemies = true;
+
+	//Register the senses in order to our Perception Component
+	AIPerceptionComponent->ConfigureSense(*Config_Damage);
+	AIPerceptionComponent->ConfigureSense(*Config_Sight);
+	AIPerceptionComponent->ConfigureSense(*Config_Hearing);
+	
+	SetPerceptionComponent(*AIPerceptionComponent);
 }

@@ -50,23 +50,23 @@ void UFindStrafeLocation::OnQueryFinished(TSharedPtr<FEnvQueryResult> Result)
 
 bool UFindStrafeLocation::IsDistanceGreater(FVector Location)
 {
-	if (this->EnemyController->AllEnemies.Num() <= 1) { return true; }
+	// if (this->EnemyController->AllEnemies.Num() <= 1) { return true; }
 
 	bool ConsiderLocation = true;
 	float CalculatedDistance = 0;
 
 	// Check if the distance between the passed in EQS Location
 	// is less than the distance parameter of the query.
-	for (auto& EnemyActor : this->EnemyController->AllEnemies)
-	{
-		CalculatedDistance = FVector::Dist(Location, EnemyActor->GetActorLocation());
-
-		if (CalculatedDistance <= this->MaximalDistanceBetweenEnemies)
-		{
-			ConsiderLocation = false;
-			break;
-		}
-	}
+	// for (auto& EnemyActor : this->EnemyController->AllEnemies)
+	// {
+	// 	CalculatedDistance = FVector::Dist(Location, EnemyActor->GetActorLocation());
+	//
+	// 	if (CalculatedDistance <= this->MaximalDistanceBetweenEnemies)
+	// 	{
+	// 		ConsiderLocation = false;
+	// 		break;
+	// 	}
+	// }
 
 	return ConsiderLocation;
 }
