@@ -12,6 +12,8 @@ class UBaseAmmo;
 class UBaseCustomDamageType;
 class APlayerCharacter;
 class UEntityStats;
+class UNiagaraComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class VIOLENTENDS_API ABaseGun : public AActor
@@ -60,6 +62,15 @@ protected:
 	 */
 	float CalculateDamage(UEntityStats* OtherEntity);
 
+	UFUNCTION(BlueprintCallable)
+	void StartLaserSight();
+
+	void BounceLaser();
+
+	FVector LaserStart;
+	FVector LaserEnd;
+	float DistanceToCover;
+
 	/* Initializes the magazine size, burst amount, projectile pierce and
 	   maximum range depending on the held ammo. Also updates the ammo widget UI
 	*/
@@ -78,22 +89,40 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Gun Properties")
 	USkeletalMeshComponent* GunMesh;
 
+	/** Place where the projectiles will spawn upon shooting */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	USceneComponent* ProjectileSpawnPoint;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	UNiagaraComponent* NiagaraComp;
+
+	/** What class of projectile will this weapon spawn upon being fired */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun Properties", meta = (AllowPrivateAccess = true))
 	TSubclassOf<AProjectile> ProjectileClass;
 
+	/**
+	 * What ammo item is currently loaded in the gun,
+	 * only relevant for the Player character
+	 */
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	UBaseAmmo* HeldAmmo;
 
+	/**
+	 * Determines the lenght that the projectile fired from this
+	 * weapon can travel before geting destroyed automatically
+	 */
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	float MaximumRange = 10.f;
 
-	/* How long will the reload animation take to complete in seconds */
+	/** How long will the reload animation take to complete in seconds */
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	float ReloadTime = 1.f;
 
+	/**
+	 * How many entities can bullets fired from this weapon pass through
+	 * before they are destroyed. This value is passed on the projectile
+	 * itself and all the logic is done in that class, not here
+	 */
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	int32 BulletPierceAmount;
 
@@ -103,21 +132,35 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	int32 MagazineSize;
 
+	/**
+	 * By how much should we divide the damage of a single projectile.
+	 * Used to customize the damage when firing multiple bullets at the
+	 * same time (i.e. burst or shotgun rounds)
+	 */
 	int32 DivideDamageAmount = 1;
 
 	int32 BurstAmount;
 
+	/**
+	 * What types of ammo can this weapon use? Takes a firing style
+	 * to determine which ammo (that has that same style) can be
+	 * equipped and which can not be equipped
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Offence Properties", meta = (AllowPrivateAccess = true))
 	TArray<EFiringStyle> AcceptableAmmoTypes;
 
-	/* Damage types that the projectiles will deal upon impact, as well as their damage values */
+	/** Damage types that the projectiles will deal upon impact, as well as their damage values */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Offence Properties", meta = (AllowPrivateAccess = true))
 	TMap<TSubclassOf<UBaseCustomDamageType>, float> GunDamageTypes;
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	bool bIsFiring;
 
-	/* Assigned by the Player if he has the appropriate gameplay tag (Weapon.BouncyBullets) */
+	/** Showing the laser only depends on the bouncy bullets ability for now */
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	bool bShowLaserSight = false;
+
+	/** Assigned by the Player if he has the appropriate gameplay tag (Weapon.BouncyBullets) */
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	bool bShouldProjectilesBounce = false;
 

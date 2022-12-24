@@ -9,6 +9,10 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "PlayerCharacter.h"
 #include "Projectile.h"
 #include "TimerManager.h"
@@ -26,6 +30,9 @@ ABaseGun::ABaseGun()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Spawn Point"));
 	ProjectileSpawnPoint->SetupAttachment(GunMesh);
+
+	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara Component"));
+	NiagaraComp->SetupAttachment(GunMesh);
 }
 
 void ABaseGun::BeginPlay()
@@ -213,6 +220,81 @@ float ABaseGun::CalculateDamage(class UEntityStats* OtherEntity)
 	}
 
 	return ResultingDamage / this->DivideDamageAmount;
+}
+
+void ABaseGun::StartLaserSight()
+{
+	this->DistanceToCover = this->MaximumRange;
+
+	this->LaserStart = this->ProjectileSpawnPoint->GetComponentLocation();
+	this->LaserEnd = this->LaserStart + this->ProjectileSpawnPoint->GetForwardVector() * this->DistanceToCover;
+
+	FHitResult HitResult;
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectTypes;
+
+	// Only WorldStatic objects will be registered
+	CollisionObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+
+	TArray<AActor*> ActorsToIgnore;
+
+	bool GotHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), this->LaserStart, this->LaserEnd,
+		CollisionObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true);
+
+	if (GotHit)
+	{
+		this->NiagaraComp->SetNiagaraVariableVec3(FString("Laser Start"), this->LaserStart);
+		this->NiagaraComp->SetNiagaraVariableVec3(FString("Laser End"), HitResult.Location);
+
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), this->NiagaraComp->GetAsset(), this->LaserStart,
+			FRotator(0, 0, 0), FVector(1, 1, 1), true, true, ENCPoolMethod::None, true);
+
+		this->DistanceToCover -= FVector::Dist(this->LaserStart, HitResult.Location);
+
+		this->LaserStart = HitResult.Location;
+
+		FVector UnitVector = UKismetMathLibrary::GetDirectionUnitVector(HitResult.TraceStart, HitResult.TraceEnd);
+		FVector ReflectionVector = UKismetMathLibrary::GetReflectionVector(UnitVector, HitResult.Normal);
+		this->LaserEnd = this->LaserStart + ReflectionVector * this->DistanceToCover;
+
+		this->BounceLaser();
+	}
+	else
+	{
+		this->NiagaraComp->SetNiagaraVariableVec3(FString("Laser Start"), this->LaserStart);
+		this->NiagaraComp->SetNiagaraVariableVec3(FString("Laser End"), this->LaserEnd);
+
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), this->NiagaraComp->GetAsset(), this->LaserStart,
+			FRotator(0, 0, 0), FVector(1, 1, 1), true, true, ENCPoolMethod::None, true);
+	}
+}
+
+void ABaseGun::BounceLaser()
+{
+	if (this->DistanceToCover <= 0) { return; }
+
+	FHitResult HitResult;
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectTypes;
+
+	// Only WorldStatic objects will be registered
+	CollisionObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+
+	TArray<AActor*> ActorsToIgnore;
+
+	bool GotHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), this->LaserStart, this->LaserEnd,
+		CollisionObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true);
+
+	if (GotHit)
+	{
+		this->DistanceToCover -= FVector::Dist(this->LaserStart, HitResult.Location);
+
+		this->LaserStart = HitResult.Location;
+
+		FVector UnitVector = UKismetMathLibrary::GetDirectionUnitVector(HitResult.TraceStart, HitResult.TraceEnd);
+		FVector ReflectionVector = UKismetMathLibrary::GetReflectionVector(UnitVector, HitResult.Normal);
+		this->LaserEnd = this->LaserStart + ReflectionVector * this->DistanceToCover;
+
+		this->BounceLaser();
+	}
 }
 
 void ABaseGun::UpdateAmmo()
