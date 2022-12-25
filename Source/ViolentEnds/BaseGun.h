@@ -37,6 +37,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	void FireBurst();
 	void FireShotgun();
@@ -63,13 +65,7 @@ protected:
 	float CalculateDamage(UEntityStats* OtherEntity);
 
 	UFUNCTION(BlueprintCallable)
-	void StartLaserSight();
-
-	void BounceLaser();
-
-	FVector LaserStart;
-	FVector LaserEnd;
-	float DistanceToCover;
+	void DisplayLaserSight();
 
 	/* Initializes the magazine size, burst amount, projectile pierce and
 	   maximum range depending on the held ammo. Also updates the ammo widget UI
@@ -93,12 +89,29 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	USceneComponent* ProjectileSpawnPoint;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	UNiagaraComponent* NiagaraComp;
-
 	/** What class of projectile will this weapon spawn upon being fired */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun Properties", meta = (AllowPrivateAccess = true))
 	TSubclassOf<AProjectile> ProjectileClass;
+
+	/**
+	 *  Starting point of the trace for the
+	 *  laser, changes each time the laser
+	 *  bounces if the trace hits something
+	 */
+	FVector LaserStart;
+
+	/**
+	 *  Ending point of the trace for the laser,
+	 *  starts at gun max range and changes if
+	 *  the trace hits something and the laser bounces
+	 */
+	FVector LaserEnd;
+
+	/**
+	 * How long will the laser beam be?
+	 * Determined by the maximum range.
+	 */
+	float DistanceToCover;
 
 	/**
 	 * What ammo item is currently loaded in the gun,

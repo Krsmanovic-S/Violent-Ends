@@ -490,6 +490,8 @@ void APlayerCharacter::EquipWeapon()
 		this->Gun = GetWorld()->SpawnActor<ABaseGun>(WeaponClass->BlueprintGunClass, SpawnParameters);
 		this->Gun->AttachToComponent(
 			GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
+
+		if (this->HasMatchingGameplayTag(FGlobalTags::Get().Weapon_BouncyBullets)) { this->Gun->bShowLaserSight = true; }
 	}
 }
 
