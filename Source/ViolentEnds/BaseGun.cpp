@@ -9,6 +9,10 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "PlayerCharacter.h"
 #include "Projectile.h"
 #include "TimerManager.h"
@@ -16,7 +20,7 @@
 
 ABaseGun::ABaseGun()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root Component"));
 	SetRootComponent(Root);
@@ -49,6 +53,11 @@ void ABaseGun::BeginPlay()
 
 		this->GunDamageTypes = OwningEnemy->EnemyDamageTypes;
 	}
+}
+
+void ABaseGun::Tick(float DeltaTime)
+{
+	if (this->bShowLaserSight) { this->DisplayLaserSight(); }
 }
 
 void ABaseGun::FireOneBullet(FVector ProjectileDirection)
@@ -213,6 +222,52 @@ float ABaseGun::CalculateDamage(class UEntityStats* OtherEntity)
 	}
 
 	return ResultingDamage / this->DivideDamageAmount;
+}
+
+void ABaseGun::DisplayLaserSight()
+{
+	uint8 LaserMaxBounces = 10;
+
+	this->DistanceToCover = this->MaximumRange;
+
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore;
+	TArray<TEnumAsByte<EObjectTypeQuery>> CollisionObjectTypes;
+
+	// Only bounce off WorldStaticObjects
+	CollisionObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+
+	bool GotHit;
+	FVector UnitVector;
+	FVector ReflectionVector;
+
+	for (int i = 0; i < LaserMaxBounces; i++)
+	{
+		if (this->DistanceToCover > 0)
+		{
+			if (i == 0)
+			{
+				this->LaserStart = this->ProjectileSpawnPoint->GetComponentLocation();
+				this->LaserEnd =
+					this->LaserStart + this->ProjectileSpawnPoint->GetForwardVector() * this->DistanceToCover;
+			}
+
+			GotHit = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), this->LaserStart, this->LaserEnd,
+				CollisionObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::ForOneFrame, HitResult, true);
+
+			if (GotHit)
+			{
+				this->DistanceToCover -= FVector::Dist(this->LaserStart, HitResult.Location);
+
+				this->LaserStart = HitResult.Location;
+
+				UnitVector = UKismetMathLibrary::GetDirectionUnitVector(HitResult.TraceStart, HitResult.TraceEnd);
+				ReflectionVector = UKismetMathLibrary::GetReflectionVector(UnitVector, HitResult.Normal);
+				this->LaserEnd = this->LaserStart + ReflectionVector * this->DistanceToCover;
+			}
+			else { break; }
+		}
+	}
 }
 
 void ABaseGun::UpdateAmmo()
