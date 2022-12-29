@@ -7,6 +7,7 @@
 #include "WeaponSystem.h"
 
 #include "GameFramework/Character.h"
+#include "Spawner/DynamicSpawnable.h"
 #include "UtilityPickup.h"
 
 #include "BaseEnemy.generated.h"
@@ -20,7 +21,7 @@ class UDataTable;
 class UAIPerceptionStimuliSourceComponent;
 
 UCLASS()
-class VIOLENTENDS_API ABaseEnemy : public ACharacter, public ILootSystem, public IWeaponSystem
+class VIOLENTENDS_API ABaseEnemy : public ACharacter, public ILootSystem, public IWeaponSystem, public IDynamicSpawnable
 {
 	GENERATED_BODY()
 
@@ -139,4 +140,9 @@ private:
 	virtual bool HasMeleeWeapon() const override;
 	virtual bool TryAttackRanged() override;
 	virtual bool TryAttackMelee() override;
+
+	// Inherited via IDynamicSpawnable
+	virtual FVector GetSpawnLocationOffset() const override;
+	virtual FRotator GetFixedSpawnRotation() const override;
+	virtual float GetSpawnRadius() const override;
 };

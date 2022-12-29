@@ -5,6 +5,7 @@
 #include "BaseMeleeWeapon.h"
 #include "BaseQuest.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "Components/CapsuleComponent.h"
 #include "EnemyAIController.h"
 #include "EntityStats.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -164,4 +165,19 @@ bool ABaseEnemy::TryAttackMelee()
 
 	bool Success = MeleeWeapon->Attack();
 	return Success;
+}
+
+FVector ABaseEnemy::GetSpawnLocationOffset() const
+{
+	return FVector(0,0, (GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+}
+
+FRotator ABaseEnemy::GetFixedSpawnRotation() const
+{
+	return FRotator();
+}
+
+float ABaseEnemy::GetSpawnRadius() const
+{
+	return GetCapsuleComponent()->GetScaledCapsuleRadius();
 }
