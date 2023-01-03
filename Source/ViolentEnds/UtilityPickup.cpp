@@ -49,9 +49,25 @@ void AUtilityPickup::InitializeUtilityMesh()
 			this->UtilityActorMesh->SetStaticMesh(this->UtilityPossibleMeshes[1]);
 			this->UtilityActorMesh->SetMaterial(0, this->TemporaryTestingMaterials[1]);
 			return;
-		default:
+		case EUtilityType::StandardAmmo:
 			this->UtilityActorMesh->SetStaticMesh(this->UtilityPossibleMeshes[2]);
-			this->UtilityActorMesh->SetWorldScale3D(FVector(1.2, 1.2, 1.2));
+			this->UtilityActorMesh->SetWorldScale3D(FVector(1.1, 1.1, 1.1));
+			this->UtilityActorMesh->SetMaterial(1, this->TemporaryTestingMaterials[2]);
+			return;
+		case EUtilityType::BurstAmmo:
+			this->UtilityActorMesh->SetStaticMesh(this->UtilityPossibleMeshes[2]);
+			this->UtilityActorMesh->SetWorldScale3D(FVector(1.1, 1.1, 1.1));
+			this->UtilityActorMesh->SetMaterial(1, this->TemporaryTestingMaterials[3]);
+			return;
+		case EUtilityType::ShotgunAmmo:
+			this->UtilityActorMesh->SetStaticMesh(this->UtilityPossibleMeshes[2]);
+			this->UtilityActorMesh->SetWorldScale3D(FVector(1.1, 1.1, 1.1));
+			this->UtilityActorMesh->SetMaterial(1, this->TemporaryTestingMaterials[4]);
+			return;
+		case EUtilityType::SniperAmmo:
+			this->UtilityActorMesh->SetStaticMesh(this->UtilityPossibleMeshes[2]);
+			this->UtilityActorMesh->SetWorldScale3D(FVector(1.1, 1.1, 1.1));
+			this->UtilityActorMesh->SetMaterial(1, this->TemporaryTestingMaterials[5]);
 			return;
 	}
 }
