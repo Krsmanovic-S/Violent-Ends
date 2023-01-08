@@ -98,7 +98,12 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 		FVector Target = HitLocation + OffsetToLineIntersection;
 
-		RotateCharacterToMouse(Target);
+		RotateCharacterToMouse(Target, DeltaTime);
+	}
+	else if (MainPlayerController && bIsRelativeAiming)
+	{
+		FVector Target = GetActorLocation() + (RelativeAimDirection * 100);
+		RotateCharacterToMouse(Target, DeltaTime);
 	}
 
 	if (this->PlayerStats->bIsEntityRunning && this->PlayerStats->CurrentStamina > 0)
@@ -125,6 +130,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Pressed, this, &APlayerCharacter::Aim);
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Released, this, &APlayerCharacter::StopAiming);
 
+	// TODO(EnhancedInput): Nicer bindings didn't work ("RelativeAim"), fix this when switching
+	PlayerInputComponent->BindVectorAxis(EKeys::Gamepad_Right2D, this, &APlayerCharacter::RelativeAim);
+
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &APlayerCharacter::Attack);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &APlayerCharacter::StopAttacking);
 
@@ -145,7 +153,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 }
 
 // -------------------------Character Movement And Rotation To Cursor-------------------------
-void APlayerCharacter::RotateCharacterToMouse(FVector LookAtTarget)
+void APlayerCharacter::RotateCharacterToMouse(FVector LookAtTarget, float DeltaTime)
 {
 	// Look at target is the mouse hit result position.
 	FVector ToTarget = LookAtTarget - GetMesh()->GetComponentLocation();
@@ -153,13 +161,27 @@ void APlayerCharacter::RotateCharacterToMouse(FVector LookAtTarget)
 	// Vector math to get the new vector (from the destination to where we want it to start).
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f);
 
-	GetMesh()->SetWorldRotation(FMath::RInterpTo(
-		GetMesh()->GetComponentRotation(), LookAtRotation, UGameplayStatics::GetWorldDeltaSeconds(this), 7.5));
+	GetMesh()->SetWorldRotation(FMath::RInterpTo(GetMesh()->GetComponentRotation(), LookAtRotation, DeltaTime, 7.5));
 }
 
 void APlayerCharacter::Aim()
 {
 	this->bIsAiming = true;
+}
+
+void APlayerCharacter::RelativeAim(FVector AimDirection)
+{
+	if (AimDirection.IsNearlyZero(.05)) // Small deadzone, should be configurable eventually
+	{
+		bIsRelativeAiming = false;
+		return;
+	}
+
+	bIsRelativeAiming = true;
+
+	// TODO(Enhanced Input): remove this hack when we switch
+	auto FixedDirection = FVector(-AimDirection.Y, AimDirection.X, 0);
+	RelativeAimDirection = FixedDirection;
 }
 
 void APlayerCharacter::StopAiming()
@@ -491,7 +513,10 @@ void APlayerCharacter::EquipWeapon()
 		this->Gun->AttachToComponent(
 			GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunAttachPoint"));
 
-		if (this->HasMatchingGameplayTag(FGlobalTags::Get().Weapon_BouncyBullets)) { this->Gun->bShowLaserSight = true; }
+		if (this->HasMatchingGameplayTag(FGlobalTags::Get().Weapon_BouncyBullets))
+		{
+			this->Gun->bShowLaserSight = true;
+		}
 	}
 }
 

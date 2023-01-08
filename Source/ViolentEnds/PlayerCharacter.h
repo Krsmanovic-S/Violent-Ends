@@ -72,6 +72,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<USoundBase*> GunSounds;
 
+	UPROPERTY()
 	AMainPlayerController* MainPlayerController;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -119,8 +120,13 @@ private:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// Character Movement and Aiming
-	void RotateCharacterToMouse(FVector LookAtTarget);
+	void RotateCharacterToMouse(FVector LookAtTarget, float DeltaTime);
 	void Aim();
+
+	/** Relative aiming support for controllers */
+	void RelativeAim(FVector AimDirection);
+	FVector RelativeAimDirection;
+
 	void StopAiming();
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
@@ -161,6 +167,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* InteractionZone;
 
+	UPROPERTY()
 	TArray<AActor*> OverlappingInteractables;
 
 	IInteractiveObject* CurrentInteractable;
@@ -169,6 +176,7 @@ private:
 	void PlayerLevelUp();
 	// ------------------------------------------
 	// Grenade
+	UPROPERTY()
 	AGrenade* Grenade;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player|Grenade", meta = (AllowPrivateAccess = true))
@@ -199,6 +207,7 @@ private:
 
 	bool bAllowedAttack = true;
 	bool bIsAiming;
+	bool bIsRelativeAiming = false;
 	bool bHasDashed = false;
 
 	FTimerHandle DashHandle;
