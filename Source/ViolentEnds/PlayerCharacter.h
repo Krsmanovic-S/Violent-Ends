@@ -56,6 +56,7 @@ public:
 	// Equipping and Unequipping
 	void EquipWeapon();
 	void UnequipWeapon();
+
 	// ------------------------------------------
 	UFUNCTION(BlueprintCallable)
 	void AddXP(float& ExperienceToAdd);
@@ -108,6 +109,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FAmmoUpdate OnAmmoUpdated;
 
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ReloadWeapon();
 
 	/** Can this character attack? */
@@ -117,41 +119,49 @@ public:
 	bool CanReload();
 
 private:
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 	// Character Movement and Aiming
 	void RotateCharacterToMouse(FVector LookAtTarget, float DeltaTime);
-	void Aim();
 
-	/** Relative aiming support for controllers */
-	void RelativeAim(FVector AimDirection);
+	/** Relative aim direction for controllers, set within Blueprints */
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	FVector RelativeAimDirection;
 
-	void StopAiming();
-	void MoveForward(float AxisValue);
-	void MoveRight(float AxisValue);
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void Run();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void StopRunning();
+
 	/** Switches the current running desire */
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ToggleRunning();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void Dash();
+
 	void ResetDash();
-	// ------------------------------------------
+
 	// Shooting
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void Attack();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void StopAttacking();
-	// ------------------------------------------
+
 	// Ammo & Weapon Swap
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void SwapWeapons();
+
+	UFUNCTION(BlueprintCallable, Category = "Input", meta = (BitmaskEnum = "EFiringStyle"))
 	void EquipAmmo(EFiringStyle AmmoFireStyle);
-	void EquipStandardAmmo();
-	void EquipBurstAmmo();
-	void EquipShotgunAmmo();
-	void EquipSniperAmmo();
-	// ------------------------------------------
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ThrowGrenade();
-	// ------------------------------------------
+
 	// Interaction System
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void Interact();
+
 	UFUNCTION()
 	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -159,8 +169,6 @@ private:
 	UFUNCTION()
 	void OnBoxEndOverlap(
 		UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	void OnInteract();
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
@@ -205,9 +213,13 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	bool bAllowedReload = true;
 
-	bool bAllowedAttack = true;
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
 	bool bIsAiming;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
 	bool bIsRelativeAiming = false;
+
+	bool bAllowedAttack = true;
 	bool bHasDashed = false;
 
 	FTimerHandle DashHandle;

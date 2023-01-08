@@ -113,43 +113,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	else { GetCharacterMovement()->MaxWalkSpeed = WalkSpeed; }
 }
 
-void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &APlayerCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &APlayerCharacter::MoveRight);
-
-	PlayerInputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &APlayerCharacter::Run);
-	PlayerInputComponent->BindAction(TEXT("Run"), IE_Released, this, &APlayerCharacter::StopRunning);
-
-	PlayerInputComponent->BindAction(TEXT("ToggleRun"), IE_Pressed, this, &APlayerCharacter::ToggleRunning);
-
-	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Pressed, this, &APlayerCharacter::Aim);
-	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Released, this, &APlayerCharacter::StopAiming);
-
-	// TODO(EnhancedInput): Nicer bindings didn't work ("RelativeAim"), fix this when switching
-	PlayerInputComponent->BindVectorAxis(EKeys::Gamepad_Right2D, this, &APlayerCharacter::RelativeAim);
-
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &APlayerCharacter::Attack);
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &APlayerCharacter::StopAttacking);
-
-	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Released, this, &APlayerCharacter::ReloadWeapon);
-
-	PlayerInputComponent->BindAction(TEXT("Dash"), IE_Pressed, this, &APlayerCharacter::Dash);
-
-	PlayerInputComponent->BindAction(TEXT("ThrowGrenade"), IE_Pressed, this, &APlayerCharacter::ThrowGrenade);
-
-	PlayerInputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &APlayerCharacter::OnInteract);
-
-	PlayerInputComponent->BindAction(TEXT("SwapWeapons"), IE_Pressed, this, &APlayerCharacter::SwapWeapons);
-
-	PlayerInputComponent->BindAction(TEXT("StandardAmmo"), IE_Pressed, this, &APlayerCharacter::EquipStandardAmmo);
-	PlayerInputComponent->BindAction(TEXT("BurstAmmo"), IE_Pressed, this, &APlayerCharacter::EquipBurstAmmo);
-	PlayerInputComponent->BindAction(TEXT("ShotgunAmmo"), IE_Pressed, this, &APlayerCharacter::EquipShotgunAmmo);
-	PlayerInputComponent->BindAction(TEXT("SniperAmmo"), IE_Pressed, this, &APlayerCharacter::EquipSniperAmmo);
-}
-
 // -------------------------Character Movement And Rotation To Cursor-------------------------
 void APlayerCharacter::RotateCharacterToMouse(FVector LookAtTarget, float DeltaTime)
 {
@@ -160,41 +123,6 @@ void APlayerCharacter::RotateCharacterToMouse(FVector LookAtTarget, float DeltaT
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw - 90.f, 0.f);
 
 	GetMesh()->SetWorldRotation(FMath::RInterpTo(GetMesh()->GetComponentRotation(), LookAtRotation, DeltaTime, 7.5));
-}
-
-void APlayerCharacter::Aim()
-{
-	this->bIsAiming = true;
-}
-
-void APlayerCharacter::RelativeAim(FVector AimDirection)
-{
-	if (AimDirection.IsNearlyZero(.05)) // Small deadzone, should be configurable eventually
-	{
-		bIsRelativeAiming = false;
-		return;
-	}
-
-	bIsRelativeAiming = true;
-
-	// TODO(Enhanced Input): remove this hack when we switch
-	auto FixedDirection = FVector(-AimDirection.Y, AimDirection.X, 0);
-	RelativeAimDirection = FixedDirection;
-}
-
-void APlayerCharacter::StopAiming()
-{
-	this->bIsAiming = false;
-}
-
-void APlayerCharacter::MoveForward(float AxisValue)
-{
-	AddMovementInput(GetActorForwardVector() * AxisValue);
-}
-
-void APlayerCharacter::MoveRight(float AxisValue)
-{
-	AddMovementInput(GetActorRightVector() * AxisValue);
 }
 
 void APlayerCharacter::Run()
@@ -323,8 +251,9 @@ void APlayerCharacter::SwapWeapons()
 
 void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 {
+	if (Gun == nullptr) { return; }
 	// Don't do anything if we already equipped this ammo type.
-	if (this->Gun->HeldAmmo != nullptr && this->Gun->HeldAmmo->AmmoFireStyle == AmmoFireStyle) { return; }
+	if (Gun->HeldAmmo != nullptr && Gun->HeldAmmo->AmmoFireStyle == AmmoFireStyle) { return; }
 
 	bool CanAcceptAmmo = false;
 
@@ -372,27 +301,6 @@ void APlayerCharacter::EquipAmmo(EFiringStyle AmmoFireStyle)
 		this->OnAmmoUpdated.Broadcast();
 	}
 }
-
-void APlayerCharacter::EquipStandardAmmo()
-{
-	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Standard); }
-}
-
-void APlayerCharacter::EquipBurstAmmo()
-{
-	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Burst); }
-}
-
-void APlayerCharacter::EquipShotgunAmmo()
-{
-	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Shotgun); }
-}
-
-void APlayerCharacter::EquipSniperAmmo()
-{
-	if (this->Gun != nullptr && this->bAllowedAmmoEquip) { this->EquipAmmo(EFiringStyle::Sniper); }
-}
-// ---------------------------------------------------------------------------------------------
 
 void APlayerCharacter::ThrowGrenade()
 {
@@ -477,20 +385,21 @@ void APlayerCharacter::OnBoxEndOverlap(
 	}
 }
 
-void APlayerCharacter::OnInteract()
+void APlayerCharacter::Interact()
 {
-	if (this->CurrentInteractable != nullptr)
+	if (CurrentInteractable == nullptr)
 	{
-		this->CurrentInteractable->InteractPure();
-
-		if (!this->CurrentInteractable->bCanBeUsedAgain)
-		{
-			AActor* InteractableActor = Cast<AActor>(this->CurrentInteractable);
-
-			this->OnBoxEndOverlap(nullptr, InteractableActor, nullptr, 0);
-		}
+		LOG_WARNING(LogTemp, "No interactable in focus.");
+		return;
 	}
-	else { UE_LOG(LogTemp, Warning, TEXT("No interactable in focus.")); }
+
+	CurrentInteractable->InteractPure();
+
+	if (!CurrentInteractable->bCanBeUsedAgain)
+	{
+		AActor* InteractableActor = Cast<AActor>(CurrentInteractable);
+		OnBoxEndOverlap(nullptr, InteractableActor, nullptr, 0);
+	}
 }
 
 void APlayerCharacter::EquipWeapon()
