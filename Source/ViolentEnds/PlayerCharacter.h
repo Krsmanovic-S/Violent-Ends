@@ -224,7 +224,7 @@ private:
 
 	FTimerHandle DashHandle;
 	FTimerHandle InvincibilityHandle;
-	FHitResult MouseHitResult;
+	FHitResult HitResult;
 
 public: // Quest
 	/**

@@ -83,14 +83,14 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	if (MainPlayerController && this->bIsAiming)
 	{
-		MainPlayerController->GetHitResultUnderCursor(ECC_Visibility, false, MouseHitResult);
+		MainPlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
 
 		// The mouse hit result occurs at some arbitrary point, from the camera to the floor/ terrain
 		// Interpolate or extrapolate that trace to derive the point
 		// where the line's Z value is equal to the player's gun height (roughly, player location Z + 55)
 		// The player's location there is its half height, so it would be around 135cm above the current floor
-		FVector HitLocation = MouseHitResult.Location;
-		FVector CameraLocation = MouseHitResult.TraceStart;
+		FVector HitLocation = HitResult.Location;
+		FVector CameraLocation = HitResult.TraceStart;
 		FVector TraceDirection = (CameraLocation - HitLocation).GetSafeNormal();
 		float PlayerGunHeight = GetActorLocation().Z + GGun_Height;
 		float HitToPlayerGunDistance = PlayerGunHeight - HitLocation.Z;
