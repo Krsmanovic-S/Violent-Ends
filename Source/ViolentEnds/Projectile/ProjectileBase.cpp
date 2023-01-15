@@ -29,18 +29,25 @@ void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompone
 {
 	// Handle collision logic if the target is a character (target has ability system component)
 
-	
-	if (IAbilitySystemInterface* ABSI = Cast<IAbilitySystemInterface>(OtherActor))
+	if (HitGameplayEffect)
 	{
-		if (auto ASC = ABSI->GetAbilitySystemComponent())
+		if (IAbilitySystemInterface* ABSI = Cast<IAbilitySystemInterface>(OtherActor))
 		{
-			// Hits the character
-			// Require tags
-			ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("")));
+			if (auto ASC = ABSI->GetAbilitySystemComponent())
+			{
+				// Hits the character
+				// Require tags
+				ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("")));
 
-			// Apply hit effect
-			OwnerAbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*HitGameplayEffect, ASC);
-			// ASC->AddGameplayCue
+				// Apply hit effect
+
+				FGameplayEffectSpecHandle GEHandle =
+					OwnerAbilitySystemComponent->MakeOutgoingSpec(HitGameplayEffect, 0, FGameplayEffectContextHandle());
+				if (GEHandle.IsValid())
+				{
+					OwnerAbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*GEHandle.Data.Get(), ASC);
+				}
+			}
 		}
 	}
 

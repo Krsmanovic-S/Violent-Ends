@@ -6,6 +6,7 @@
 
 UENUM(BlueprintType)
 enum class EEquipmentType: uint8 {
+	Type        UMETA(DisplayName = "TYpe"),
  	Weapon      UMETA(DisplayName = "Weapon"),
     Helmet      UMETA(DisplayName = "Helmet"),
     BodyArmor   UMETA(DisplayName = "Body Armor"),

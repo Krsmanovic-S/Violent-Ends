@@ -8,6 +8,9 @@
 
 class UCharacterInventoryComponent;
 class UBoxComponent;
+class UQuestComponent;
+class USpringArmComponent;
+class UCameraComponent;
 
 UCLASS()
 class VIOLENTENDS_API APlayerCharacterBase : public ACharacterBase {
@@ -19,15 +22,24 @@ public:
 	APlayerCharacterBase();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Inventory")
-	UCharacterInventoryComponent* InventoryComponent;
+	UCharacterInventoryComponent* InventoryComponent;	
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Inventory")
+	UQuestComponent* QuestComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character")
-	UBoxComponent* InteractionDetection;
+	UBoxComponent* InteractionDetection;	
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Camera")
+	USpringArmComponent* SpringArmComponent;
+		
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Camera")
+	UCameraComponent* CameraComponent;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Character|Aim")
 	void StartRotation();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Character|Aim")
 	void EndRotation();
 
 protected:

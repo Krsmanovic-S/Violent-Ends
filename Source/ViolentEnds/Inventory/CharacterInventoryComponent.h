@@ -77,6 +77,9 @@ public:
 	UEquipmentBase* ArmsGuard;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
+	void InitInventoryComponent(UVE_ASC* OwnerASC);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
 	int32 FindItemIndexInInventory(UItemBase* ItemToFind);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")

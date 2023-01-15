@@ -1,0 +1,2 @@
+Use GameplayTags.ini to add/remove tags from the game.
+To update in editor: turn the Import Tags From Config option off and back on

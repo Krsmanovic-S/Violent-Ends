@@ -9,7 +9,6 @@ ACharacterBase::ACharacterBase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	CharacterASC = CreateDefaultSubobject<UVE_ASC>(TEXT("CharacterAbilitySystemComponent"));
-
 	CharacterASC->GetGameplayAttributeValueChangeDelegate(UAttributeSet_BaseAttribute::GetHealthAttribute())
 		.AddUObject(this, &ACharacterBase::OnCharacterHealthChanged_Implementation);
 }
@@ -21,27 +20,37 @@ void ACharacterBase::BeginPlay()
 	// Initialize actor info for ability system
 	if (CharacterASC)
 	{
-		auto ActorInfo = CharacterASC->AbilityActorInfo.Get();
+		CharacterASC->InitAbilityActorInfo(this, this);
 
+		auto ActorInfo = CharacterASC->AbilityActorInfo.Get();
 		if (ActorInfo)
 		{
-			ActorInfo->AvatarActor = this;
-			ActorInfo->OwnerActor = this;
 			ActorInfo->AnimInstance = MakeWeakObjectPtr(GetMesh()->GetAnimInstance());
 			ActorInfo->MovementComponent = MakeWeakObjectPtr(GetCharacterMovement());
 		}
 
-		UGE_CharacterInitialization* CharacterStatEffect = NewObject<UGE_CharacterInitialization>(this, CharacterDefaultStats);
+		// Register list of attribute set to the ASC
+		for (auto& AttributeSetClass : RegisteredAttributeSets) {
+			auto AttributeSet = NewObject<UAttributeSet>(this, AttributeSetClass);
+			CharacterASC->AddAttributeSetSubobject(AttributeSet);
+		}
 
-#if WITH_EDITORONLY_DATA
-		CharacterStatEffect = UGE_CharacterInitialization::CreateEffectFromHelperStruct(EditorCharacterStat);
-#endif // WITH_EDITORONLY_DATA
+		if (CharacterDefaultStats)
+		{
+			FGameplayEffectContextHandle ContextHandle = CharacterASC->MakeEffectContext();
+			FGameplayEffectSpecHandle EffectSpec =
+				CharacterASC->MakeOutgoingSpec(CharacterDefaultStats, 0, ContextHandle);
 
-		FGameplayEffectSpec EffectSpec;
-		EffectSpec.Def = CharacterStatEffect;
-		EffectSpec.Duration;
-
-		CharacterASC->ApplyGameplayEffectSpecToSelf(EffectSpec);
+			if (EffectSpec.IsValid()) { auto Handle = CharacterASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data.Get()); }
+		}
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("AbilitySystemComponent is null")));
+		}
 	}
 }
 
@@ -64,9 +73,29 @@ void ACharacterBase::OnCharacterHealthChanged_Implementation(const FOnAttributeC
 	}
 }
 
-void ACharacterBase::OnCharacterMovementSpeedChanged_Implementation(const FOnAttributeChangeData& Data) {
+void ACharacterBase::OnCharacterMovementSpeedChanged_Implementation(const FOnAttributeChangeData& Data)
+{
 	OnCharacterMovementSpeedChanged(Data.OldValue, Data.NewValue);
 
 	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
+}
 
+bool ACharacterBase::TryUseAbilityWithTag(const FGameplayTagContainer& AbilityTag)
+{
+	if (!CharacterASC) { return false; }
+
+	bool Result = CharacterASC->TryActivateAbilitiesByTag(AbilityTag);
+
+	UE_LOG(LogTemp, Display, TEXT("%s attempt to use ability with tag %s: %s"), *GetFName().ToString(),
+		*AbilityTag.ToString(), Result ? *FString(TEXT("Success")) : *FString(TEXT("Failed")))
+
+	return Result;
+}
+
+bool ACharacterBase::TryUseDefaultAttack()
+{
+	FGameplayTagContainer TagContainer;
+	TagContainer.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Character.Ability.Attack.Default")));
+
+	return TryUseAbilityWithTag(TagContainer);
 }

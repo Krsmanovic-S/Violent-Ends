@@ -10,8 +10,7 @@
 class UProjectileMovementComponent;
 class USphereComponent;
 class UNiagaraSystem;
-
-struct FGameplayEffectSpec;
+class UGameplayEffect;
 
 UCLASS()
 class VIOLENTENDS_API AProjectileBase : public AActor, public IAbilitySystemInterface
@@ -29,7 +28,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	USphereComponent* CollisionComponent;
 
-	FGameplayEffectSpec* HitGameplayEffect;
+	TSubclassOf<UGameplayEffect> HitGameplayEffect;
 
 	// Projectile movement component, used to adjust projectile properties 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

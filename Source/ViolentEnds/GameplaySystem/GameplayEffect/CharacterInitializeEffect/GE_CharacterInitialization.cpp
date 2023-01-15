@@ -1,7 +1,7 @@
 #include "GE_CharacterInitialization.h"
 
 UGE_CharacterInitialization::UGE_CharacterInitialization() {
-	DurationPolicy = EGameplayEffectDurationType::Instant;
+	DurationPolicy = EGameplayEffectDurationType::Infinite;
 }
 
 UGE_CharacterInitialization* UGE_CharacterInitialization::CreateEffectFromHelperStruct(

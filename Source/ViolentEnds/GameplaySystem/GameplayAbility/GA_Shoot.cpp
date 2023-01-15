@@ -2,6 +2,10 @@
 #include "ViolentEnds/Projectile/ProjectileBase.h"
 #include "AbilitySystemComponent.h"
 
+UGA_Shoot::UGA_Shoot() {
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Character.Ability.Attack.Default")));
+}
+
 void UGA_Shoot::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
@@ -12,6 +16,8 @@ void UGA_Shoot::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	auto SpawnedProjectile = GetWorld()->SpawnActorDeferred<AProjectileBase>(AProjectileBase::StaticClass(), FTransform());
 	if (SpawnedProjectile) {
+		SpawnedProjectile->OwnerAbilitySystemComponent =
+			MakeWeakObjectPtr<UAbilitySystemComponent>(ASC);
 		SpawnedProjectile->FinishSpawning(FTransform());
 	}
 

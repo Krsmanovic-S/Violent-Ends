@@ -6,16 +6,18 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayEffectTypes.h"
 #include "ViolentEnds/GameplaySystem/GameplayEffect/CharacterInitializeEffect/GE_CharacterInitialization.h"
+#include "ViolentEnds/GameplaySystem/Combat/CombatInterface.h"
 
 #include "CharacterBase.generated.h"
 
 class UVE_ASC;
+class UAttributeSet;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCharacterDeath, ACharacter*, DeadCharacter);
 
 UCLASS()
 class VIOLENTENDS_API ACharacterBase :
-	public ACharacter, public IAbilitySystemInterface
+	public ACharacter, public IAbilitySystemInterface, public ICombatInterface
 {
 	GENERATED_BODY()
 
@@ -40,15 +42,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character")
 	TSubclassOf<UGE_CharacterInitialization> CharacterDefaultStats;
 
-#if WITH_EDITORONLY_DATA
 	/**
-	* Editor only: used to create initialize effect
-	* Has priority over CharacterDefaultStats
+	* Character's array of attribute sets to assign to this ASC
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character")
-	FCharacterInitialStatStruct EditorCharacterStat;
-#endif // WITH_EDITORONLY_DATA
-
+	TArray<TSubclassOf<UAttributeSet>> RegisteredAttributeSets;
 
 protected:
 
@@ -67,4 +65,10 @@ protected:
 	void OnCharacterMovementSpeedChanged_Implementation(const FOnAttributeChangeData& Data);
 
 
+
+
+
+// Inherited via ICombatInterface
+	virtual bool TryUseAbilityWithTag(const FGameplayTagContainer& AbilityTag) override;
+	virtual bool TryUseDefaultAttack() override;
 };

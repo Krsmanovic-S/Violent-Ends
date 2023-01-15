@@ -5,17 +5,21 @@
 #include "ViolentEnds/GameplaySystem/Component/VE_ASC.h"
 
 static TMap<EEquipmentType, FGameplayTag> GearTagMap = {
-	{ EEquipmentType::Weapon, FGameplayTag::RequestGameplayTag(TEXT("")) },
-	{ EEquipmentType::Helmet, FGameplayTag::RequestGameplayTag(TEXT("")) },
-	{ EEquipmentType::BodyArmor, FGameplayTag::RequestGameplayTag(TEXT("")) },
-	{ EEquipmentType::Legs, FGameplayTag::RequestGameplayTag(TEXT("")) },
-	{ EEquipmentType::Boots, FGameplayTag::RequestGameplayTag(TEXT("")) },
-	{ EEquipmentType::Arms, FGameplayTag::RequestGameplayTag(TEXT("")) },
+	{ EEquipmentType::Weapon, FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Weapon")) },
+	{ EEquipmentType::Helmet, FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Gear.Helmet")) },
+	{ EEquipmentType::BodyArmor, FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Gear.BodyArmor")) },
+	{ EEquipmentType::Legs, FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Gear.Legs")) },
+	{ EEquipmentType::Boots, FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Gear.Boots")) },
+	{ EEquipmentType::Arms, FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Gear.Arms")) },
 };
 
 UCharacterInventoryComponent::UCharacterInventoryComponent()
 {
-	OwnersAbilitySystemComponent = CreateDefaultSubobject<UVE_ASC>(TEXT("OwnersAbilitySystemComponent"));
+
+}
+
+void UCharacterInventoryComponent::InitInventoryComponent(UVE_ASC* OwnerASC) {
+	OwnersAbilitySystemComponent = OwnerASC;
 }
 
 int32 UCharacterInventoryComponent::FindItemIndexInInventory(UItemBase* ItemToFind)

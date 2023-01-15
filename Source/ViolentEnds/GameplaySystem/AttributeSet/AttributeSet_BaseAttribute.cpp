@@ -30,11 +30,9 @@ UAttributeSet_BaseAttribute::UAttributeSet_BaseAttribute()
 void UAttributeSet_BaseAttribute::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
-}
 
-void UAttributeSet_BaseAttribute::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
-{
-	Super::PreAttributeChange(Attribute, NewValue);
+	FGameplayAttribute Attribute = Data.EvaluatedData.Attribute;
+	float NewValue = Data.EvaluatedData.Magnitude;
 
 	if (Attribute == GetHealthMaxAttribute()) { AdjustAttributeProportional(Health, HealthMax, NewValue); }
 	if (Attribute == GetStaminaMaxAttribute()) { AdjustAttributeProportional(Stamina, StaminaMax, NewValue); }
@@ -49,7 +47,11 @@ void UAttributeSet_BaseAttribute::PreAttributeChange(const FGameplayAttribute& A
 		float ValidStamina = FMath::Clamp(NewValue, 0.f, GetStaminaMax());
 		SetHealth(ValidStamina);
 	}
+}
 
+void UAttributeSet_BaseAttribute::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
+{
+	Super::PreAttributeChange(Attribute, NewValue);
 }
 void UAttributeSet_BaseAttribute::AdjustAttributeProportional(
 	FGameplayAttributeData& Attribute, FGameplayAttributeData& AttributeMax, float NewValue)

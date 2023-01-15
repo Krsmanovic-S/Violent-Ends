@@ -1,65 +1,71 @@
 #include "PlayerCharacterBase.h"
 
+#include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "ViolentEnds/Inventory/CharacterInventoryComponent.h"
+#include "ViolentEnds/Quest/Component/QuestComponent.h"
 
-APlayerCharacterBase::APlayerCharacterBase() {
-
+APlayerCharacterBase::APlayerCharacterBase()
+{
 	InventoryComponent = CreateDefaultSubobject<UCharacterInventoryComponent>(TEXT("InventoryComponent"));
+	InventoryComponent->InitInventoryComponent(CharacterASC);
+
 	InteractionDetection = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionDetection"));
 	InteractionDetection->SetupAttachment(GetRootComponent());
+
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArmComponent->SetupAttachment(GetRootComponent());
+	SpringArmComponent->SetRelativeRotation(FRotator(-65.f, 0.f, 0.f));
+	SpringArmComponent->TargetArmLength = 1100.f;
+	SpringArmComponent->bDoCollisionTest = false;
+	SpringArmComponent->SetComponentTickEnabled(false);
+	SpringArmComponent->bInheritPitch = false;
+	SpringArmComponent->bInheritRoll = false;
+	SpringArmComponent->bInheritYaw = false;
+	SpringArmComponent->bEnableCameraLag = true;
+	SpringArmComponent->bEnableCameraRotationLag = true;
+	SpringArmComponent->bUsePawnControlRotation = true;
+
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	CameraComponent->SetupAttachment(SpringArmComponent);
+
+	QuestComponent = CreateDefaultSubobject<UQuestComponent>(TEXT("QuestComponent"));
 	bIsRotating = false;
 }
 
-void APlayerCharacterBase::StartRotation() 
+void APlayerCharacterBase::StartRotation()
 {
 	float LoopDuration = GetWorld()->GetDeltaSeconds();
-	GetWorld()->GetTimerManager().SetTimer(RotationTimer,this, &APlayerCharacterBase::CharacterRotationCallback, LoopDuration, true);
+	GetWorld()->GetTimerManager().SetTimer(
+		RotationTimer, this, &APlayerCharacterBase::CharacterRotationCallback, LoopDuration, true);
 	bIsRotating = true;
 }
 
-void APlayerCharacterBase::EndRotation() 
+void APlayerCharacterBase::EndRotation()
 {
 	GetWorld()->GetTimerManager().ClearTimer(RotationTimer);
 	bIsRotating = false;
 }
 
-void APlayerCharacterBase::PossessedBy(AController* NewController) {
-	PlayerController = Cast<APlayerController>(NewController); 
+void APlayerCharacterBase::PossessedBy(AController* NewController)
+{
+	PlayerController = Cast<APlayerController>(NewController);
+	if (PlayerController) { PlayerController->SetControlRotation(FRotator(-65.f, 0.f, 0.f)); }
 }
 
-void APlayerCharacterBase::CharacterRotationCallback() {
+void APlayerCharacterBase::CharacterRotationCallback()
+{
+	if (!PlayerController) { return; }
 
-	//if (!PlayerController) return;
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
 
-	//FHitResult HitResult;
-	//PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
+	FVector HitLocation = HitResult.Location;
+	FVector NewForward = HitLocation - GetActorLocation();
+	NewForward.GetSafeNormal2D();
 
-	//// The mouse hit result occurs at some arbitrary point, from the camera to the floor/ terrain
-	//// Interpolate or extrapolate that trace to derive the point
-	//// where the line's Z value is equal to the player's gun height (roughly, player location Z + 55)
-	//// The player's location there is its half height, so it would be around 135cm above the current floor
-	//FVector HitLocation = HitResult.Location;
-	//FVector CameraLocation = HitResult.TraceStart;
-	//FVector TraceDirection = (CameraLocation - HitLocation).GetSafeNormal();
-	//float PlayerGunHeight = GetActorLocation().Z + GGun_Height;
-	//float HitToPlayerGunDistance = PlayerGunHeight - HitLocation.Z;
-	//FVector OffsetToLineIntersection = HitToPlayerGunDistance * (1 / TraceDirection.Z) * TraceDirection;
-
-	//FVector Target = HitLocation + OffsetToLineIntersection;
-
-	//RotateCharacterToMouse(Target, DeltaTime);
-	//
-	//else if (MainPlayerController && bIsRelativeAiming)
-	//{
-	//	FVector Target = GetActorLocation() + (RelativeAimDirection * 100);
-	//	RotateCharacterToMouse(Target, DeltaTime);
-	//}
-
-	//if (this->PlayerStats->bIsEntityRunning && this->PlayerStats->CurrentStamina > 0)
-	//{
-	//	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-	//}
-	//else { GetCharacterMovement()->MaxWalkSpeed = WalkSpeed; }
+	FRotator NewRotation = FRotationMatrix::MakeFromXZ(NewForward, FVector::UpVector).Rotator();
+	FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), NewRotation, GetWorld()->DeltaTimeSeconds, 0.25f);
+	if (PlayerController) { PlayerController->SetControlRotation(NewRotation); }
 }
-

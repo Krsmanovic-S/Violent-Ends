@@ -1,5 +1,10 @@
 #include "GA_DefaultAbility.h"
 
+UGA_DefaultAbility::UGA_DefaultAbility() 
+{
+ 
+}
+
 void UGA_DefaultAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)

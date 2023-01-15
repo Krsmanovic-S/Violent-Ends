@@ -5,6 +5,8 @@
 
 UEquipmentBase::UEquipmentBase() {
 	ItemTag = FGameplayTag::RequestGameplayTag(TEXT("Item.Equipment"));
+
+
 }
 
 bool UEquipmentBase::TryUseItem_Implementation(AActor* Target)
