@@ -9,6 +9,14 @@
 class UWidgetComponent;
 class UBaseQuest;
 
+UENUM()
+enum class InteractableType : uint8
+{
+	None,
+	Chest,
+	Door
+};
+
 UINTERFACE(MinimalAPI)
 class UInteractiveObject : public UInterface
 {
@@ -36,6 +44,13 @@ public:
 	virtual void InteractionWidgetVisibility(UWidgetComponent* Widget, bool bShowWidget);
 
 public:
+
+	/**
+	 * Type determines what info message shows up if 
+	 * the player cannot interact with this object.
+	 */
+	InteractableType Type;
+
 	/* Quest that is connected to this interactive object */
 	UBaseQuest* RelevantQuest;
 
@@ -50,6 +65,9 @@ public:
 	FVector InteractiveObjectLocation;
 
 	bool bEnableWidgetSettings = true;
+
+	/* Can the Player interact with this object now? */
+	bool bCanInteract = true;
 
 	/* Has the Player interacted with this object before? */
 	bool bWasInteractedWith = false;

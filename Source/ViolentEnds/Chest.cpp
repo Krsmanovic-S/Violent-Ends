@@ -30,6 +30,8 @@ void AChest::BeginPlay()
 
 	this->InteractiveObjectLocation = this->GetActorLocation();
 
+	this->Type = InteractableType::Chest;
+
 	this->InitializeChest();
 }
 
