@@ -393,12 +393,23 @@ void APlayerCharacter::Interact()
 		return;
 	}
 
-	CurrentInteractable->InteractPure();
-
-	if (!CurrentInteractable->bCanBeUsedAgain)
+	if (CurrentInteractable->bCanInteract)
 	{
-		AActor* InteractableActor = Cast<AActor>(CurrentInteractable);
-		OnBoxEndOverlap(nullptr, InteractableActor, nullptr, 0);
+		CurrentInteractable->InteractPure();
+
+		if (!CurrentInteractable->bCanBeUsedAgain)
+		{
+			AActor* InteractableActor = Cast<AActor>(CurrentInteractable);
+			OnBoxEndOverlap(nullptr, InteractableActor, nullptr, 0);
+		}
+	}
+	else if (CurrentInteractable->Type == InteractableType::Door)
+	{
+		AddInfoMessage(FText::FromString(TEXT("Door is locked")));
+	}
+	else if (CurrentInteractable->Type == InteractableType::Chest)
+	{
+		AddInfoMessage(FText::FromString(TEXT("Chest is locked")));
 	}
 }
 
