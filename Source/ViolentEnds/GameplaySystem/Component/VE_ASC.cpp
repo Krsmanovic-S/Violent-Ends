@@ -57,12 +57,10 @@ void UVE_ASC::EffectAppliedToSelfCallback(
 	{
 		if (OnQuestTagAdded.IsBound()) { OnQuestTagAdded.Broadcast(TagContainer); }
 	}
+
 	if (!Source)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Target invalid"))
+		UE_LOG(LogTemp, Error, TEXT("Target invalid"))
 		return;
-	}
-	else {
-		UE_LOG(LogTemp, Display, TEXT("Target valid"))
 	}
 }

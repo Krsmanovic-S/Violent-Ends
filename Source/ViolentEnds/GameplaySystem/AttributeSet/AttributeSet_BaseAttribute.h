@@ -128,7 +128,28 @@ public:
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
 	FGameplayAttributeData MovementSpeed;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MovementSpeed)
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MovementSpeed)	
+		
+	/**
+	 * 
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
+	FGameplayAttributeData WalkSpeed;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, WalkSpeed)	
+
+	/**
+	 * 
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
+	FGameplayAttributeData RunSpeed;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, RunSpeed)		
+
+	/**
+	 * 
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
+	FGameplayAttributeData MoveSpeedWhileAiming;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MoveSpeedWhileAiming)
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;

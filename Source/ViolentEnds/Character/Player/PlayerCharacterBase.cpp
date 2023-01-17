@@ -3,6 +3,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "ViolentEnds/GameplaySystem/GameplayEffect/SelfAppliedEffect/GE_Aim.h"
 #include "ViolentEnds/Inventory/CharacterInventoryComponent.h"
 #include "ViolentEnds/Quest/Component/QuestComponent.h"
 
@@ -17,6 +18,7 @@ APlayerCharacterBase::APlayerCharacterBase()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->SetRelativeRotation(FRotator(-65.f, 0.f, 0.f));
+	SpringArmComponent->bDoCollisionTest = false;
 	SpringArmComponent->TargetArmLength = 1100.f;
 	SpringArmComponent->bDoCollisionTest = false;
 	SpringArmComponent->SetComponentTickEnabled(false);
@@ -31,21 +33,24 @@ APlayerCharacterBase::APlayerCharacterBase()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	QuestComponent = CreateDefaultSubobject<UQuestComponent>(TEXT("QuestComponent"));
-	bIsRotating = false;
+	bIsAiming = false;
 }
 
-void APlayerCharacterBase::StartRotation()
+void APlayerCharacterBase::StartAiming()
 {
 	float LoopDuration = GetWorld()->GetDeltaSeconds();
 	GetWorld()->GetTimerManager().SetTimer(
 		RotationTimer, this, &APlayerCharacterBase::CharacterRotationCallback, LoopDuration, true);
-	bIsRotating = true;
+	bIsAiming = true;
+
+	TryApplyEffectToSelf(UGE_Aim::StaticClass());
 }
 
-void APlayerCharacterBase::EndRotation()
+void APlayerCharacterBase::EndAiming()
 {
 	GetWorld()->GetTimerManager().ClearTimer(RotationTimer);
-	bIsRotating = false;
+	bIsAiming = false;
+
 }
 
 void APlayerCharacterBase::PossessedBy(AController* NewController)

@@ -48,6 +48,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character")
 	TArray<TSubclassOf<UAttributeSet>> RegisteredAttributeSets;
 
+	/**
+	* Attempt to apply the effect of Effect class to this character
+	*/
+	UFUNCTION(BlueprintCallable)
+	virtual bool TryApplyEffectToSelf(UClass* Effect);
+
+
 protected:
 
 	virtual void BeginPlay() override;

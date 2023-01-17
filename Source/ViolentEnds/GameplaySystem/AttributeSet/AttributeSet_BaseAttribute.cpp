@@ -24,7 +24,10 @@ UAttributeSet_BaseAttribute::UAttributeSet_BaseAttribute()
 	HealthRegenModifier = 1.f;
 	StaminaRegenModifier = 1.f;
 
-	MovementSpeed = 600.f;
+	WalkSpeed = 600.f;
+	RunSpeed = 800.f;
+	MoveSpeedWhileAiming = 400.f;
+	MovementSpeed = WalkSpeed;
 }
 
 void UAttributeSet_BaseAttribute::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
