@@ -24,12 +24,6 @@ bool ACharacterBase::TryApplyEffectToSelf(UClass* Effect)
 	if (EffectSpec.IsValid())
 	{
 		FActiveGameplayEffectHandle Handle = CharacterASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data.Get());
-
-		if (Handle.IsValid())
-		{
-			UE_LOG(LogTemp, Display, TEXT("TryApplyEffectWithDataToSelf: Effect successfully applied to self"))
-			return true;
-		}
 	}
 	return false;
 }
@@ -102,7 +96,7 @@ bool ACharacterBase::TryUseAbilityWithTag(const FGameplayTagContainer& AbilityTa
 bool ACharacterBase::TryUseDefaultAttack()
 {
 	FGameplayTagContainer TagContainer;
-	TagContainer.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Character.Ability.Attack.Default")));
+	TagContainer.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Default")));
 
 	return TryUseAbilityWithTag(TagContainer);
 }

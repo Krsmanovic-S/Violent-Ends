@@ -3,7 +3,6 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "ViolentEnds/GameplaySystem/GameplayEffect/SelfAppliedEffect/GE_Aim.h"
 #include "ViolentEnds/Inventory/CharacterInventoryComponent.h"
 #include "ViolentEnds/Quest/Component/QuestComponent.h"
 
@@ -41,16 +40,21 @@ void APlayerCharacterBase::StartAiming()
 	float LoopDuration = GetWorld()->GetDeltaSeconds();
 	GetWorld()->GetTimerManager().SetTimer(
 		RotationTimer, this, &APlayerCharacterBase::CharacterRotationCallback, LoopDuration, true);
-	bIsAiming = true;
+	FGameplayTagContainer Container;
+	Container.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Aim")));
+	if (!bIsAiming) { TryUseAbilityWithTag(Container); }
 
-	TryApplyEffectToSelf(UGE_Aim::StaticClass());
+	bIsAiming = true;
 }
 
 void APlayerCharacterBase::EndAiming()
 {
 	GetWorld()->GetTimerManager().ClearTimer(RotationTimer);
-	bIsAiming = false;
 
+	FGameplayTagContainer Container;
+	Container.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Aim")));
+	if (bIsAiming) { TryUseAbilityWithTag(Container); }
+	bIsAiming = false;
 }
 
 void APlayerCharacterBase::PossessedBy(AController* NewController)

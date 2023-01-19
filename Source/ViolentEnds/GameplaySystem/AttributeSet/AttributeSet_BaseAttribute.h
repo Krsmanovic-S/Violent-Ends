@@ -126,28 +126,28 @@ public:
 	/**
 	 * The current movement speed of the associated character
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
 	FGameplayAttributeData MovementSpeed;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MovementSpeed)	
 		
 	/**
 	 * 
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
 	FGameplayAttributeData WalkSpeed;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, WalkSpeed)	
 
 	/**
 	 * 
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
 	FGameplayAttributeData RunSpeed;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, RunSpeed)		
 
 	/**
 	 * 
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Health")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
 	FGameplayAttributeData MoveSpeedWhileAiming;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MoveSpeedWhileAiming)
 
