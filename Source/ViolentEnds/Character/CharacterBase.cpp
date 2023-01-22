@@ -11,6 +11,21 @@ ACharacterBase::ACharacterBase()
 	CharacterASC = CreateDefaultSubobject<UVE_ASC>(TEXT("CharacterAbilitySystemComponent"));
 	CharacterASC->GetGameplayAttributeValueChangeDelegate(UAttributeSet_BaseAttribute::GetHealthAttribute())
 		.AddUObject(this, &ACharacterBase::OnCharacterHealthChanged_Implementation);
+	CharacterASC->GetGameplayAttributeValueChangeDelegate(UAttributeSet_BaseAttribute::GetMovementSpeedAttribute())
+		.AddUObject(this, &ACharacterBase::OnCharacterMovementSpeedChanged_Implementation);
+}
+
+bool ACharacterBase::TryApplyEffectToSelf(UClass* Effect)
+{
+	if (!CharacterASC) { return false; }
+	FGameplayEffectContextHandle ContextHandle = CharacterASC->MakeEffectContext();
+	FGameplayEffectSpecHandle EffectSpec = CharacterASC->MakeOutgoingSpec(Effect, 0, ContextHandle);
+
+	if (EffectSpec.IsValid())
+	{
+		FActiveGameplayEffectHandle Handle = CharacterASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data.Get());
+	}
+	return false;
 }
 
 void ACharacterBase::BeginPlay()
@@ -30,27 +45,13 @@ void ACharacterBase::BeginPlay()
 		}
 
 		// Register list of attribute set to the ASC
-		for (auto& AttributeSetClass : RegisteredAttributeSets) {
+		for (auto& AttributeSetClass : RegisteredAttributeSets)
+		{
 			auto AttributeSet = NewObject<UAttributeSet>(this, AttributeSetClass);
 			CharacterASC->AddAttributeSetSubobject(AttributeSet);
 		}
 
-		if (CharacterDefaultStats)
-		{
-			FGameplayEffectContextHandle ContextHandle = CharacterASC->MakeEffectContext();
-			FGameplayEffectSpecHandle EffectSpec =
-				CharacterASC->MakeOutgoingSpec(CharacterDefaultStats, 0, ContextHandle);
-
-			if (EffectSpec.IsValid()) { auto Handle = CharacterASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data.Get()); }
-		}
-	}
-	else
-	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("AbilitySystemComponent is null")));
-		}
+		if (CharacterDefaultStats) { TryApplyEffectToSelf(CharacterDefaultStats); }
 	}
 }
 
@@ -95,7 +96,7 @@ bool ACharacterBase::TryUseAbilityWithTag(const FGameplayTagContainer& AbilityTa
 bool ACharacterBase::TryUseDefaultAttack()
 {
 	FGameplayTagContainer TagContainer;
-	TagContainer.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Character.Ability.Attack.Default")));
+	TagContainer.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Default")));
 
 	return TryUseAbilityWithTag(TagContainer);
 }

@@ -17,6 +17,7 @@ APlayerCharacterBase::APlayerCharacterBase()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->SetRelativeRotation(FRotator(-65.f, 0.f, 0.f));
+	SpringArmComponent->bDoCollisionTest = false;
 	SpringArmComponent->TargetArmLength = 1100.f;
 	SpringArmComponent->bDoCollisionTest = false;
 	SpringArmComponent->SetComponentTickEnabled(false);
@@ -31,21 +32,29 @@ APlayerCharacterBase::APlayerCharacterBase()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	QuestComponent = CreateDefaultSubobject<UQuestComponent>(TEXT("QuestComponent"));
-	bIsRotating = false;
+	bIsAiming = false;
 }
 
-void APlayerCharacterBase::StartRotation()
+void APlayerCharacterBase::StartAiming()
 {
 	float LoopDuration = GetWorld()->GetDeltaSeconds();
 	GetWorld()->GetTimerManager().SetTimer(
 		RotationTimer, this, &APlayerCharacterBase::CharacterRotationCallback, LoopDuration, true);
-	bIsRotating = true;
+	FGameplayTagContainer Container;
+	Container.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Aim")));
+	if (!bIsAiming) { TryUseAbilityWithTag(Container); }
+
+	bIsAiming = true;
 }
 
-void APlayerCharacterBase::EndRotation()
+void APlayerCharacterBase::EndAiming()
 {
 	GetWorld()->GetTimerManager().ClearTimer(RotationTimer);
-	bIsRotating = false;
+
+	FGameplayTagContainer Container;
+	Container.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Aim")));
+	if (bIsAiming) { TryUseAbilityWithTag(Container); }
+	bIsAiming = false;
 }
 
 void APlayerCharacterBase::PossessedBy(AController* NewController)

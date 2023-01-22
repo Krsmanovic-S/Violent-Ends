@@ -10,6 +10,9 @@ UVE_ASC::UVE_ASC()
 	AbilityActivatedCallbacks.AddLambda([&](const UGameplayAbility* Ability) {
 		UE_LOG(LogTemp, Warning, TEXT("%s with tag(s) %s activated"), *Ability->GetFName().ToString())
 	});
+
+	OnAnyGameplayEffectRemovedDelegate().AddLambda([&](const FActiveGameplayEffect& EffectRemoved) { ABILITY_LOG(Warning, TEXT("%s removed"), *EffectRemoved.Spec.ToSimpleString())
+		});
 }
 
 FGameplayEffectSpecHandle UVE_ASC::GetEffectWithTag(FGameplayTag Tag)
@@ -46,7 +49,6 @@ bool UVE_ASC::HasEffectedByTag(FGameplayTag Tag)
 void UVE_ASC::EffectAppliedToSelfCallback(
 	UAbilitySystemComponent* Source, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle EffectHandle)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Effect appied: %s"), *EffectSpec.ToSimpleString())
 	// Check if the effect is quest based
 	FGameplayTagContainer TagContainer;
 	EffectSpec.Def->GetOwnedGameplayTags(TagContainer);
@@ -57,12 +59,32 @@ void UVE_ASC::EffectAppliedToSelfCallback(
 	{
 		if (OnQuestTagAdded.IsBound()) { OnQuestTagAdded.Broadcast(TagContainer); }
 	}
+
 	if (!Source)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Target invalid"))
+		UE_LOG(LogTemp, Error, TEXT("Target invalid"))
 		return;
 	}
-	else {
-		UE_LOG(LogTemp, Display, TEXT("Target valid"))
+
+	UE_LOG(LogTemp, Warning, TEXT("Effect appied: %s"), *EffectSpec.ToSimpleString())
+
+	auto& Added = EffectSpec.Def->InheritableOwnedTagsContainer.Added;
+	auto& Removed = EffectSpec.Def->InheritableOwnedTagsContainer.Removed;
+
+	for (int32 i = 0; i < Added.Num(); ++i) {
+		ABILITY_LOG(Display, TEXT("Tag added: %s"), *Added.GetByIndex(i).ToString())
+	}
+	for (int32 i = 0; i < Removed.Num(); ++i) {
+		ABILITY_LOG(Display, TEXT("Tag added: %s"), *Removed.GetByIndex(i).ToString())
+	}
+
+	TArray<FString> TextOut;
+	for (int32 i = 0; i < EffectSpec.ModifiedAttributes.Num(); i++)
+	{
+		TextOut.Add(EffectSpec.ModifiedAttributes[i].Attribute.AttributeName + TEXT(" with magnitude of : ") + FString::SanitizeFloat(EffectSpec.ModifiedAttributes[i].TotalMagnitude));
+	}
+
+	for (int32 i = 0; i < TextOut.Num(); i++) {
+		ABILITY_LOG(Warning, TEXT("%s"), *TextOut[i])
 	}
 }

@@ -24,7 +24,10 @@ UAttributeSet_BaseAttribute::UAttributeSet_BaseAttribute()
 	HealthRegenModifier = 1.f;
 	StaminaRegenModifier = 1.f;
 
-	MovementSpeed = 600.f;
+	WalkSpeed = 600.f;
+	RunSpeed = 800.f;
+	MoveSpeedWhileAiming = 400.f;
+	MovementSpeed = WalkSpeed;
 }
 
 void UAttributeSet_BaseAttribute::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
@@ -34,8 +37,16 @@ void UAttributeSet_BaseAttribute::PostGameplayEffectExecute(const FGameplayEffec
 	FGameplayAttribute Attribute = Data.EvaluatedData.Attribute;
 	float NewValue = Data.EvaluatedData.Magnitude;
 
-	if (Attribute == GetHealthMaxAttribute()) { AdjustAttributeProportional(Health, HealthMax, NewValue); }
-	if (Attribute == GetStaminaMaxAttribute()) { AdjustAttributeProportional(Stamina, StaminaMax, NewValue); }
+	if (Attribute == GetHealthMaxAttribute()) { 
+		
+		AdjustAttributeProportional(Health, HealthMax, NewValue); 
+	
+
+	}
+
+	if (Attribute == GetStaminaMaxAttribute()) { 
+		
+		AdjustAttributeProportional(Stamina, StaminaMax, NewValue); }
 
 	if (Attribute == GetHealthAttribute())
 	{

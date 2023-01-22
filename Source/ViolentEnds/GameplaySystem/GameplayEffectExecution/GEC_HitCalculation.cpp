@@ -3,9 +3,9 @@
 #include "ViolentEnds/GameplaySystem/AttributeSet/AttributeSet_BaseAttribute.h"
 #include "ViolentEnds/GameplaySystem/AttributeSet/AttributeSet_WeaponAttribute.h"
 
-#define CaptureAttribute(E, A, P) E.AttemptCalculateCapturedAttributeMagnitude(Stats.##A##Def, P, A);
+#define CaptureAttribute(Exe,S, A, P) Exe.AttemptCalculateCapturedAttributeMagnitude(S.A##Def, P, A);
 
-struct DamageStatistics
+struct FDamageStatistics
 {
 	DECLARE_ATTRIBUTE_CAPTUREDEF(Health);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(HealthMax);
@@ -27,7 +27,7 @@ struct DamageStatistics
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CritChanceBase);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CritMultiplierBase);
 
-	DamageStatistics()
+	FDamageStatistics()
 	{
 		// Capture the target's defense values
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_BaseAttribute, Health, Target, false);
@@ -47,12 +47,38 @@ struct DamageStatistics
 	}
 };
 
-UGEC_HitCalculation::UGEC_HitCalculation() {}
+static FDamageStatistics DamageStatistics()
+{
+	static FDamageStatistics Statics;
+	return Statics;
+}
+
+UGEC_HitCalculation::UGEC_HitCalculation()
+{
+	RelevantAttributesToCapture.Add(DamageStatistics().HealthDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().HealthMaxDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().HealthRegenDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().StaminaDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().StaminaMaxDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().StaminaRegenDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().ArmourDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().FireResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().ExplosiveResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().HealthMaxModifierDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().StaminaMaxModifierDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().DamageReductionDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().HealthRegenModifierDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().StaminaRegenModifierDef);
+
+	RelevantAttributesToCapture.Add(DamageStatistics().PhysicalWeaponDamageBaseDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().FireWeaponDamageBaseDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().CritChanceBaseDef);
+	RelevantAttributesToCapture.Add(DamageStatistics().CritMultiplierBaseDef);
+}
 
 void UGEC_HitCalculation::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 	FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
-	static DamageStatistics Stats;
 
 	FAggregatorEvaluateParameters EvaluationParams;
 
@@ -76,40 +102,36 @@ void UGEC_HitCalculation::Execute_Implementation(const FGameplayEffectCustomExec
 	float CritChanceBase = 0.f;
 	float CritMultiplierBase = 1.f;
 
-	CaptureAttribute(ExecutionParams, Health, EvaluationParams);
-	CaptureAttribute(ExecutionParams, HealthMax, EvaluationParams);
-	CaptureAttribute(ExecutionParams, HealthRegen, EvaluationParams);
-	CaptureAttribute(ExecutionParams, Stamina, EvaluationParams);
-	CaptureAttribute(ExecutionParams, StaminaMax, EvaluationParams);
-	CaptureAttribute(ExecutionParams, StaminaRegen, EvaluationParams);
-	CaptureAttribute(ExecutionParams, Armour, EvaluationParams);
-	CaptureAttribute(ExecutionParams, FireResistance, EvaluationParams);
-	CaptureAttribute(ExecutionParams, ExplosiveResistance, EvaluationParams);
-	CaptureAttribute(ExecutionParams, HealthMaxModifier, EvaluationParams);
-	CaptureAttribute(ExecutionParams, StaminaMaxModifier, EvaluationParams);
-	CaptureAttribute(ExecutionParams, DamageReduction, EvaluationParams);
-	CaptureAttribute(ExecutionParams, HealthRegenModifier, EvaluationParams);
-	CaptureAttribute(ExecutionParams, StaminaRegenModifier, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), Health, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), HealthMax, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), HealthRegen, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), Stamina, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), StaminaMax, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), StaminaRegen, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), Armour, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), FireResistance, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), ExplosiveResistance, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), HealthMaxModifier, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), StaminaMaxModifier, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), DamageReduction, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), HealthRegenModifier, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), StaminaRegenModifier, EvaluationParams);
 
-	CaptureAttribute(ExecutionParams, PhysicalWeaponDamageBase, EvaluationParams);
-	CaptureAttribute(ExecutionParams, FireWeaponDamageBase, EvaluationParams);
-	CaptureAttribute(ExecutionParams, CritChanceBase, EvaluationParams);
-	CaptureAttribute(ExecutionParams, CritMultiplierBase, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), PhysicalWeaponDamageBase, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), FireWeaponDamageBase, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), CritChanceBase, EvaluationParams);
+	CaptureAttribute(ExecutionParams, DamageStatistics(), CritMultiplierBase, EvaluationParams);
 
 	// Critical hit calculation
 	bool bIsCritHit = (FMath::RandRange(0.f, 1.f) >= CritChanceBase);
 	float FinalDamage = PhysicalWeaponDamageBase + FireWeaponDamageBase;
-	if (bIsCritHit)
-	{
-		FinalDamage *= CritMultiplierBase;
-	}
+	if (bIsCritHit) { FinalDamage *= CritMultiplierBase; }
 
 	// Armour and damage reduction calculation
 
-
 	// Add modifiers to execute
 	FGameplayModifierEvaluatedData Data;
-	//Data.Attribute = Stats.HealthDef.AttributeToCapture;
+	// Data.Attribute = Stats.HealthDef.AttributeToCapture;
 	Data.Attribute = UAttributeSet_BaseAttribute::GetHealthAttribute();
 	Data.ModifierOp = EGameplayModOp::Additive;
 	Data.Magnitude = -FinalDamage;
