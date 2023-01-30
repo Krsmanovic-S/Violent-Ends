@@ -30,10 +30,12 @@ ABaseMeleeWeapon::ABaseMeleeWeapon()
 
 	SetRootComponent(MeleeWeaponMesh);
 
-	// #if WITH_EDITOR
+	#if WITH_EDITOR
+
 	bShowMeleeDebug = true;
 	DebugDuration = 2.f;
-	// #endif
+	
+	#endif
 }
 
 void ABaseMeleeWeapon::BeginPlay()
@@ -59,7 +61,7 @@ bool ABaseMeleeWeapon::Attack()
 
 	//----------------------------
 	//	DEBUG
-	// #if WITH_EDITOR
+	#if WITH_EDITOR
 
 	if (bShowMeleeDebug)
 	{
@@ -68,7 +70,7 @@ bool ABaseMeleeWeapon::Attack()
 			FMath::Cos(Angle), FMath::Cos(Angle), 12, FColor::Green, false, DebugDuration);
 	}
 
-	// #endif // WITH_EDITOR
+	#endif // WITH_EDITOR
 	//----------------------------
 
 	if (OnMeleeWeaponAttack.IsBound()) { OnMeleeWeaponAttack.Broadcast(); }
