@@ -10,9 +10,10 @@ ACharacterBase::ACharacterBase()
 
 	CharacterASC = CreateDefaultSubobject<UVE_ASC>(TEXT("CharacterAbilitySystemComponent"));
 	CharacterASC->GetGameplayAttributeValueChangeDelegate(UAttributeSet_BaseAttribute::GetHealthAttribute())
-		.AddUObject(this, &ACharacterBase::OnCharacterHealthChanged_Implementation);
+		.AddUObject(this, &ACharacterBase::NativeCharacterHealthChanged);
 	CharacterASC->GetGameplayAttributeValueChangeDelegate(UAttributeSet_BaseAttribute::GetMovementSpeedAttribute())
-		.AddUObject(this, &ACharacterBase::OnCharacterMovementSpeedChanged_Implementation);
+		.AddUObject(this, &ACharacterBase::NativeOnCharacterMovementSpeedChanged);
+	CharacterASC->OnCharacterHit.AddDynamic(this, &ACharacterBase::OnCharacterHit);
 }
 
 bool ACharacterBase::TryApplyEffectToSelf(UClass* Effect)
@@ -60,7 +61,7 @@ UAbilitySystemComponent* ACharacterBase::GetAbilitySystemComponent() const
 	return CharacterASC;
 }
 
-void ACharacterBase::OnCharacterHealthChanged_Implementation(const FOnAttributeChangeData& Data)
+void ACharacterBase::NativeCharacterHealthChanged(const FOnAttributeChangeData& Data)
 {
 	OnCharacterHealthChanged(Data.OldValue, Data.NewValue);
 
@@ -74,11 +75,15 @@ void ACharacterBase::OnCharacterHealthChanged_Implementation(const FOnAttributeC
 	}
 }
 
-void ACharacterBase::OnCharacterMovementSpeedChanged_Implementation(const FOnAttributeChangeData& Data)
+void ACharacterBase::NativeOnCharacterMovementSpeedChanged(const FOnAttributeChangeData& Data)
 {
 	OnCharacterMovementSpeedChanged(Data.OldValue, Data.NewValue);
 
 	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
+}
+
+void ACharacterBase::OnCharacterHit_Implementation(FGameplayTag HitTag) {
+	// Play hit react
 }
 
 bool ACharacterBase::TryUseAbilityWithTag(const FGameplayTagContainer& AbilityTag)

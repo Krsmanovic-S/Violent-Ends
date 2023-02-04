@@ -28,6 +28,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Item|Equipment")
 	TArray<FEquipmentStats> StatList;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Item|Equipment")
+	FGameplayTag EquipmentTag;
+
 	// Primary use: Equip item
 	virtual bool TryUseItem_Implementation(AActor* Target) override;
 

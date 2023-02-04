@@ -3,6 +3,8 @@
 UVE_ASC::UVE_ASC()
 {
 	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UVE_ASC::EffectAppliedToSelfCallback);
+	OnGameplayEffectAppliedDelegateToTarget.AddUObject(this, &UVE_ASC::EffectAppliedToTargetCallback);
+
 	AbilityFailedCallbacks.AddLambda([&](const UGameplayAbility* Ability, const FGameplayTagContainer& TagContainer) {
 		UE_LOG(LogTemp, Warning, TEXT("%s failed to activate, reason: %s"), *Ability->GetFName().ToString(),
 			*TagContainer.ToString())
@@ -11,8 +13,9 @@ UVE_ASC::UVE_ASC()
 		UE_LOG(LogTemp, Warning, TEXT("%s with tag(s) %s activated"), *Ability->GetFName().ToString())
 	});
 
-	OnAnyGameplayEffectRemovedDelegate().AddLambda([&](const FActiveGameplayEffect& EffectRemoved) { ABILITY_LOG(Warning, TEXT("%s removed"), *EffectRemoved.Spec.ToSimpleString())
-		});
+	OnAnyGameplayEffectRemovedDelegate().AddLambda([&](const FActiveGameplayEffect& EffectRemoved) {
+		ABILITY_LOG(Warning, TEXT("%s removed"), *EffectRemoved.Spec.ToSimpleString())
+	});
 }
 
 FGameplayEffectSpecHandle UVE_ASC::GetEffectWithTag(FGameplayTag Tag)
@@ -71,20 +74,48 @@ void UVE_ASC::EffectAppliedToSelfCallback(
 	auto& Added = EffectSpec.Def->InheritableOwnedTagsContainer.Added;
 	auto& Removed = EffectSpec.Def->InheritableOwnedTagsContainer.Removed;
 
-	for (int32 i = 0; i < Added.Num(); ++i) {
+	for (int32 i = 0; i < Added.Num(); ++i)
+	{
 		ABILITY_LOG(Display, TEXT("Tag added: %s"), *Added.GetByIndex(i).ToString())
 	}
-	for (int32 i = 0; i < Removed.Num(); ++i) {
+	for (int32 i = 0; i < Removed.Num(); ++i)
+	{
 		ABILITY_LOG(Display, TEXT("Tag added: %s"), *Removed.GetByIndex(i).ToString())
 	}
 
 	TArray<FString> TextOut;
 	for (int32 i = 0; i < EffectSpec.ModifiedAttributes.Num(); i++)
 	{
-		TextOut.Add(EffectSpec.ModifiedAttributes[i].Attribute.AttributeName + TEXT(" with magnitude of : ") + FString::SanitizeFloat(EffectSpec.ModifiedAttributes[i].TotalMagnitude));
+		TextOut.Add(EffectSpec.ModifiedAttributes[i].Attribute.AttributeName + TEXT(" with magnitude of : ")
+					+ FString::SanitizeFloat(EffectSpec.ModifiedAttributes[i].TotalMagnitude));
 	}
 
-	for (int32 i = 0; i < TextOut.Num(); i++) {
+	for (int32 i = 0; i < TextOut.Num(); i++)
+	{
 		ABILITY_LOG(Warning, TEXT("%s"), *TextOut[i])
 	}
+}
+
+void UVE_ASC::EffectAppliedToTargetCallback(
+	UAbilitySystemComponent* Target, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle EffectHandle)
+{
+	FGameplayTagContainer TagContainer;
+	EffectSpec.Def->GetOwnedGameplayTags(TagContainer);
+
+	// TODO: Add actual tag(s) here
+	bool Success = TagContainer.HasTag(FGameplayTag::RequestGameplayTag(TEXT("Quest")));
+	if (Success)
+	{
+		if (OnQuestTagAdded.IsBound()) { OnQuestTagAdded.Broadcast(TagContainer); }
+	}
+}
+
+int32 UVE_ASC::HandleGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload)
+{
+	if (EventTag.MatchesTag(FGameplayTag::RequestGameplayTag(TEXT(""))))
+	{
+		if (OnCharacterHit.IsBound()) { OnCharacterHit.Broadcast(EventTag); }
+	}
+
+	return int32();
 }

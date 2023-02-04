@@ -40,10 +40,10 @@ struct FDamageStatistics
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_BaseAttribute, DamageReduction, Target, false);
 
 		// Capture the source's offensive values
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, PhysicalWeaponDamageBase, Source, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, FireWeaponDamageBase, Source, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, CritChanceBase, Source, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, CritMultiplierBase, Source, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, PhysicalWeaponDamageBase, Source, true);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, FireWeaponDamageBase, Source, true);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, CritChanceBase, Source, true);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAttributeSet_WeaponAttribute, CritMultiplierBase, Source, true);
 	}
 };
 

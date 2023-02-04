@@ -20,10 +20,10 @@ bool UEquipmentBase::TryUseItem_Implementation(AActor* Target)
 			EffectSpec.Stats = StatList;
 
 			UGE_EquipmentEffect* EquipmentEffect = UGE_EquipmentEffect::CreateEffect(EffectSpec);
+			EquipmentEffect->InheritableGameplayEffectTags.Added.AddTag(EquipmentTag);
 			FGameplayEffectSpec EquipmentEffectSpec;
 			EquipmentEffectSpec.Def = EquipmentEffect;
-			EquipmentEffectSpec
-				.SetLevel(0);
+			EquipmentEffectSpec.SetLevel(0);
 
 			ASC->ApplyGameplayEffectSpecToSelf(EquipmentEffectSpec);
 

@@ -62,16 +62,32 @@ protected:
 	// Inherited via IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	/**
+	* Blueprint implementable event for event health changed
+	* @param OldValue The old health value
+	* @param NewValue The new health value
+	*/
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCharacterHealthChanged(float OldValue, float NewValue);	
 	
+	/**
+	* Blueprint implementable event for event movement speed changed
+	* @param OldValue The old movement speed value
+	* @param NewValue The new movement speed value
+	*/
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCharacterMovementSpeedChanged(float OldValue, float NewValue);
 
-	void OnCharacterHealthChanged_Implementation(const FOnAttributeChangeData& Data);
-	void OnCharacterMovementSpeedChanged_Implementation(const FOnAttributeChangeData& Data);
+	/**
+	* Blueprint implementable event for when character is hit
+	* @param HitTag The gameplay tag of the hit
+	*/
+	UFUNCTION(BlueprintNativeEvent)
+	void OnCharacterHit(FGameplayTag HitTag);
 
-
+	void NativeCharacterHealthChanged(const FOnAttributeChangeData& Data);
+	void NativeOnCharacterMovementSpeedChanged(const FOnAttributeChangeData& Data);
+	void OnCharacterHit_Implementation(FGameplayTag HitTag);
 
 
 

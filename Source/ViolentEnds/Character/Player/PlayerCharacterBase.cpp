@@ -2,17 +2,25 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "ViolentEnds/Interactable/InteractableInterface.h"
 #include "ViolentEnds/Inventory/CharacterInventoryComponent.h"
 #include "ViolentEnds/Quest/Component/QuestComponent.h"
 
 APlayerCharacterBase::APlayerCharacterBase()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	InventoryComponent = CreateDefaultSubobject<UCharacterInventoryComponent>(TEXT("InventoryComponent"));
 	InventoryComponent->InitInventoryComponent(CharacterASC);
+	InventoryComponent->OnWeaponSheathed;
+	InventoryComponent->OnWeaponSwapped;
 
 	InteractionDetection = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionDetection"));
 	InteractionDetection->SetupAttachment(GetRootComponent());
+	InteractionDetection->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacterBase::OnOverlapBegin);
+	InteractionDetection->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacterBase::OnOverlapEnd);
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
@@ -31,36 +39,85 @@ APlayerCharacterBase::APlayerCharacterBase()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
+	InteractionWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("InteractionWidget"));
+
 	QuestComponent = CreateDefaultSubobject<UQuestComponent>(TEXT("QuestComponent"));
 	bIsAiming = false;
 }
 
-void APlayerCharacterBase::StartAiming()
-{
-	float LoopDuration = GetWorld()->GetDeltaSeconds();
-	GetWorld()->GetTimerManager().SetTimer(
-		RotationTimer, this, &APlayerCharacterBase::CharacterRotationCallback, LoopDuration, true);
-	FGameplayTagContainer Container;
-	Container.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Aim")));
-	if (!bIsAiming) { TryUseAbilityWithTag(Container); }
 
-	bIsAiming = true;
+void APlayerCharacterBase::InteractWithItem()
+{
+	if (auto Interactable = Cast<IInteractableInterface>(CurrentInteractable))
+	{
+		Interactable->InteractWithObject(this);
+	}
 }
 
-void APlayerCharacterBase::EndAiming()
+void APlayerCharacterBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GetWorld()->GetTimerManager().ClearTimer(RotationTimer);
+	if (auto Interactable = Cast<IInteractableInterface>(OtherActor)) { InteractablesInRange.AddUnique(OtherActor); }
+	InteractablesInRange.Sort([this](const AActor& A, const AActor& B) {
+		return FVector::DistSquared(GetActorLocation(), A.GetActorLocation())
+			   < FVector::DistSquared(GetActorLocation(), B.GetActorLocation());
+	});
 
-	FGameplayTagContainer Container;
-	Container.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack.Aim")));
-	if (bIsAiming) { TryUseAbilityWithTag(Container); }
-	bIsAiming = false;
+	HighlightInteraction();
+}
+
+void APlayerCharacterBase::OnOverlapEnd(
+	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (InteractablesInRange.Find(OtherActor) >= 0) { InteractablesInRange.Remove(OtherActor); }
+	InteractablesInRange.Sort([this](const AActor& A, const AActor& B) {
+		return FVector::DistSquared(GetActorLocation(), A.GetActorLocation())
+			   < FVector::DistSquared(GetActorLocation(), B.GetActorLocation());
+	});
+
+	HighlightInteraction();
 }
 
 void APlayerCharacterBase::PossessedBy(AController* NewController)
 {
 	PlayerController = Cast<APlayerController>(NewController);
 	if (PlayerController) { PlayerController->SetControlRotation(FRotator(-65.f, 0.f, 0.f)); }
+}
+
+void APlayerCharacterBase::Tick(float DeltaSecond)
+{
+	CharacterRotationCallback();
+}
+
+void APlayerCharacterBase::HighlightInteraction_Implementation() {
+	
+	if (InteractablesInRange.Num() > 0)
+	{
+		CurrentInteractable = InteractablesInRange[0];
+		// Toggle highlight
+		if (!InteractionWidget->IsActive()) { InteractionWidget->SetActive(true); }
+		InteractionWidget->AttachToComponent(
+			CurrentInteractable->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	}
+	else
+	{
+		if (InteractionWidget->IsActive()) { InteractionWidget->SetActive(false); }
+		CurrentInteractable = nullptr;
+	}
+}
+
+void APlayerCharacterBase::OnWeaponSheathed_Implementation(UWeaponBase* Weapon) {
+	// Play animation
+
+	// Block the character from being able to swap weapons until the animation is complete
+	//GetMesh()->GetAnimInstance()->OnPlayMontageNotifyBegin.AddDynamic();
+}
+
+void APlayerCharacterBase::OnWeaponSwapped_Implementation(UWeaponBase* OldWeapon, UWeaponBase* NewWeapon) {
+	// Play animation
+
+	// Block the character from being able to swap weapons until the animation is complete
+	//GetMesh()->GetAnimInstance()->OnPlayMontageNotifyBegin.AddDynamic();
 }
 
 void APlayerCharacterBase::CharacterRotationCallback()

@@ -7,7 +7,7 @@
 
 #include "ItemBase.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class VIOLENTENDS_API UItemBase: public UObject {
 
 	GENERATED_BODY()

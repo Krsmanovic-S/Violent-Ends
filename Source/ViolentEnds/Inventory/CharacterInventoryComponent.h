@@ -6,8 +6,9 @@
 
 class UItemBase;
 class UEquipmentBase;
+class UWeaponBase;
 class UVE_ASC;
-enum class EEquipmentType: uint8;
+enum class EEquipmentType : uint8;
 
 static int32 InventoryWidth = 6;
 static int32 InventoryHeight = 6;
@@ -18,13 +19,18 @@ struct VIOLENTENDS_API FInventoryItem
 	GENERATED_BODY()
 
 public:
-	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Iventory|Item")
+	// UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Iventory|Item")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemAddedToInventory, UEquipmentBase*, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryRefreshed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemEquipped, UEquipmentBase*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemRemoved, UEquipmentBase*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemUsed, UItemBase*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemSecondaryUsed, UItemBase*, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWeaponSlotted, UWeaponBase*, Weapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWeaponSwapped, UWeaponBase*, From, UWeaponBase*, To);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWeaponSheathed, UWeaponBase*, Weapon);
 
 UCLASS()
 class VIOLENTENDS_API UCharacterInventoryComponent : public UActorComponent
@@ -44,24 +50,37 @@ public:
 	// Item interaction event
 	//
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FInventoryRefreshed OnInventoryRefeshed;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FItemAddedToInventory OnItemAddedToInventory;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FItemEquipped OnItemEquipped;
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FItemRemoved OnItemRemoved;	
+	FItemRemoved OnItemRemoved;
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FItemUsed OnItemUsed;
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FItemSecondaryUsed OnItemSecondaryUsed;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FWeaponSlotted OnWeaponUsed;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FWeaponSwapped OnWeaponSwapped;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FWeaponSheathed OnWeaponSheathed;
 
 	// Equipped weapon inventory
 	//
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Inventory")
-	UEquipmentBase* Weapon1;
+	UWeaponBase* CurrentWeapon;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Inventory")
-	UEquipmentBase* Weapon2;
+	UWeaponBase* Weapon1;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Inventory")
-	UEquipmentBase* Weapon3;
+	UWeaponBase* Weapon2;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Inventory")
-	UEquipmentBase* Weapon4;
+	UWeaponBase* Weapon3;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Inventory")
+	UWeaponBase* Weapon4;
 
 	// Equipped gear inventory
 	//
@@ -86,7 +105,7 @@ public:
 	int32 FindFirstEmptySlot(UItemBase* ItemToAdd);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
-	bool TryAddItemToInventory(UItemBase* ItemToAdd, int32& Index);		
+	bool TryAddItemToInventory(UItemBase* ItemToAdd, int32& Index);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
 	bool TryEquipItem(UEquipmentBase* ItemToEquip);
@@ -103,5 +122,35 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
 	bool TryGetEquippedGear(EEquipmentType EquipmentTypeToRemove, UEquipmentBase*& OutGear);
 
+	/**
+	* Attempt to assign weapon to a slot
+	* @param NewWeapon The new weapon to equip
+	* @param Slot The index of the slot to equip to
+	* @return True if weapon equip is successful
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
+	bool AttachWeaponToSlot(UWeaponBase* NewWeapon, int32 SlotIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
+	bool UseWeaponAtSlot(int32 Slot);
+
+	/**
+	* Attempt to get the current weapon
+	* @param[out] OutCurrentWeapon The current weapon object
+	* @return True if current weapon object is not null
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
+	bool TryGetCurrentWeapon(UWeaponBase* OutCurrentWeapon);
+	/**
+	 *Remove current weapon from hands(similar to sheathing a sword)
+	 * @return Index of weapon (1, 2, 3, 4)
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Inventory|Functionality")
+	int32 SheatheWeapon();
+
+protected:
+
 	UEquipmentBase** GetGearSlotRef(EEquipmentType GearType);
+	UWeaponBase** GetWeaponSlotRef(int32 SlotIndex);
+
 };

@@ -2,4 +2,5 @@
 
 UEquipmentLegs::UEquipmentLegs() {
 	ItemTag = FGameplayTag::RequestGameplayTag(TEXT("Character.Item.Equipment.Gear.Legs"));
+	EquipmentTag = FGameplayTag::RequestGameplayTag(TEXT("Character.Item.Equipment.Gear.Legs"));
 }

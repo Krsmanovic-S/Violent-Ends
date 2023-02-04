@@ -16,6 +16,8 @@ class VIOLENTENDS_API UGA_Shoot : public UGA_DefaultAbility
 public:
 
 	UGA_Shoot();
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Ability|Effect")
+	TSubclassOf<UGameplayEffect> HitGameplayEffect;
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;

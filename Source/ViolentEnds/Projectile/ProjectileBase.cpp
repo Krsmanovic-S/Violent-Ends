@@ -3,6 +3,7 @@
 #include "AbilitySystemComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayEffect.h"
 
 AProjectileBase::AProjectileBase()
@@ -15,9 +16,13 @@ AProjectileBase::AProjectileBase()
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
 	SetRootComponent(CollisionComponent);
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectileBase::OnProjectileOverlap);
+	SetRootComponent(CollisionComponent);
+
 
 	// Create Mesh component
 	ProjectileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
+	ProjectileMeshComponent->SetupAttachment(GetRootComponent());
+
 
 	// Create the movement component
 	ProjectileMovementComponent =
@@ -29,7 +34,9 @@ void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompone
 {
 	// Handle collision logic if the target is a character (target has ability system component)
 
-	if (HitGameplayEffect)
+	if (OtherActor == Owner) return;
+
+	if (HitGameplayEffect.IsValid())
 	{
 		if (IAbilitySystemInterface* ABSI = Cast<IAbilitySystemInterface>(OtherActor))
 		{
@@ -41,11 +48,9 @@ void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompone
 
 				// Apply hit effect
 
-				FGameplayEffectSpecHandle GEHandle =
-					OwnerAbilitySystemComponent->MakeOutgoingSpec(HitGameplayEffect, 0, FGameplayEffectContextHandle());
-				if (GEHandle.IsValid())
+				if (HitGameplayEffect.IsValid() && OwnerAbilitySystemComponent)
 				{
-					OwnerAbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*GEHandle.Data.Get(), ASC);
+					OwnerAbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*HitGameplayEffect.Data.Get(), ASC);
 				}
 			}
 		}
@@ -63,6 +68,15 @@ void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompone
 	FGameplayCueParameters CueParams;
 	CueParams.Location = HitResult.Location;
 	CueParams.Normal = HitResult.Normal;
+
+	FGameplayTag EventTag = FGameplayTag::RequestGameplayTag(TEXT(""));
+	FGameplayEventData Payload;
+	Payload.Target = OtherActor;
+	Payload.Instigator = GetOwner();
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OtherActor,EventTag, Payload);
+
+	if (OwnerAbilitySystemComponent)
 	OwnerAbilitySystemComponent->ExecuteGameplayCue(ImpactCueTag, CueParams);
 	
 }
@@ -70,7 +84,7 @@ void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompone
 UAbilitySystemComponent* AProjectileBase::GetAbilitySystemComponent() const
 {
 	UAbilitySystemComponent* RetVal = nullptr;
-	if (OwnerAbilitySystemComponent.IsValid()) { RetVal = OwnerAbilitySystemComponent.Get(); }
+	if (OwnerAbilitySystemComponent) { RetVal = OwnerAbilitySystemComponent; }
 	return RetVal;
 }
 

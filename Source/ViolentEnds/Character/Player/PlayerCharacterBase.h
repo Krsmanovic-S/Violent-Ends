@@ -11,6 +11,7 @@ class UBoxComponent;
 class UQuestComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UWidgetComponent;
 
 UCLASS()
 class VIOLENTENDS_API APlayerCharacterBase : public ACharacterBase
@@ -35,20 +36,45 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Camera")
 	UCameraComponent* CameraComponent;
 
-	UFUNCTION(BlueprintCallable, Category = "Character|Aim")
-	void StartAiming();
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Interactable")
+	TArray<AActor*> InteractablesInRange;
 
-	UFUNCTION(BlueprintCallable, Category = "Character|Aim")
-	void EndAiming();
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Interactable")
+	AActor* CurrentInteractable;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character|Interactable")
+	UWidgetComponent* InteractionWidget;
+
+	UFUNCTION(BlueprintCallable, Category = "Character|Interaction")
+	void InteractWithItem();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Character|Interation")
+	void HighlightInteraction();
+
+	UFUNCTION()
+	void OnOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Character|Inventory|Weapon")
+	void OnWeaponSheathed(UWeaponBase* Weapon);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Character|Inventory|Weapon")
+	void OnWeaponSwapped(UWeaponBase* OldWeapon, UWeaponBase* NewWeapon);
 
 protected:
-	void PossessedBy(AController* NewController) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void Tick(float DeltaSecond) override;
+
+	virtual void HighlightInteraction_Implementation();
+
+	virtual void OnWeaponSheathed_Implementation(UWeaponBase* Weapon);
+	virtual void OnWeaponSwapped_Implementation(UWeaponBase* OldWeapon, UWeaponBase* NewWeapon);
 
 private:
 	UPROPERTY()
 	APlayerController* PlayerController;
-
-	FTimerHandle RotationTimer;
 
 	bool bIsAiming;
 
