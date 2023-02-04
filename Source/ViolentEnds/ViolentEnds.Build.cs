@@ -11,7 +11,8 @@ public class ViolentEnds : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "UMG",
-			"GameplayAbilities", "GameplayTasks", "GameplayTags", "Niagara"
+			"GameplayAbilities", "GameplayTasks", "GameplayTags", "Niagara",
+			"FastNoise", "FastNoiseGenerator"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[] {"AIModule", "NavigationSystem", "Slate", "SlateCore"});

@@ -3,6 +3,7 @@ AllowShortBlocksOnASingleLine: Always
 AllowShortIfStatementsOnASingleLine: OnlyFirstIf
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortLambdasOnASingleLine: All
+BinPackArguments: false
 ColumnLimit: 120
 EmptyLineBeforeAccessModifier: Always
 IncludeBlocks: Regroup
