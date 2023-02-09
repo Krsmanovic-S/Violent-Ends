@@ -214,9 +214,6 @@ private:
 	bool bAllowedReload = true;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
-	bool bIsAiming;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
 	bool bIsRelativeAiming = false;
 
 	bool bAllowedAttack = true;

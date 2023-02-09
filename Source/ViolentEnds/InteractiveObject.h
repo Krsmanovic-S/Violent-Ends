@@ -14,7 +14,8 @@ enum class InteractableType : uint8
 {
 	None,
 	Chest,
-	Door
+	Door,
+	Note
 };
 
 UINTERFACE(MinimalAPI)

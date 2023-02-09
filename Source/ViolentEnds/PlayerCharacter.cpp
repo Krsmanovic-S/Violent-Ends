@@ -63,8 +63,7 @@ void APlayerCharacter::BeginPlay()
 		this->PlayerInventory->AmmoInventory[AmmoInventoryIndex] = AmmoItem;
 		AmmoInventoryIndex++;
 	}
-
-	this->bIsAiming = false;
+	
 	this->bHasDashed = false;
 	this->DashDistance = 2500.f;
 	this->DashCooldown = 1.f;
@@ -81,7 +80,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (MainPlayerController && this->bIsAiming)
+	if (MainPlayerController)
 	{
 		MainPlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
 
@@ -397,7 +396,7 @@ void APlayerCharacter::Interact()
 	{
 		CurrentInteractable->InteractPure();
 
-		if (!CurrentInteractable->bCanBeUsedAgain)
+		if (CurrentInteractable != nullptr && !CurrentInteractable->bCanBeUsedAgain)
 		{
 			AActor* InteractableActor = Cast<AActor>(CurrentInteractable);
 			OnBoxEndOverlap(nullptr, InteractableActor, nullptr, 0);
