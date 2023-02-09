@@ -19,7 +19,6 @@ class VIOLENTENDS_API UAttributeSet_BaseAttribute : public UAttributeSet
 	GENERATED_BODY()
 
 public:
-
 	UAttributeSet_BaseAttribute();
 
 	/**
@@ -47,112 +46,149 @@ public:
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, HealthRegen)
 
 	/**
-	 *
+	 * The current Stamina attribute of the character
+	 * Uses to activate abilities
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Stamina")
 	FGameplayAttributeData Stamina;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, Stamina)
 
 	/**
-	 *
+	 * The max Stamina attribute of the character
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Stamina")
 	FGameplayAttributeData StaminaMax;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, StaminaMax)
 
 	/**
-	 *
+	 * The health regeneration attribute of the character
+	 * Health is recovered by this amount per second
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Stamina")
 	FGameplayAttributeData StaminaRegen;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, StaminaRegen)
 
 	/**
-	 *
+	 * The current movement speed of the character
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Defense")
-	FGameplayAttributeData Armour;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, Armour)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
+	FGameplayAttributeData MovementSpeed;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MovementSpeed)
 
 	/**
-	 *
+	 * The walk speed of the character
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Defense")
-	FGameplayAttributeData FireResistance;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, FireResistance)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
+	FGameplayAttributeData WalkSpeed;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, WalkSpeed)
 
 	/**
-	 *
+	 * The run speed of the character
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Defense")
-	FGameplayAttributeData ExplosiveResistance;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, ExplosiveResistance)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
+	FGameplayAttributeData RunSpeed;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, RunSpeed)
 
 	/**
-	 *
+	 * The movement speed of the character while in aim mode
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Modifier")
-	FGameplayAttributeData HealthMaxModifier;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, HealthMaxModifier)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
+	FGameplayAttributeData MoveSpeedWhileAiming;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MoveSpeedWhileAiming)
+
+#pragma region Defensive_Values
 
 	/**
-	 *
-	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Modifier")
-	FGameplayAttributeData StaminaMaxModifier;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, StaminaMaxModifier)
-
-	/**
-	 *
+	 * Damage taken multiplier
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Modifier")
 	FGameplayAttributeData DamageReduction;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, DamageReduction)
 
 	/**
-	 *
+	 * The armour of the character
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Defense")
+	FGameplayAttributeData Armour;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, Armour)
+
+	/**
+	 * The fire resistance of the character
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Defense")
+	FGameplayAttributeData FireResistance;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, FireResistance)
+
+	/**
+	 * The explosive resistance of the character
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Defense")
+	FGameplayAttributeData ExplosiveResistance;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, ExplosiveResistance)
+
+#pragma endregion
+#pragma region Additional_Attributes
+
+	/**
+	 * The max Health modifier
+	 * Multiplicative to the base modifier(s)
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Modifier")
+	FGameplayAttributeData HealthMaxModifier;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, HealthMaxModifier)
+
+	/**
+	 * The max Stamina modifier
+	 * Multiplicative to the base modifier(s)
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Modifier")
+	FGameplayAttributeData StaminaMaxModifier;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, StaminaMaxModifier)
+
+	/**
+	 * The Health regeneration modifier
+	 * Multiplicative to the base modifier(s)
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Modifier")
 	FGameplayAttributeData HealthRegenModifier;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, HealthRegenModifier)
 
 	/**
-	 *
+	 * The Stamina regeneration modifier
+	 * Multiplicative to the base modifier(s)
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|Modifier")
 	FGameplayAttributeData StaminaRegenModifier;
 	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, StaminaRegenModifier)
 
 	/**
-	 * The current movement speed of the associated character
+	 * The walk speed modifier
+	 * Multiplicative to the base modifier(s)
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
-	FGameplayAttributeData MovementSpeed;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MovementSpeed)	
-		
-	/**
-	 * 
-	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
-	FGameplayAttributeData WalkSpeed;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, WalkSpeed)	
+	FGameplayAttributeData WalkSpeedModifier;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, WalkSpeedModifier)
 
 	/**
-	 * 
+	 * The run speed modifier
+	 * Multiplicative to the base modifier(s)
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
-	FGameplayAttributeData RunSpeed;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, RunSpeed)		
+	FGameplayAttributeData RunSpeedModifier;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, RunSpeedModifier)
 
 	/**
-	 * 
+	 * The aim move speed modifier
+	 * Multiplicative to the base modifier(s)
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Gameplay|Attributes|MovementSpeed")
-	FGameplayAttributeData MoveSpeedWhileAiming;
-	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MoveSpeedWhileAiming)
+	FGameplayAttributeData MoveSpeedWhileAimingModifier;
+	ATTRIBUTE_ACCESSORS(UAttributeSet_BaseAttribute, MoveSpeedWhileAimingModifier)
+
+#pragma endregion
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
-	void AdjustAttributeProportional(FGameplayAttributeData& Attribute, FGameplayAttributeData& AttributeMax, float NewValue);
-
+	void AdjustAttributeProportional(FGameplayAttributeData& Attribute,
+		FGameplayAttributeData& AttributeMax, float NewValue);
 };
