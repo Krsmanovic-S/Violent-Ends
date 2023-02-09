@@ -1,9 +1,9 @@
 #include "ProjectileBase.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayEffect.h"
 
 AProjectileBase::AProjectileBase()
@@ -18,11 +18,9 @@ AProjectileBase::AProjectileBase()
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectileBase::OnProjectileOverlap);
 	SetRootComponent(CollisionComponent);
 
-
 	// Create Mesh component
 	ProjectileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
 	ProjectileMeshComponent->SetupAttachment(GetRootComponent());
-
 
 	// Create the movement component
 	ProjectileMovementComponent =
@@ -32,10 +30,20 @@ AProjectileBase::AProjectileBase()
 void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& Hit)
 {
+	// Define hit impact cue(s)
+	FHitResult HitResult = FindHitImpact();
+	FGameplayCueParameters CueParams;
+	CueParams.Location = HitResult.Location;
+	CueParams.Normal = HitResult.Normal;
+
+	// Define the hit event
+	FGameplayTag EventTag = FGameplayTag::RequestGameplayTag(TEXT(""));
+	FGameplayEventData Payload;
+	Payload.Target = OtherActor;
+	Payload.Instigator = GetOwner();
+	if (OtherActor == Owner) { return; }
+
 	// Handle collision logic if the target is a character (target has ability system component)
-
-	if (OtherActor == Owner) return;
-
 	if (HitGameplayEffect.IsValid())
 	{
 		if (IAbilitySystemInterface* ABSI = Cast<IAbilitySystemInterface>(OtherActor))
@@ -53,6 +61,8 @@ void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompone
 					OwnerAbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*HitGameplayEffect.Data.Get(), ASC);
 				}
 			}
+
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OtherActor, EventTag, Payload);
 		}
 	}
 
@@ -62,23 +72,8 @@ void AProjectileBase::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompone
 
 	// Handle collision logic if the target is static target (Walls/ Pillars, etc.)
 	else {}
-	
-	// Play the hit impact cue(s)
-	FHitResult HitResult = FindHitImpact();
-	FGameplayCueParameters CueParams;
-	CueParams.Location = HitResult.Location;
-	CueParams.Normal = HitResult.Normal;
 
-	FGameplayTag EventTag = FGameplayTag::RequestGameplayTag(TEXT(""));
-	FGameplayEventData Payload;
-	Payload.Target = OtherActor;
-	Payload.Instigator = GetOwner();
-
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OtherActor,EventTag, Payload);
-
-	if (OwnerAbilitySystemComponent)
-	OwnerAbilitySystemComponent->ExecuteGameplayCue(ImpactCueTag, CueParams);
-	
+	if (OwnerAbilitySystemComponent) { OwnerAbilitySystemComponent->ExecuteGameplayCue(ImpactCueTag, CueParams); }
 }
 
 UAbilitySystemComponent* AProjectileBase::GetAbilitySystemComponent() const
