@@ -6,8 +6,7 @@
 
 UWeaponBase::UWeaponBase()
 {
-	ItemTag = FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Weapon"));
-	EquipmentTag = FGameplayTag::RequestGameplayTag(TEXT("Character.Effect.Item.Equipment.Weapon"));
+	ItemTag = FGameplayTag::RequestGameplayTag(TEXT("Item.Equipment.Weapon"));
 }
 
 bool UWeaponBase::TryUseItem_Implementation(AActor* Target)
@@ -20,17 +19,8 @@ bool UWeaponBase::TryUseItem_Implementation(AActor* Target)
 		{
 			auto Context = ASC->MakeEffectContext();
 			Context.AddSourceObject(this);
-			auto Handle = ASC->MakeOutgoingSpec(WeaponAbilityEffect, 1.0f, Context);
-			if (Handle.IsValid())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Amount of abilities granted: %d"), Handle.Data.Get()->GrantedAbilitySpecs.Num())
-				for (auto Item : Handle.Data.Get()->GrantedAbilitySpecs)
-				{
-					UE_LOG(LogTemp, Display, TEXT("Granting ability: %s"),
-						*Item.Ability.GetDefaultObject()->GetFName().ToString())
-				}
-					ASC->ApplyGameplayEffectSpecToSelf(*Handle.Data.Get());
-			}
+			auto Handle = ASC->MakeOutgoingSpec(WeaponAbilitiesGrantedEffect, 0, Context);
+			if (Handle.IsValid()) { auto EffectHandle = ASC->ApplyGameplayEffectSpecToSelf(*Handle.Data.Get()); }
 
 			return true;
 		}

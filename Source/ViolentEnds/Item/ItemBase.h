@@ -31,7 +31,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Item")
 	int32 ItemMaxStack;
 	
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Item|Equipment")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Item")
 	FGameplayTag ItemTag;
 
 	UFUNCTION(BlueprintCallable, Category = "Item")

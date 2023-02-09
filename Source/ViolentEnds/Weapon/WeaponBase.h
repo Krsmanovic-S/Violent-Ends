@@ -42,7 +42,19 @@ public:
 	* The amount of ammo left in a magazine
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
-	int32 Reserve;
+	int32 Reserve;	
+	
+	/**
+	* The maximum range which aim can offset to
+	*/
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
+	float AimRange;	
+	
+	/**
+	* The inaccuracy of the weapon, measured in max angle which the projectile can spawn different from the aim position
+	*/
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
+	float InaccuracySpreadAngle;
 
 	// Effective range of the weapon
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
@@ -50,10 +62,7 @@ public:
 
 	// Effect used to grant abilities to give to the character in relevant to weapon gameplay weapon functionalities
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
-	TSubclassOf<UGameplayEffect> WeaponAbilityEffect;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
-	TSubclassOf<UGameplayEffect> WeaponAbilitiesGranted;
+	TSubclassOf<UGameplayEffect> WeaponAbilitiesGrantedEffect;
 
 	// Primary use: Equip item
 	virtual bool TryUseItem_Implementation(AActor* Target) override;

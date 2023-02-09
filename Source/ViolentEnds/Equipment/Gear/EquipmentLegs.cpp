@@ -1,6 +1,5 @@
 #include "EquipmentLegs.h"
 
 UEquipmentLegs::UEquipmentLegs() {
-	ItemTag = FGameplayTag::RequestGameplayTag(TEXT("Character.Item.Equipment.Gear.Legs"));
-	EquipmentTag = FGameplayTag::RequestGameplayTag(TEXT("Character.Item.Equipment.Gear.Legs"));
+	ItemTag = FGameplayTag::RequestGameplayTag(TEXT("Item.Equipment.Gear.Legs"));
 }
