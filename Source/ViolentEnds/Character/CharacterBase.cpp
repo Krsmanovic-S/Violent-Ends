@@ -25,6 +25,7 @@ bool ACharacterBase::TryApplyEffectToSelf(UClass* Effect)
 	if (EffectSpec.IsValid())
 	{
 		FActiveGameplayEffectHandle Handle = CharacterASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data.Get());
+		return true;
 	}
 	return false;
 }
