@@ -112,7 +112,9 @@ void UVE_ASC::EffectAppliedToTargetCallback(
 
 int32 UVE_ASC::HandleGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload)
 {
-	if (EventTag.MatchesTag(FGameplayTag::RequestGameplayTag(TEXT(""))))
+	Super::HandleGameplayEvent(EventTag, Payload);
+
+	if (EventTag.MatchesTag(FGameplayTag::RequestGameplayTag(TEXT("Event.Weapon.Hit"))))
 	{
 		if (OnCharacterHit.IsBound()) { OnCharacterHit.Broadcast(EventTag); }
 	}
