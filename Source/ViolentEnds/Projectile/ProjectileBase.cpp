@@ -131,7 +131,6 @@ FHitResult AProjectileBase::FindHitImpact()
 	FVector TraceEnd = TraceStart + (Direction * (CollisionComponent->GetScaledSphereRadius()));
 	ECollisionChannel TraceChannel = (CollisionComponent->GetCollisionObjectType());
 
-	//GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, TraceChannel);
 	GetWorld()->SweepSingleByChannel(HitResult, TraceStart, TraceEnd,FQuat::Identity, TraceChannel, FCollisionShape::MakeSphere(CollisionComponent->GetScaledSphereRadius()));
 
 	return HitResult;
